@@ -1,0 +1,45 @@
+#root {
+  width: 1200px;
+  height: 1000px;
+  vertical-align: top;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid black;
+
+}
+
+.row {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: start;
+  border: 1px solid black;
+
+}
+
+.add-row-btn {
+  font-size: large;
+  border: 1px solid black;
+  margin-top: .5rem;
+}
+
+.modal-popup {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+  border: 1px solid black;
+  width: 50%;
+  margin: auto;
+}
+
+.modal-popup input {
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.submit-modal {
+  border: 1px solid black;
+}
