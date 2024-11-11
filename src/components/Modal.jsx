@@ -1,47 +1,69 @@
+import { useEffect, useState } from "react";
 import { useRow } from "../context/RowProvider";
 import { useTable } from "../context/TableProvider";
 import Row from "./Row";
 
-function Modal(props) {
+function Modal({ row, onSave }) {
 
-    const {rows, setRows, addingRow, setAddingRow} = useTable();
+    const {rows, setRows, addingRow, setAddingRow, setSelectedRow} = useTable();
 
-    
-    const handleSubmit = (event) => {    
-        const newRow = <Row
-         propertyAddress={event.target[0].value}
-         purchasePriceSF={event.target[1].value}
-         purchasePrice={event.target[2].value}
-         ACQCAPXSF={event.target[3].value}
-         ACQCAPX={event.target[4].value}
-         UnitCount={event.target[5].value}
-         GrossBuildingArea={event.target[6].value}
-         GrossSiteArea={event.target[7].value}
-         REPropertyTax={event.target[8].value}
-         MarketRate={event.target[9].value}
-         ServiceStructure={event.target[10].value}
-         PropertyClass={event.target[11].value} />
-        setRows((prev) => [...prev, newRow])
-        setAddingRow(false);
-        }
+  const [formData, setFormData] = useState({
+    propertyAddress: "",
+    purchasePriceSF: "",
+    purchasePrice: "",
+    ACQCAPXSF: "",
+    ACQCAPX: "",
+    UnitCount: "",
+    GrossBuildingArea: "",
+    GrossSiteArea: "",
+    REPropertyTax: "",
+    MarketRate: "",
+    ServiceStructure: "",
+    PropertyClass: "",
+  });
+
+  // Initialize form data when the modal opens
+  useEffect(() => {
+    if (row) {
+      setFormData({ ...row });
+    }
+  }, [row]);
+
+  // Handle input changes
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  // Handle form submission
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSave(formData);
+  };
+    // Handle cancel button click
+    const handleCancel = () => {
+      onSave && onSave(null); // Optional chaining to avoid errors if onSave is undefined
+    };
+  
 
   return (
     <form className="modal-popup" onSubmit={handleSubmit}>
-        <input type="text" placeholder="Property Address"/>
-        <input type="text" placeholder="Purchase Price ($/SF)"/>
-        <input type="text" placeholder="Purchase Price"/>
-        <input type="text" placeholder="ACQ CAPx ($/SF)"/>
-        <input type="text" placeholder="ACQ CAPx ($)"/>
-        <input type="text" placeholder="Unit Count"/>
-        <input type="text" placeholder="Gross Building Area"/>
-        <input type="text" placeholder="Gross Site Area"/>
-        <input type="text" placeholder="RE Property Tax"/>
-        <input type="text" placeholder="Market Rate"/>
-        <input type="text" placeholder="Service Structure"/>  
-        <input type="text" placeholder="Property Class"/>  
-        <input type="submit" name="Submit" />
+      <input type="text" name="propertyAddress" placeholder="Property Address" value={formData.propertyAddress} onChange={handleChange} />
+      <input type="text" name="purchasePriceSF" placeholder="Purchase Price ($/SF)" value={formData.purchasePriceSF} onChange={handleChange} />
+      <input type="text" name="purchasePrice" placeholder="Purchase Price" value={formData.purchasePrice} onChange={handleChange} />
+      <input type="text" name="ACQCAPXSF" placeholder="ACQ CAPx ($/SF)" value={formData.ACQCAPXSF} onChange={handleChange} />
+      <input type="text" name="ACQCAPX" placeholder="ACQ CAPx ($)" value={formData.ACQCAPX} onChange={handleChange} />
+      <input type="text" name="UnitCount" placeholder="Unit Count" value={formData.UnitCount} onChange={handleChange} />
+      <input type="text" name="GrossBuildingArea" placeholder="Gross Building Area" value={formData.GrossBuildingArea} onChange={handleChange} />
+      <input type="text" name="GrossSiteArea" placeholder="Gross Site Area" value={formData.GrossSiteArea} onChange={handleChange} />
+      <input type="text" name="REPropertyTax" placeholder="RE Property Tax" value={formData.REPropertyTax} onChange={handleChange} />
+      <input type="text" name="MarketRate" placeholder="Market Rate" value={formData.MarketRate} onChange={handleChange} />
+      <input type="text" name="ServiceStructure" placeholder="Service Structure" value={formData.ServiceStructure} onChange={handleChange} />
+      <input type="text" name="PropertyClass" placeholder="Property Class" value={formData.PropertyClass} onChange={handleChange} />
+      <button type="submit">Save</button>
+      <button type="button" onClick={handleCancel}>Cancel</button>
     </form>
-  )
+  );
 }
 
 export default Modal

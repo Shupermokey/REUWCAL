@@ -1,7 +1,7 @@
 
 function Cell({value}) {
   return (
-    <div>
+    <div className="cell">
         {value ? value : '-'}
     </div>
   )

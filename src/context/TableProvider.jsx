@@ -7,6 +7,7 @@ const TableContext = createContext();
 export const TableProvider = ({ children }) => {
   const [rows, setRows] = useState([]);
   const [addingRow, setAddingRow] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
 
 
   return (
@@ -15,7 +16,9 @@ export const TableProvider = ({ children }) => {
         rows,
         setRows,
         addingRow,
-        setAddingRow
+        setAddingRow,
+        selectedRow,
+        setSelectedRow
       }}
     >
       {children}
