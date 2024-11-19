@@ -2,52 +2,75 @@ import { useEffect, useState } from "react"
 import Row from "./Row"
 import Modal from "./Modal";
 import { useTable } from "../context/TableProvider";
+import Levered from "./Levered";
 
 function Table() {
 
-  const {rows, setRows, addingRow, setAddingRow, selectedRow, setSelectedRow} = useTable();
+  const {rows, setRows,
+    leveredRow, setLeveredRow,
+    unleveredRow, setUnleveredRow,
+     addingRow, setAddingRow,
+      selectedRow, setSelectedRow} = useTable();
   
-  useEffect(() => {
-    setRows((prev) => [...prev])
-  }, [setSelectedRow])
+  // useEffect(() => {
+  //   setRows((prev) => [...prev])
+  // }, [setSelectedRow])
 
-    function addRow() {
-      setSelectedRow(null);
-      setAddingRow(true);
+  const handleAddEveredRows = () => {
+    const newRowLevered = {
+      id: leveredRow.length + 1,
+      ENTCapRate: "",
+      YieldOnCash: "",
+      TenYearIRR: "",
+      TenYearNPV: "",
+      TenYearROI: "",
+    };
+    const newRowUnlevered = {
+      id: unleveredRow.length + 1,
+      ENTCapRate: "",
+      YieldOnCash: "",
+      TenYearIRR: "",
+      TenYearNPV: "",
+      TenYearROI: "",
+    };
+
+    setLeveredRow((prevRows) => [...prevRows, newRowLevered]);
+    setUnleveredRow((prevRows) => [...prevRows, newRowUnlevered]);
+
+
   }
 
-  function updateRow(row) {
-    console.log(row)
-    setAddingRow(true);
-    setSelectedRow(row);
-  }
+  const handleAddRow = () => {
+    const newRow = {
+      id: rows.length + 1,
+      propertyAddress: "",
+      purchasePriceSF: "",
+      purchasePrice: "",
+      ACQCAPXSF: "",
+      ACQCAPX: "",
+      UnitCount: "",
+      GrossBuildingArea: "",
+      GrossSiteArea: "",
+      REPropertyTax: "",
+      MarketRate: "",
+      ServiceStructure: "",
+      PropertyClass: "",
+    };
+    setRows((prevRows) => [...prevRows, newRow]);
+    handleAddEveredRows();
+  };
 
-  
-  // Function to handle save/update from modal
-  function handleSave(updatedData) {
-    if (!updatedData) {
-      // Cancel action, just close the modal
-      setAddingRow(false);
-      setSelectedRow(null);
-      return;
-    }
-  
-    if (selectedRow) {
-      // Update existing row
-      const updatedRows = rows.map((r) => (r.id === updatedData.id ? updatedData : r));
-      setRows(updatedRows);
-    } else {
-      // Add new row
-      const newRow = { id: Date.now(), ...updatedData };
-      setRows((prev) => [...prev, newRow]);
-    }
-  
-    setAddingRow(false);
-    setSelectedRow(null);
-  }
+  const handleCellChange = (id, field, value) => {
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === id ? { ...row, [field]: value } : row
+      )
+    );
+  };
+ 
   
     return (
-      <>
+      <div class="table">
       {!addingRow ? <Row
       propertyAddress={'Property Address'}
       purchasePriceSF={'Purchase Price ($/SF)'}
@@ -63,29 +86,20 @@ function Table() {
       PropertyClass={'Property Class'}
           /> : null}
 
-      {addingRow && <Modal row={selectedRow} onSave={handleSave} />}
-      { !addingRow && rows.map((row, index) =>  (
+
+      { !addingRow && rows.map((row) =>  (
         <Row
-        key={index}
-        propertyAddress={row.propertyAddress}
-        purchasePriceSF={row.purchasePriceSF}
-        purchasePrice={row.purchasePrice}
-        ACQCAPXSF={row.ACQCAPXSF}
-        ACQCAPX={row.ACQCAPX}
-        UnitCount={row.UnitCount}
-        GrossBuildingArea={row.GrossBuildingArea}
-        GrossSiteArea={row.GrossSiteArea}
-        REPropertyTax={row.REPropertyTax}
-        MarketRate={row.MarketRate}
-        ServiceStructure={row.ServiceStructure}
-        PropertyClass={row.PropertyClass}
-        onClick={() => updateRow(row)}
+        key={row.id}
+        handleCellChange={handleCellChange}
       />
       ))}
 
 
-      {!addingRow ? <button onClick={() => addRow()} className="add-row-btn">+</button> : <></>}
-      </>
+      {!addingRow ? <button onClick={() => handleAddRow()} className="add-row-btn">+</button> : <></>}
+
+      <Levered name="Unlevered" />
+      <Levered name="Levered" />
+      </div>
   )
 }
 
