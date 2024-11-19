@@ -1,9 +1,9 @@
 import "../Row.css"
 import Cell from "./Cell"
 
-function Row({propertyAddress, purchasePriceSF, purchasePrice, ACQCAPXSF, ACQCAPX, UnitCount, GrossBuildingArea, GrossSiteArea, REPropertyTax, MarketRate, ServiceStructure, PropertyClass, handleCellChange}) {
+function Row({propertyAddress, purchasePriceSF, purchasePrice, ACQCAPXSF, ACQCAPX, UnitCount, GrossBuildingArea, GrossSiteArea, REPropertyTax, MarketRate, ServiceStructure, PropertyClass, handleCellChange, isSelected, onSelect}) {
   return (
-    <div className="row">
+    <div className="row" onClick={onSelect} style={{backgroundColor: isSelected ? 'red' : "transparent", cursor: "pointer"}}>
         <div className="purchase-price-sf"><Cell value={propertyAddress} handleCellChange={handleCellChange}/></div>
         <div className="purchase-price-sf"><Cell value={purchasePriceSF} handleCellChange={handleCellChange}/></div>
         <div className="purchase-price"><Cell value={purchasePrice} handleCellChange={handleCellChange}/></div>

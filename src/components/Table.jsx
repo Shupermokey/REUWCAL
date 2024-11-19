@@ -68,6 +68,9 @@ function Table() {
     );
   };
  
+  const handleRowSelect = (id) => {
+    setSelectedRow(id);
+  }
   
     return (
       <div class="table">
@@ -91,6 +94,8 @@ function Table() {
         <Row
         key={row.id}
         handleCellChange={handleCellChange}
+        isSelected={row.id === selectedRow}
+        onSelect={() => handleRowSelect(row.id)}
       />
       ))}
 

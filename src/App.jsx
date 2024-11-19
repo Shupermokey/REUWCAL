@@ -11,9 +11,10 @@ function App() {
 
   return (
     <>
+             
       <TableProvider>
         <RowProvider>
-         <Sidebar pageWrapId={'page-wrap'} outerContainerId={'outer-container'} />
+          <Sidebar />
           <Table />
         </RowProvider>
       </TableProvider>
