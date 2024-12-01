@@ -5,11 +5,12 @@ const TableContext = createContext();
 
 // Provider component to provide game state to its children
 export const TableProvider = ({ children }) => {
+  
   const [rows, setRows] = useState([]);
   const [unleveredRow, setUnleveredRow] = useState([]);
   const [leveredRow, setLeveredRow] = useState([]);
   const [addingRow, setAddingRow] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(-1);
 
 
   return (

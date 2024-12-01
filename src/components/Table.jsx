@@ -3,6 +3,7 @@ import Row from "./Row"
 import Modal from "./Modal";
 import { useTable } from "../context/TableProvider";
 import Levered from "./Levered";
+import PropertyDashboard from "./PropertyDashboard";
 
 function Table() {
 
@@ -12,13 +13,10 @@ function Table() {
      addingRow, setAddingRow,
       selectedRow, setSelectedRow} = useTable();
   
-  // useEffect(() => {
-  //   setRows((prev) => [...prev])
-  // }, [setSelectedRow])
 
-  const handleAddEveredRows = () => {
+  const updateEveredRows = () => {
     const newRowLevered = {
-      id: leveredRow.length + 1,
+      id: 0,
       ENTCapRate: "",
       YieldOnCash: "",
       TenYearIRR: "",
@@ -26,7 +24,7 @@ function Table() {
       TenYearROI: "",
     };
     const newRowUnlevered = {
-      id: unleveredRow.length + 1,
+      id: 0,
       ENTCapRate: "",
       YieldOnCash: "",
       TenYearIRR: "",
@@ -34,15 +32,15 @@ function Table() {
       TenYearROI: "",
     };
 
-    setLeveredRow((prevRows) => [...prevRows, newRowLevered]);
-    setUnleveredRow((prevRows) => [...prevRows, newRowUnlevered]);
+    setLeveredRow([newRowLevered]);
+    setUnleveredRow([newRowUnlevered]);
 
 
   }
 
   const handleAddRow = () => {
     const newRow = {
-      id: rows.length + 1,
+      id: rows.length,
       propertyAddress: "",
       purchasePriceSF: "",
       purchasePrice: "",
@@ -57,7 +55,8 @@ function Table() {
       PropertyClass: "",
     };
     setRows((prevRows) => [...prevRows, newRow]);
-    handleAddEveredRows();
+    setSelectedRow(newRow.id)
+    updateEveredRows();
   };
 
   const handleCellChange = (id, field, value) => {
@@ -93,6 +92,19 @@ function Table() {
       { !addingRow && rows.map((row) =>  (
         <Row
         key={row.id}
+        id={row.id}
+        propertyAddress={row.propertyAddress}
+    purchasePriceSF={row.purchasePriceSF}
+    purchasePrice={row.purchasePrice}
+    ACQCAPXSF={row.ACQCAPXSF}
+    ACQCAPX={row.ACQCAPX}
+    UnitCount={row.UnitCount}
+    GrossBuildingArea={row.GrossBuildingArea}
+    GrossSiteArea={row.GrossSiteArea}
+    REPropertyTax={row.REPropertyTax}
+    MarketRate={row.MarketRate}
+    ServiceStructure={row.ServiceStructure}
+    PropertyClass={row.PropertyClass}
         handleCellChange={handleCellChange}
         isSelected={row.id === selectedRow}
         onSelect={() => handleRowSelect(row.id)}
@@ -104,6 +116,7 @@ function Table() {
 
       <Levered name="Unlevered" />
       <Levered name="Levered" />
+      {selectedRow > -1 && <PropertyDashboard id={selectedRow}/>}
       </div>
   )
 }

@@ -203,3 +203,51 @@ Note: Beware of modifying this element as it can break the animations - you shou
 .everedMetrics div {
   flex:1;
 }
+
+.left{
+  left: 100px;
+}
+
+.acquisition-radio-assumptions-table{
+  display: flex;
+  flex-direction: column;
+}
+.acquisition-radio-assumptions-row{
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.acquisition-radio-assumptions-cell{
+  flex: 1;
+}
+
+.acquisition-radio-assumptions-table,
+.acquisition-radio-assumptions-cell
+ {
+  border: 1px solid black;
+}
+
+.property-dashboard {
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: start;
+  align-items: start;
+}
+
+.property-cell {
+  border: 1px solid black;
+  width: 100%;
+  height: 100%;
+  margin: 2px;
+  text-align: start;
+}
+
+.property-scenario-button{
+  border: 1px solid grey;
+  background-color: red;
+}
+
+.scenario-rows{
+  display: flex;
+}
