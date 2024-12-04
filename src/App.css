@@ -230,11 +230,13 @@ Note: Beware of modifying this element as it can break the animations - you shou
 
 .property-dashboard {
   display: flex;
-  /* flex-direction: column; */
+  flex-direction: column;
   justify-content: start;
   align-items: start;
 }
-
+.property-dashboard-row {
+  display: flex;
+}
 .property-cell {
   border: 1px solid black;
   width: 100%;
@@ -250,4 +252,9 @@ Note: Beware of modifying this element as it can break the animations - you shou
 
 .scenario-rows{
   display: flex;
+}
+
+.property-cell-subrow {
+  display: flex;
+  border: 1px solid black;
 }

@@ -5,7 +5,7 @@ const ScenarioContext = createContext();
 
 // Provider component to provide game state to its children
 export const ScenarioProvider = ({ children }) => {
-    const [srows, setSrows] = useState([]);
+    const [srows, setSrows] = useState({});
     const [createScenario, setCreateScenario] = useState(false);
 
 

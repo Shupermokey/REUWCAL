@@ -53,6 +53,7 @@ function Table() {
       MarketRate: "",
       ServiceStructure: "",
       PropertyClass: "",
+      ScenarioRows: []
     };
     setRows((prevRows) => [...prevRows, newRow]);
     setSelectedRow(newRow.id)
@@ -86,6 +87,7 @@ function Table() {
       MarketRate={'Market Rate'}
       ServiceStructure={'Service Structure'}
       PropertyClass={'Property Class'}
+      
           /> : null}
 
 
@@ -94,17 +96,17 @@ function Table() {
         key={row.id}
         id={row.id}
         propertyAddress={row.propertyAddress}
-    purchasePriceSF={row.purchasePriceSF}
-    purchasePrice={row.purchasePrice}
-    ACQCAPXSF={row.ACQCAPXSF}
-    ACQCAPX={row.ACQCAPX}
-    UnitCount={row.UnitCount}
-    GrossBuildingArea={row.GrossBuildingArea}
-    GrossSiteArea={row.GrossSiteArea}
-    REPropertyTax={row.REPropertyTax}
-    MarketRate={row.MarketRate}
-    ServiceStructure={row.ServiceStructure}
-    PropertyClass={row.PropertyClass}
+        purchasePriceSF={row.purchasePriceSF}
+        purchasePrice={row.purchasePrice}
+        ACQCAPXSF={row.ACQCAPXSF}
+        ACQCAPX={row.ACQCAPX}
+        UnitCount={row.UnitCount}
+        GrossBuildingArea={row.GrossBuildingArea}
+        GrossSiteArea={row.GrossSiteArea}
+        REPropertyTax={row.REPropertyTax}
+        MarketRate={row.MarketRate}
+        ServiceStructure={row.ServiceStructure}
+        PropertyClass={row.PropertyClass}
         handleCellChange={handleCellChange}
         isSelected={row.id === selectedRow}
         onSelect={() => handleRowSelect(row.id)}
