@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { loginUser } from "../../firebase/authService";
 import { handleSignInWithEmailAndPassword, handleSignInWithGoogle } from "../../firebase/authService";
 import { useAuth } from "../../context/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
 
@@ -11,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate(); //Navigation Hook?
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,9 +22,15 @@ const Login = () => {
     // } catch (error) {
     //   console.error("Login failed:", error.message);
     // }
-    if(!isSigningIn) {
-      setIsSigningIn(true);
-      await handleSignInWithEmailAndPassword(email, password);
+    try {
+      if(!isSigningIn) {
+        setIsSigningIn(true);
+        await handleSignInWithEmailAndPassword(email, password);
+      }
+      navigate("/home");
+    }
+    catch (err) {
+      console.log("error")
     }
   };
 
