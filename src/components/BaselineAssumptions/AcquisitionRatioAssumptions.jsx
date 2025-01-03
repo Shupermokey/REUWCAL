@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AcquisitionRatioAssumptions() {
+function AcquisitionRatioAssumptions({isBase}) {
   return (
     <table className='acquisition-radio-assumptions-table'>
         <th className='acquisition-radio-assumptions-row'>

@@ -8,9 +8,11 @@ function Sidebar() {
 
   return (
     <Menu noOverlay className='left'>
-        <div href="">Home</div>
-        <div onClick={() => setBase(!base)}>Basic</div>
-        <div href="">Third</div>
+        <a href="/home">Home</a>
+        {/* <div onClick={() => setBase(!base)}>Basic</div> */}
+        <a href="/baseline">Basic</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/dashboard">Dash</a>
     </Menu>
   )
 }

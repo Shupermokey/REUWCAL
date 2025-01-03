@@ -1,34 +1,25 @@
-import Row from "./components/Row"
-import Table from "./components/Table"
-
-import "./App.css"
-import { TableProvider, useTable } from "./context/TableProvider"
-import { RowProvider } from "./context/RowProvider"
-import Sidebar from "./components/Sidebar"
-import { AppProvider, useApp } from "./context/AppProvider"
-import BaselineTable from "./components/BaselineTable"
-import PropertyDashboard from "./components/PropertyDashboard"
-import { ScenarioProvider } from "./context/ScenarioRowProvider"
+import "./App.css";
+import { Route, Routes} from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import Home from "./pages/Home";
+import DashboardPage from "./pages/DashboardPage";
+import PricingPage from "./pages/PricingPage";
+import BaselineTablePage from "./pages/BaselineTablePage";
 
 function App() {
-
-  const {base} = useApp();
-  const {selectedRow} = useTable();
-
   return (
     <>
-    
-        <ScenarioProvider>
-        <RowProvider>
-          <Sidebar />
-          {base === false && <Table />}
-          {base !== false && <BaselineTable/>}
-        </RowProvider>
-        </ScenarioProvider>
+      <Routes>
+        
+        <Route path="/" element={<LoginPage/>}/>
+        <Route path="/home" element={<Home/>}/>
+        <Route path="/pricing" element={<PricingPage/>}/>
+        <Route path="/dashboard" element={<DashboardPage/>}/>
+        <Route path="/baseline" element={<BaselineTablePage/>}/>
 
-      
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

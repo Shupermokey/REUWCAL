@@ -1,6 +1,6 @@
 import React from 'react'
 
-function BaselineFinancingConditionAssumptions() {
+function BaselineFinancingConditionAssumptions({isBase}) {
   return (
     <table className='acquisition-radio-assumptions-table'>
         <th className='acquisition-radio-assumptions-row'>
@@ -20,6 +20,7 @@ function BaselineFinancingConditionAssumptions() {
             <td className='acquisition-radio-assumptions-cell'>5.00%</td>
             <td className='acquisition-radio-assumptions-cell'>10/19/24</td>
         </tr>
+        <button style={{backgroundColor:'red'}}>Adding row to Table Above</button>
     </table>
   )
 }

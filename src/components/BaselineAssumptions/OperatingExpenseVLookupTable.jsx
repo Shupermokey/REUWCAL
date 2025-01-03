@@ -1,6 +1,6 @@
 import React from 'react'
 
-function OperatingExpenseVLookupTable() {
+function OperatingExpenseVLookupTable({isBase}) {
   return (
     <table className='acquisition-radio-assumptions-table'>
     <tr className='acquisition-radio-assumptions-row'>
@@ -25,130 +25,131 @@ function OperatingExpenseVLookupTable() {
 
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>RESI-G</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''} /></td>
       <td className='acquisition-radio-assumptions-cell'>RE TAX, RE INS, Utilities, CAM, Repair, MGMT, CAPx</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>G</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
       <td className='acquisition-radio-assumptions-cell'>RE TAX, RE INS, Utilities, CAM, Repair, MGMT, CAPx</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>MG</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%' : ''}/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%' : ''}/></td>
       <td className='acquisition-radio-assumptions-cell'>RE TAX, RE INS, Utilities, CAM, Repair, MGMT, CAPx</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>ABS-NNN</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%'   : ''} /></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''} /></td>
       <td className='acquisition-radio-assumptions-cell'>MGMT</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities, RE TAX, RE INS, Utilities, CAM, Repair, CAPx</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>NNN</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%  ' : '' }/></td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : '' }/></td>
       <td className='acquisition-radio-assumptions-cell'>MGMT, Repair, CAPx</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities, RE TAX, RE INS, Utilities, CAM</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>NN</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
       <td className='acquisition-radio-assumptions-cell'>MGMT, Repair, CAPx, RE INS</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities, RE TAX, Utilities, CAM</td>
     </tr>
     <tr className='acquisition-radio-assumptions-row'>
       <td className='acquisition-radio-assumptions-cell'>N</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>1.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>100.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>2.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>5.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>3.0%</td>
-      <td className='acquisition-radio-assumptions-cell'>0.0%</td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '1.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '100.0%' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '2.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '5.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '3.0%  ' : ''}/> </td>
+      <td className='acquisition-radio-assumptions-cell'><input value={isBase ? '0.0%  ' : ''}/> </td>
       <td className='acquisition-radio-assumptions-cell'>MGMT, Repair, CAPx, RE TAX, RE INS</td>
       <td className='acquisition-radio-assumptions-cell'>Named Utilities, CAM, Utilities</td>
     </tr>
+    <button style={{backgroundColor:'red'}}>Adding row to Table Above</button>
 </table>
 
   )

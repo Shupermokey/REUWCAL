@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import AcquisitionRatioAssumptions from './BaselineAssumptions/AcquisitionRatioAssumptions'
 import BaselineFinancingConditionAssumptions from './BaselineAssumptions/BaselineFinancingConditionAssumptions'
 import BaselineOperatingExpenseRationAssumptions from './BaselineAssumptions/BaselineOperatingExpenseRationAssumptions'
@@ -6,17 +6,43 @@ import OperatingExpenseVLookupTable from './BaselineAssumptions/OperatingExpense
 import InvestmentGradeClassifications from './BaselineAssumptions/InvestmentGradeClassifications'
 
 function BaselineTable() {
+
+  const [isBase, setIsBase] = useState(true);
+
+  function handleCreateBase() {
+      setIsBase(!isBase);
+  }
+
   return (
     <div>
-        <AcquisitionRatioAssumptions/>
+
+        {isBase && <>
+        <AcquisitionRatioAssumptions isBase={ isBase }/>
         <br/>
-        <BaselineFinancingConditionAssumptions/>
+        <BaselineFinancingConditionAssumptions isBase={ isBase }/>
+        <br/> 
+        <BaselineOperatingExpenseRationAssumptions isBase={ isBase }/> 
+        <br/> 
+        <OperatingExpenseVLookupTable isBase={ isBase }/> 
+        <br/> 
+        <InvestmentGradeClassifications isBase={ isBase }/> 
         <br/>
-        <BaselineOperatingExpenseRationAssumptions/>
+        </>}
+
+        {!isBase && <>
+        <AcquisitionRatioAssumptions isBase={ isBase }/>
         <br/>
-        <OperatingExpenseVLookupTable/>
+        <BaselineFinancingConditionAssumptions isBase={ isBase }/>
+        <br/> 
+        <BaselineOperatingExpenseRationAssumptions isBase={ isBase }/> 
+        <br/> 
+        <OperatingExpenseVLookupTable isBase={ isBase }/> 
+        <br/> 
+        <InvestmentGradeClassifications isBase={ isBase }/> 
         <br/>
-        <InvestmentGradeClassifications/>
+        </>}
+
+        <button onClick={() => handleCreateBase()}>+++</button>
     </div>
   )
 }

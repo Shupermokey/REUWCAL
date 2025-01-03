@@ -1,6 +1,6 @@
 import React from 'react'
 
-function InvestmentGradeClassifications() {
+function InvestmentGradeClassifications({isBase}) {
   return (
     <table className='acquisition-radio-assumptions-table'>
 
@@ -21,7 +21,7 @@ function InvestmentGradeClassifications() {
       <td className='acquisition-radio-assumptions-cell'>20%</td>
       <td className='acquisition-radio-assumptions-cell'>-</td>
     </tr>
-
+    <button style={{backgroundColor:'red'}}>Adding row to Table Above</button>
 </table>
 
   )

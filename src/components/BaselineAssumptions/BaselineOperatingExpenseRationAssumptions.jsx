@@ -1,6 +1,6 @@
 import React from 'react'
 
-function BaselineOperatingExpenseRationAssumptions() {
+function BaselineOperatingExpenseRationAssumptions({isBase}) {
   return (
     <table className='acquisition-radio-assumptions-table'>
     <tr className='acquisition-radio-assumptions-row'>
@@ -74,6 +74,7 @@ function BaselineOperatingExpenseRationAssumptions() {
       <td className='acquisition-radio-assumptions-cell'>23.00%</td>
       <td className='acquisition-radio-assumptions-cell'>-</td>
     </tr>
+    <button style={{backgroundColor:'red'}}>Adding row to Table Above</button>
 </table>
 
   )
