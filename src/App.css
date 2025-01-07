@@ -258,3 +258,75 @@ Note: Beware of modifying this element as it can break the animations - you shou
   display: flex;
   border: 1px solid black;
 }
+.login-page-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.logo {
+  height: 10rem;
+  width: 15rem;
+}
+
+.login-page-top {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-login-input,
+.pass-login-input {
+  height: 20px;
+  width: 100%;
+  padding: 10px;
+  margin: 5px;
+}
+.login-btn {
+  height: 20px;
+  width: 100%;
+}
+.register-btn {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  transition: border-color 0.25s;
+  font-size: 1em;
+  font-weight:500;
+  font-family: inherit;
+  color: #213547;
+  background-color: #f9f9f9;
+  display: block;
+  height: 20px;
+  width: 100%;
+}
+
+.register-btn:hover {
+  border-color: #646cff;
+}
+.tier-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 80%;
+  margin: 0 auto;
+  margin-top: 25px;
+}
+.tier {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 15em;
+  width:  8em;
+  border: 1px solid black;
+  border-radius: 5px;
+  text-align: center;
+}
+.tier:hover {
+  background-color: antiquewhite;
+}

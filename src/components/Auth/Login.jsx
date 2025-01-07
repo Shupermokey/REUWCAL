@@ -47,8 +47,9 @@ const Login = () => {
 
 
   return (
-    <form onSubmit={handleLogin}>
+    <form className="login-form" onSubmit={handleLogin}>
       <input
+        className="email-login-input"
         type="email"
         placeholder="Email"
         value={email}
@@ -56,13 +57,14 @@ const Login = () => {
         required
       />
       <input
+        className="pass-login-input"
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <button type="submit">Login</button>
+      <button className="login-btn" type="submit">Login</button>
     </form>
   );
 };
