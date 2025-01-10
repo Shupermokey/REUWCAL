@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthProvider.jsx'
 import { BrowserRouter } from 'react-router-dom'
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+  // <BrowserRouter>
       
       <AuthProvider>
       <AppProvider>
@@ -18,5 +18,5 @@ createRoot(document.getElementById('root')).render(
       </AppProvider>
       </AuthProvider>
     
-  </BrowserRouter>,
+  // </BrowserRouter>,
 )

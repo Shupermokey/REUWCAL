@@ -1,4 +1,4 @@
-import "../Row.css"
+
 import Cell from "./Cell"
 
 function Row({id,propertyAddress, purchasePriceSF, purchasePrice, ACQCAPXSF, ACQCAPX, UnitCount, GrossBuildingArea, GrossSiteArea, REPropertyTax, MarketRate, ServiceStructure, PropertyClass, handleCellChange, isSelected, onSelect}) {

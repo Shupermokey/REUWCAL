@@ -14,12 +14,13 @@ const app = express();
 app.use(cors());
 app.use(json()); // Parse JSON requests
 
-// Define your price IDs from Stripe Dashboard
+// Define your price IDs from Stripe Dashboard. Make sure to update this in .env with non-test values
 const prices = {
     free: 'price_1QefjxEgiGJZMTseqhni6OT9', // Replace with the actual price ID
+    freetwo: 'price_1QeqNvEgiGJZMTseWFjYiTql', // Replace with the actual price ID
     market: 'price_1QefkuEgiGJZMTseD5g4kb1K',
     developer: 'price_1QeflXEgiGJZMTsepoBPEblg',
-    premium: 'price_1QefmEEgiGJZMTsedxiwooup',
+    syndicator: 'price_1QefmEEgiGJZMTsedxiwooup',
 };
 
 // Create Checkout Session endpoint

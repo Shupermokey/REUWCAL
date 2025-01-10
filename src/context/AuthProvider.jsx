@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     async function initializeUser(user) {
+        console.log("Firebase Auth User:", user); // Add this log
         if(user) {
             setUser({...user})
             setUserLoggedIn(true);
