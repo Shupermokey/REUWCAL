@@ -23,6 +23,7 @@ const prices = {
     syndicator: 'price_1QefmEEgiGJZMTsedxiwooup',
 };
 
+
 // Create Checkout Session endpoint
 app.post('/create-checkout-session', async (req, res) => {
     const { tier } = req.body; // Get the selected tier from the request
@@ -53,6 +54,28 @@ app.post('/create-checkout-session', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+app.get('/api/subscription', async (req, res) => {
+    try {
+        const customerId = req.user.stripeCustomerId; // Ensure you store Stripe's customer ID with your user
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'active',
+        });
+
+        if (subscriptions.data.length > 0) {
+            const subscription = subscriptions.data[0];
+            const priceId = subscription.items.data[0].price.id; // Get the subscription tier
+            res.json({ tier: priceId });
+        } else {
+            res.json({ tier: 'free' }); // Default to free if no active subscription
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Unable to fetch subscription data' });
+    }
+});
+
 
 // Start the server
 app.listen(4000, () => console.log('Server running on port 4000'));
