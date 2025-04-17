@@ -1,0 +1,67 @@
+.nested-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 999;
+    background-color: white;
+    border: 1px solid red;
+    padding: 6px 8px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    min-width: 240px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dropdown-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
+  }
+  
+  .dropdown-line,
+  .dropdown-subitem {
+    padding: 2px 6px;
+    cursor: pointer;
+  }
+  
+  .dropdown-line:hover,
+  .dropdown-subitem:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .dropdown-subitem {
+    padding-left: 18px;
+    font-style: italic;
+  }
+  
+  .dropdown-subadd {
+    display: flex;
+    margin-top: 4px;
+    padding-left: 18px;
+    gap: 4px;
+  }
+  
+  .dropdown-subadd input,
+  .dropdown-add input {
+    flex: 1;
+    padding: 2px 4px;
+    font-size: 12px;
+  }
+  
+  .dropdown-subadd button,
+  .dropdown-add button {
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+  
+  .dropdown-add {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    border-top: 1px solid #ccc;
+    padding-top: 6px;
+  }
+  
