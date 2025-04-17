@@ -1,4 +1,3 @@
-// Row.jsx
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthProvider";
 import { db } from "../firebase/firebaseConfig";
@@ -69,6 +68,7 @@ function Row({
         id: doc.id,
         ...doc.data(),
       }));
+      console.log("Fetched baselines:", data);
       setBaselines(data);
     };
     fetchBaselines();
@@ -78,6 +78,22 @@ function Row({
     setEditableRow((prev) => ({ ...prev, [field]: value }));
     handleCellChange(row.id, field, value);
   };
+
+  const validateFields = () => {
+    const invalids = [];
+    Object.entries(columnTypes).forEach(([key, type]) => {
+      const value = editableRow[key]?.value ?? editableRow[key];
+      if (type === "number" && (value === "" || isNaN(Number(value)))) {
+        invalids.push(key);
+      }
+      if (type === "string" && typeof value !== "string") {
+        invalids.push(key);
+      }
+    });
+    setInvalidFields(invalids);
+    return invalids.length === 0;
+  };
+  
 
   const handleCancel = () => {
     if (row.id === "new") {
@@ -119,21 +135,6 @@ function Row({
     });
   };
 
-  const validateFields = () => {
-    const invalids = [];
-    Object.entries(columnTypes).forEach(([key, type]) => {
-      const value = editableRow[key]?.value ?? editableRow[key];
-      if (type === "number" && (value === "" || isNaN(Number(value)))) {
-        invalids.push(key);
-      }
-      if (type === "string" && typeof value !== "string") {
-        invalids.push(key);
-      }
-    });
-    setInvalidFields(invalids);
-    return invalids.length === 0;
-  };
-
   return (
     <div
       className={`row ${isSelected ? "selected" : ""}`}
@@ -147,42 +148,63 @@ function Row({
           style={{ position: "relative", overflow: "visible", zIndex: 2, minWidth: 150 }}
         >
           {isEditing ? (
-            <>
-              <input
-                type="text"
-                value={editableRow[key]?.value || ""}
-                onChange={(e) =>
-                  handleChange(key, {
-                    ...(editableRow[key] || {}),
-                    value: e.target.value,
-                    details: editableRow[key]?.details || {},
-                  })
-                }
-              />
-              <button
-                style={{ marginLeft: 4 }}
-                onClick={() => {
-                  setOpenDropdownKey(row.id);
-                  setActiveColumn(key);
-                }}
-              >
-                🛈
-              </button>
-              {openDropdownKey === row.id && activeColumn === key && (
-                <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 1000 }}>
-                  <NestedDropdown
-                    visible
-                    structure={dropdownStructureMap[key] || []}
-                    data={editableRow[key] || { value: "", details: {} }}
-                    onDataUpdate={(updated) => handleChange(key, updated)}
-                    onRequestClose={() => setOpenDropdownKey(null)}
+            key === "Category" ? (
+              <div className="editable-cell">
+                <select
+                  value={editableRow[key] || ""}
+                  onChange={(e) => {
+                    handleChange(key, e.target.value);
+                    applyBaseline(e.target.value);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ width: "100%" }}
+                >
+                  <option value="">Select a baseline</option>
+                  {baselines.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name || b.id}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <>
+                <div
+                  className="editable-cell"
+                  onClick={() => {
+                    setOpenDropdownKey(row.id);
+                    setActiveColumn(key);
+                  }}
+                >
+                  <input
+                    type="text"
+                    value={editableRow[key]?.value || ""}
+                    onChange={(e) =>
+                      handleChange(key, {
+                        ...(editableRow[key] || {}),
+                        value: e.target.value,
+                        details: editableRow[key]?.details || {},
+                      })
+                    }
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
-              )}
-            </>
+                {openDropdownKey === row.id && activeColumn === key && (
+                  <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 1000 }}>
+                    <NestedDropdown
+                      visible
+                      structure={dropdownStructureMap[key] || []}
+                      data={editableRow[key] || { value: "", details: {} }}
+                      onDataUpdate={(updated) => handleChange(key, updated)}
+                      onRequestClose={() => setOpenDropdownKey(null)}
+                    />
+                  </div>
+                )}
+              </>
+            )
           ) : (
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-              {editableRow[key]?.value || "—"}
+              {key === "Category"
+                ? baselines.find((b) => b.id === editableRow[key])?.name || "—"
+                : editableRow[key]?.value || "—"}
             </span>
           )}
         </div>

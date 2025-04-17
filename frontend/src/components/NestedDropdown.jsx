@@ -1,4 +1,3 @@
-// NestedDropdown.jsx
 import React, { useEffect, useRef, useState } from "react";
 import "../styles/NestedDropdown.css";
 
@@ -18,61 +17,75 @@ const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onRequestClose]);
 
+  const cleanNumber = (value) => {
+    const cleaned = value.replace(/[^\d.]/g, "");
+    return cleaned === "" ? 0 : parseFloat(cleaned);
+  };
+
   const toggleExpand = (label) => {
     setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
   const calculateSubTotal = (parent, subItems) => {
     return subItems.reduce((sum, sub) => {
-      const val = parseFloat(data.details?.[parent]?.[sub] || 0);
+      const raw = data.details?.[parent]?.[sub] || "";
+      const val = cleanNumber(raw);
       return sum + (isNaN(val) ? 0 : val);
     }, 0);
   };
 
   const handleSubItemChange = (group, sub, value) => {
-    const parsed = parseFloat(value);
     const structureIndex = structure.findIndex(i => i === group);
     const subItems = Array.isArray(structure[structureIndex + 1]) ? structure[structureIndex + 1] : [];
+
     const newSub = {
       ...(data.details?.[group] || {}),
       [sub]: value
     };
+
     const newTotal = subItems.reduce((sum, key) => {
-      const val = parseFloat(key === sub ? value : data.details?.[group]?.[key] || 0);
-      return sum + (isNaN(val) ? 0 : val);
+      const raw = key === sub ? value : data.details?.[group]?.[key];
+      const num = cleanNumber(raw ?? "");
+      return sum + (isNaN(num) ? 0 : num);
     }, 0);
+
     const updated = {
       ...data,
       details: {
         ...data.details,
         [group]: {
           ...newSub,
-          __value: newTotal,
+          __value: newTotal
         },
       },
     };
-    onDataUpdate((prevRow) => ({ ...prevRow, [columnKey]: updated }));
+
+    onDataUpdate(updated);
   };
 
   const handleValueChange = (label, value) => {
+    const parsed = cleanNumber(value);
+
     const updated = {
       ...data,
       details: {
         ...data.details,
         [label]: {
           ...(data.details?.[label] || {}),
-          __value: value,
+          __value: parsed,
+          display: value
         },
       },
     };
-    onDataUpdate((prevRow) => ({ ...prevRow, [columnKey]: updated }));
+
+    onDataUpdate(updated);
   };
 
   const calculateParentTotal = () => {
-    return structure.reduce((sum, item, idx) => {
+    return structure.reduce((sum, item) => {
       if (typeof item === "string") {
-        const value = parseFloat(data.details?.[item]?.__value || 0);
-        return sum + (isNaN(value) ? 0 : value);
+        const val = parseFloat(data.details?.[item]?.__value);
+        return sum + (isNaN(val) ? 0 : val);
       }
       return sum;
     }, 0);
@@ -81,12 +94,14 @@ const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose
   const handleAddItem = () => {
     if (!newItem.trim()) return;
     structure.push(newItem.trim());
+    structure.push([]);
     setNewItem("");
   };
 
   const handleAddSubItem = (parent) => {
     const newSub = newSubItems[parent]?.trim();
     if (!newSub) return;
+
     const parentIndex = structure.findIndex(i => i === parent);
     if (parentIndex !== -1) {
       const next = structure[parentIndex + 1];
@@ -99,37 +114,49 @@ const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose
       structure.push(parent);
       structure.push([newSub]);
     }
+
     setNewSubItems(prev => ({ ...prev, [parent]: "" }));
   };
+
+  if (!data || !data.details) {
+    console.warn("❌ NestedDropdown received invalid data:", data);
+    return <div style={{ color: "red" }}>Dropdown data missing</div>;
+  }
 
   const renderStructure = () => {
     return structure.map((item, idx) => {
       if (typeof item === "string") {
         const hasSubitems = Array.isArray(structure[idx + 1]);
         const subItems = hasSubitems ? structure[idx + 1] : [];
-        const parentValue = parseFloat(data.details?.[item]?.__value || 0);
+        const parentValueRaw = data.details?.[item]?.display ?? "";
+        const parentValue = cleanNumber(parentValueRaw);
         const subTotal = hasSubitems ? calculateSubTotal(item, subItems) : 0;
+
         return (
           <div key={item} className="dropdown-section">
             <div className="dropdown-header" onClick={() => toggleExpand(item)}>
-              ▶ {item} ({parentValue}%)
+              ▶ {item} ({isNaN(parentValue) ? 0 : parentValue}%)
             </div>
-            <input
-              type="number"
-              placeholder="%"
-              value={parentValue}
-              onChange={(e) => handleValueChange(item, e.target.value)}
-              disabled={hasSubitems}
-            />
+            <div className="dropdown-input-wrapper" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="%"
+                value={parentValueRaw}
+                onChange={(e) => handleValueChange(item, e.target.value)}
+                disabled={hasSubitems}
+              />
+            </div>
             {expanded[item] && (
               <div className="dropdown-sublist">
                 {subItems.map((sub, subIdx) => (
                   <div key={subIdx} className="dropdown-subitem">
                     <label>{sub}</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="%"
-                      value={data.details?.[item]?.[sub] || ""}
+                      value={data.details?.[item]?.[sub] ?? ""}
                       onChange={(e) => handleSubItemChange(item, sub, e.target.value)}
                     />
                   </div>
@@ -145,7 +172,7 @@ const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose
                 </div>
                 {hasSubitems && (
                   <div style={{ fontSize: "12px", color: subTotal !== parentValue ? "red" : "green" }}>
-                    Subtotal: {subTotal}% / {parentValue}%
+                    Subtotal: {subTotal}% / {isNaN(parentValue) ? 0 : parentValue}%
                   </div>
                 )}
               </div>
