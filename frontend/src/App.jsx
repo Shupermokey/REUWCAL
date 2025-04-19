@@ -9,7 +9,6 @@ import LoginPage from "./pages/LoginPage";
 import Home from "./pages/Home";
 import DashboardPage from "./pages/DashboardPage";
 import PricingPage from "./pages/PricingPage";
-import BaselineTablePage from "./pages/BaselineTablePage";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoutes/ProtectedRoute";
 import { getAuth, onAuthStateChanged } from "firebase/auth";

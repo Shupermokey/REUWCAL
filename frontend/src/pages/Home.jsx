@@ -3,10 +3,8 @@ import { ScenarioProvider } from "../context/ScenarioRowProvider";
 import { RowProvider } from "../context/RowProvider";
 import Sidebar from "../components/Sidebar";
 import Table from "../components/Table";
-import BaselineTable from "../components/BaselineTable";
 import { useApp } from "../context/AppProvider";
 import { useTable } from "../context/TableProvider";
-import FeatureX from "../components/Features/FeatureX";
 import {
   addDoc,
   collection,
@@ -22,10 +20,6 @@ import { useAuth } from "../context/AuthProvider";
 import { loadStripe } from "@stripe/stripe-js";
 
 import { getAuth } from "firebase/auth";
-import SubscriptionUpgrade from "../components/Subscription/SubscriptionUpgrade";
-import CancelSubscription from "../components/Subscription/CancelSubscription";
-import PaymentMethod from "../components/Subscription/PaymentMethod";
-import { Elements } from "@stripe/react-stripe-js";
 import { db } from "../firebase/firebaseConfig";
 import Pricing from "../components/Pricing/Pricing";
 import PerformaTable from "../components/Performa/PerformaTable";

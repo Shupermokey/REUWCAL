@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthProvider";
 import FileExplorer from "./Sidebar/FileSystem/FileExplorer";
 import PropertyFileSidebar from "./Sidebar/PropertyFileSidebar";
 import Sidebar from "./Sidebar";
+import {columnOrder} from './Row'
 
 function Table({ onRowSelect }) {
   const { rows, setRows, selectedRow, setSelectedRow } = useTable();
@@ -86,15 +87,32 @@ function Table({ onRowSelect }) {
       const { id, ...rowWithoutId } = sanitizedData;
       const docRef = await addDoc(collection(db, "users", user.uid, "properties"), rowWithoutId);
   
+      const fileSystemBasePath = collection(
+        db,
+        "users",
+        user.uid,
+        "properties",
+        docRef.id,
+        "fileSystem"
+      );
+  
       await setDoc(
-        doc(db, "users", user.uid, "properties", docRef.id, "fileSystem", "README"),
+        doc(fileSystemBasePath, "README"),
         {
           note: "This is the file system for this property",
           createdAt: new Date(),
         },
         { merge: true } // ✅ avoids overwriting if README exists
       );
-      
+
+      await Promise.all(
+        columnOrder.map(async (header) => {
+          await setDoc(doc(fileSystemBasePath, header), {
+            type: "folder",
+            title: header,
+            createdAt: new Date(),
+          });
+        }))      
 
   
       setRows(prevRows =>

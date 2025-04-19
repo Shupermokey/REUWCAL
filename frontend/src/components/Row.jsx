@@ -7,7 +7,7 @@ import { useApp } from "../context/AppProvider";
 import NestedDropdown from "./NestedDropdown";
 import dropdownStructureMap from "../nestedDropdownConfig";
 
-const columnOrder = [
+export const columnOrder = [
   "propertyAddress",
   "purchasePriceSF",
   "purchasePrice",
