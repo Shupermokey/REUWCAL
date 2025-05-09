@@ -1,13 +1,16 @@
-import React from 'react'
-import Register from '../components/Auth/Register'
+import React from "react";
+import Register from "../features/auth/Auth/Register";
+import { useNavigate } from "react-router-dom";
 
 function RegisterPage() {
+  const navigate = useNavigate();
+
   return (
     <>
-    <Register />
-    <a href='/'>Back</a>
+      <Register />
+      <button onClick={() => navigate("/")}>Back</button>
     </>
-  )
+  );
 }
 
-export default RegisterPage
+export default RegisterPage;

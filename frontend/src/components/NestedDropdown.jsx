@@ -1,11 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useAuth } from "../app/AuthProvider";
 import "../styles/NestedDropdown.css";
+import { addFolder, fetchMatchingFolderTree } from "../services/firestoreService";
 
-const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose, columnKey }) => {
-  const [expanded, setExpanded] = useState({});
-  const [newItem, setNewItem] = useState("");
-  const [newSubItems, setNewSubItems] = useState({});
+const NestedDropdown = ({
+  structure,
+  data,
+  onDataUpdate,
+  visible,
+  onRequestClose,
+  columnKey,
+  propertyId,
+}) => {
+  const { user } = useAuth();
   const dropdownRef = useRef(null);
+  const [expanded, setExpanded] = useState({});
+  const [folderTree, setFolderTree] = useState([]);
+  const [newSubInputs, setNewSubInputs] = useState({});
+  const [subinputsVisible, setSubinputsVisible] = useState({});
+  const [editingKeys, setEditingKeys] = useState({});
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -17,191 +30,225 @@ const NestedDropdown = ({ structure, data, onDataUpdate, visible, onRequestClose
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onRequestClose]);
 
-  const cleanNumber = (value) => {
-    const cleaned = value.replace(/[^\d.]/g, "");
-    return cleaned === "" ? 0 : parseFloat(cleaned);
-  };
-
-  const toggleExpand = (label) => {
-    setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
-
-  const calculateSubTotal = (parent, subItems) => {
-    return subItems.reduce((sum, sub) => {
-      const raw = data.details?.[parent]?.[sub] || "";
-      const val = cleanNumber(raw);
-      return sum + (isNaN(val) ? 0 : val);
-    }, 0);
-  };
-
-  const handleSubItemChange = (group, sub, value) => {
-    const structureIndex = structure.findIndex(i => i === group);
-    const subItems = Array.isArray(structure[structureIndex + 1]) ? structure[structureIndex + 1] : [];
-
-    const newSub = {
-      ...(data.details?.[group] || {}),
-      [sub]: value
+  useEffect(() => {
+    if (!user || !propertyId || !columnKey) return;
+    const loadMatchingFolder = async () => {
+      const filtered = await fetchMatchingFolderTree(user.uid, propertyId, columnKey);
+      setFolderTree(filtered);
     };
+    loadMatchingFolder();
+  }, [user, propertyId, columnKey]);
 
-    const newTotal = subItems.reduce((sum, key) => {
-      const raw = key === sub ? value : data.details?.[group]?.[key];
-      const num = cleanNumber(raw ?? "");
-      return sum + (isNaN(num) ? 0 : num);
-    }, 0);
-
-    const updated = {
-      ...data,
-      details: {
-        ...data.details,
-        [group]: {
-          ...newSub,
-          __value: newTotal
-        },
-      },
-    };
-
-    onDataUpdate(updated);
+  const toggleExpand = (id) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleValueChange = (label, value) => {
-    const parsed = cleanNumber(value);
-
-    const updated = {
-      ...data,
-      details: {
-        ...data.details,
-        [label]: {
-          ...(data.details?.[label] || {}),
-          __value: parsed,
-          display: value
-        },
-      },
-    };
-
-    onDataUpdate(updated);
+  const handleAddFolder = async (parentPath = []) => {
+    const folderName = prompt("Enter folder name:");
+    if (!folderName || !user || !propertyId) return;
+    await addFolder(parentPath, folderName);
+    const updated = await fetchMatchingFolderTree(user.uid, propertyId, columnKey);
+    setFolderTree(updated);
   };
 
-  const calculateParentTotal = () => {
-    return structure.reduce((sum, item) => {
-      if (typeof item === "string") {
-        const val = parseFloat(data.details?.[item]?.__value);
-        return sum + (isNaN(val) ? 0 : val);
-      }
-      return sum;
-    }, 0);
+  const handleDrop = (e, folder) => {
+    const label = e.dataTransfer.getData("text/plain");
+    console.log(`📦 Moved "${label}" to folder "${folder.title}"`);
   };
 
-  const handleAddItem = () => {
-    if (!newItem.trim()) return;
-    structure.push(newItem.trim());
-    structure.push([]);
-    setNewItem("");
-  };
-
-  const handleAddSubItem = (parent) => {
-    const newSub = newSubItems[parent]?.trim();
-    if (!newSub) return;
-
-    const parentIndex = structure.findIndex(i => i === parent);
-    if (parentIndex !== -1) {
-      const next = structure[parentIndex + 1];
-      if (Array.isArray(next)) {
-        next.push(newSub);
-      } else {
-        structure.splice(parentIndex + 1, 0, [newSub]);
-      }
-    } else {
-      structure.push(parent);
-      structure.push([newSub]);
-    }
-
-    setNewSubItems(prev => ({ ...prev, [parent]: "" }));
-  };
-
-  if (!data || !data.details) {
-    console.warn("❌ NestedDropdown received invalid data:", data);
-    return <div style={{ color: "red" }}>Dropdown data missing</div>;
-  }
-
-  const renderStructure = () => {
-    return structure.map((item, idx) => {
-      if (typeof item === "string") {
-        const hasSubitems = Array.isArray(structure[idx + 1]);
-        const subItems = hasSubitems ? structure[idx + 1] : [];
-        const parentValueRaw = data.details?.[item]?.display ?? "";
-        const parentValue = cleanNumber(parentValueRaw);
-        const subTotal = hasSubitems ? calculateSubTotal(item, subItems) : 0;
-
-        return (
-          <div key={item} className="dropdown-section">
-            <div className="dropdown-header" onClick={() => toggleExpand(item)}>
-              ▶ {item} ({isNaN(parentValue) ? 0 : parentValue}%)
-            </div>
-            <div className="dropdown-input-wrapper" onClick={(e) => e.stopPropagation()}>
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="%"
-                value={parentValueRaw}
-                onChange={(e) => handleValueChange(item, e.target.value)}
-                disabled={hasSubitems}
-              />
-            </div>
-            {expanded[item] && (
-              <div className="dropdown-sublist">
-                {subItems.map((sub, subIdx) => (
-                  <div key={subIdx} className="dropdown-subitem">
-                    <label>{sub}</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="%"
-                      value={data.details?.[item]?.[sub] ?? ""}
-                      onChange={(e) => handleSubItemChange(item, sub, e.target.value)}
-                    />
-                  </div>
-                ))}
-                <div className="dropdown-subadd">
-                  <input
-                    type="text"
-                    placeholder="New subitem"
-                    value={newSubItems[item] || ""}
-                    onChange={(e) => setNewSubItems(prev => ({ ...prev, [item]: e.target.value }))}
-                  />
-                  <button onClick={() => handleAddSubItem(item)}>Add Sub</button>
-                </div>
-                {hasSubitems && (
-                  <div style={{ fontSize: "12px", color: subTotal !== parentValue ? "red" : "green" }}>
-                    Subtotal: {subTotal}% / {isNaN(parentValue) ? 0 : parentValue}%
-                  </div>
-                )}
-              </div>
-            )}
+  const renderFolderTree = (folder) => (
+    <div key={folder.id} className="dropdown-folder">
+      <div className="dropdown-folder-title" onClick={() => toggleExpand(folder.id)}>
+        {expanded[folder.id] ? "📂" : "📁"} {folder.title}
+      </div>
+      {expanded[folder.id] && (
+        <div className="dropdown-subfolder-list">
+          {folder.children.map((child) => renderFolderTree(child))}
+          <button onClick={() => handleAddFolder(folder.path.concat("folders"))}>+ Subfolder</button>
+          <div
+            className="drop-zone"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, folder)}
+          >
+            Drop items here
           </div>
-        );
-      }
-      return null;
-    });
+        </div>
+      )}
+    </div>
+  );
+
+  const calculateSubTotal = (parentKey) => {
+    const subItems = Object.entries(data.details[parentKey] || {}).filter(
+      ([k]) => !["__value", "display"].includes(k)
+    );
+    return subItems.reduce((sum, [_, val]) => sum + parseFloat(val || 0), 0);
+  };
+
+  const handleAddSubItem = (parentKey) => {
+    const subName = newSubInputs[parentKey]?.trim();
+    if (!subName) return;
+
+    const updated = {
+      ...data,
+      details: {
+        ...data.details,
+        [parentKey]: {
+          ...data.details[parentKey],
+          [subName]: "0",
+        },
+      },
+    };
+    setNewSubInputs((prev) => ({ ...prev, [parentKey]: "" }));
+    onDataUpdate(updated);
+  };
+
+  const handleDelete = (parentKey, subKey = null) => {
+    const newDetails = { ...data.details };
+    if (subKey) {
+      delete newDetails[parentKey][subKey];
+    } else {
+      delete newDetails[parentKey];
+    }
+    onDataUpdate({ ...data, details: newDetails });
+  };
+
+  const handleEditToggle = (key, subKey = null) => {
+    const keyPath = subKey ? `${key}::${subKey}` : key;
+    setEditingKeys((prev) => ({ ...prev, [keyPath]: !prev[keyPath] }));
+  };
+
+  const getInputBorderColor = (parentKey) => {
+    const subtotal = calculateSubTotal(parentKey);
+    const expected = parseFloat(data.details[parentKey]?.__value || 0);
+    return subtotal === expected ? "2px solid green" : "2px solid red";
   };
 
   if (!visible) return null;
-  const totalTop = calculateParentTotal();
 
   return (
-    <div ref={dropdownRef} className="nested-dropdown">
-      <div className="dropdown-title">Cell Details</div>
-      {renderStructure()}
-      <div className="dropdown-add">
-        <input
-          type="text"
-          placeholder="New item"
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-        />
-        <button onClick={handleAddItem}>Add Item</button>
-      </div>
-      <div style={{ marginTop: 12, fontWeight: "bold", color: totalTop !== 100 ? "red" : "green" }}>
-        Total: {totalTop}% / 100%
+    <div className="nested-dropdown-wrapper">
+      <div ref={dropdownRef} className="nested-dropdown">
+        <div className="dropdown-title">Cell Details</div>
+
+        <div className="dropdown-folder-tree">
+          {folderTree.map((folder) => renderFolderTree(folder))}
+          <button
+            onClick={() =>
+              handleAddFolder([
+                "users",
+                user.uid,
+                "properties",
+                propertyId,
+                "fileSystem",
+              ])
+            }
+          >
+            ➕ Add Folder
+          </button>
+        </div>
+
+        <div className="dropdown-inputs">
+          {Object.entries(data.details || {}).map(([key, value]) => {
+            if (key.startsWith("__") || typeof value !== "object") return null;
+            const parentValue = parseFloat(value.__value || 0);
+            const showSubs = subinputsVisible[key];
+
+            return (
+              <div key={key} className="dropdown-input-row" style={{ marginTop: 12 }}>
+                <label
+                  style={{ fontWeight: "bold", cursor: "pointer" }}
+                  onClick={() =>
+                    setSubinputsVisible((prev) => ({ ...prev, [key]: !prev[key] }))
+                  }
+                >
+                  {showSubs ? "▼" : "▶"} {key}
+                </label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={value.display || ""}
+                  onChange={(e) => {
+                    const updated = {
+                      ...data,
+                      details: {
+                        ...data.details,
+                        [key]: {
+                          ...data.details[key],
+                          display: e.target.value,
+                          __value: parseFloat(e.target.value || "0"),
+                        },
+                      },
+                    };
+                    onDataUpdate(updated);
+                  }}
+                  style={{ border: getInputBorderColor(key) }}
+                />
+                <button onClick={() => handleDelete(key)}>🗑</button>
+
+                {showSubs &&
+                  Object.entries(value).map(([subKey, subValue]) => {
+                    if (["__value", "display"].includes(subKey)) return null;
+                    const editKey = `${key}::${subKey}`;
+                    const isEditing = editingKeys[editKey];
+
+                    return (
+                      <div key={subKey} style={{ marginLeft: 16 }}>
+                        <label>{subKey}</label>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            value={subValue}
+                            onChange={(e) => {
+                              const updated = {
+                                ...data,
+                                details: {
+                                  ...data.details,
+                                  [key]: {
+                                    ...data.details[key],
+                                    [subKey]: e.target.value,
+                                  },
+                                },
+                              };
+                              onDataUpdate(updated);
+                            }}
+                            style={{
+                              border:
+                                calculateSubTotal(key) === parseFloat(value.__value || 0) 
+                                  ? "2px solid green"
+                                  : "2px solid red",
+                            }}
+                          />
+                        ) : (
+                          <span style={{ marginLeft: 8 }}>{subValue}</span>
+                        )}
+                        <button onClick={() => handleEditToggle(key, subKey)}>
+                          {isEditing ? "✔" : "✏"}
+                        </button>
+                        <button onClick={() => handleDelete(key, subKey)}>🗑</button>
+                      </div>
+                    );
+                  })}
+
+                {showSubs && (
+                  <div style={{ marginTop: 6 }}>
+                    <input
+                      type="text"
+                      placeholder="New subinput"
+                      value={newSubInputs[key] || ""}
+                      onChange={(e) =>
+                        setNewSubInputs((prev) => ({
+                          ...prev,
+                          [key]: e.target.value,
+                        }))
+                      }
+                    />
+                    <button onClick={() => handleAddSubItem(key)}>Add Sub</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

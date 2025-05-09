@@ -37,12 +37,11 @@
   flex: 1 1 calc(100% / 14);
   text-align: center;
   padding: 8px;
-  border-right: 1px solid #ccc; /* Adds a border for consistency */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 150px;      /* ✅ Set a fixed width for headers */
-  max-width: 150px;  /* ✅ Prevent expansion */
+
+  /* align-items: center; */
+  /* justify-content: center; */
+  /* width: 150px;       ✅ Set a fixed width for headers 
+  max-width: 150px;  ✅ Prevent expansion */
 }
 
 

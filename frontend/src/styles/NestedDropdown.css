@@ -1,93 +1,69 @@
-/* NestedDropdown.css */
-
-.nested-dropdown {
+.nested-dropdown-wrapper {
   position: absolute;
   top: 100%;
   left: 0;
   z-index: 1000;
+  width: 1000px;
+  display: flex;
+  justify-items: start;
+  align-items: start;
+  text-align: start;
+}
+
+.nested-dropdown {
   background: white;
-  border: 1px solid red;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   padding: 16px;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  width: 520px; /* increased from 420px */
-  min-width: 520px;
-  max-width: 520px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  justify-items: start;
+  align-items: start;
+  text-align: start;
+
 }
 
-.dropdown-title {
-  font-weight: bold;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 6px;
-}
-
-.dropdown-section {
+.dropdown-folder-tree {
   display: flex;
-  flex-direction: column;
-}
-
-.dropdown-header {
-  cursor: pointer;
-  font-weight: 600;
-  color: #333;
-  padding: 4px 0;
-}
-
-.dropdown-sublist {
-  display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 🔁 This is the key line */
   gap: 8px;
-  margin-left: 16px;
-  padding-left: 12px;
-  border-left: 1px solid #eee;
+  margin-top: 12px;
+  justify-items: start !important;
+  align-items: start!important;
+  text-align: start!important;
+
 }
 
-.dropdown-subitem {
+.dropdown-folder {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  padding-left: 8px;
+  justify-items: start;
+  align-items: start;
+  text-align: start;
 }
 
-.dropdown-subitem label {
-  font-size: 13px;
-  color: #444;
-}
-
-.dropdown-subitem input {
-  font-size: 13px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-}
-
-.editable-cell {
+.dropdown-folder-title {
+  font-weight: bold;
   cursor: pointer;
-  border: 2px solid blue;
-  background-color: white;
-  padding: 2px;
-  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: start;
+  text-align: start;
 }
 
-.editable-cell:hover {
-  cursor: pointer;
-  border: 7px solid blue;
-  background-color: white;
-  border-color: #999;
-  padding: 2px;
-
+.dropdown-subfolder-list {
+  display: flex;
+  flex-direction: column;
+  margin-left: 16px;
+  padding-left: 8px;
 }
 
+.drop-zone {
+  padding: 6px;
+  margin-top: 4px;
+  background-color: #f6f6f6;
 
-
-.editable-cell input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
 }

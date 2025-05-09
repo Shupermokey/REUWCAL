@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from "react";
-import Login from "../components/Auth/Login";
-import Logo from "../components/LoginPage/Logo";
-import LoginFooter from "../components/LoginPage/LoginFooter";
-import { auth, db } from "../firebase/firebaseConfig";
-import { useAuth } from "../context/AuthProvider";
+import React from "react";
+import Login from "../features/auth/Auth/Login";
+import Logo from "../features/auth/LoginPage/Logo";
+import LoginFooter from "../features/auth/LoginPage/LoginFooter";
 import Pricing from "../components/Pricing/Pricing";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="login-page-container">
@@ -16,9 +14,12 @@ function LoginPage() {
         <Logo />
         <div>
           <Login />
-          <a className="register-btn" href="/register">
+          <button
+            className="register-btn"
+            onClick={() => navigate("/register")}
+          >
             Register
-          </a>
+          </button>
         </div>
       </div>
 

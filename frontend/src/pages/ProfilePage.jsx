@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { auth, db } from "../firebase/firebaseConfig";
+import {
+  getUserMetadata,
+  subscribeToProperties,
+} from "../services/firestoreService";
 import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
-import "../styles/ProfilePage.css";
 import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSidebar";
+import "../styles/ProfilePage.css";
+import { useAuth } from "../app/AuthProvider";
+import axios from "axios";
 
 export default function ProfilePage() {
-  const user = auth.currentUser;
+  const { user, tier } = useAuth(); // ✅ use context, not auth.currentUser
   const [profile, setProfile] = useState(null);
   const [properties, setProperties] = useState([]);
-
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [isFileSidebarOpen, setFileSidebarOpen] = useState(false);
 
@@ -24,43 +27,53 @@ export default function ProfilePage() {
     setFileSidebarOpen(false);
   };
 
+  const openBillingPortal = async () => {
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/subscription/create-customer-portal-session", // Your backend route
+        {},
+        { headers: { Authorization: `Bearer ${await user.getIdToken()}` } }
+      );
+  
+      if (res.data.portalUrl) {
+        window.location.href = res.data.portalUrl;
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (err) {
+      console.error("❌ Error opening billing portal:", err.message);
+      toast.error("Unable to open billing portal.");
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
-    const fetchProfile = async () => {
+    const fetchProfileAndSubscribe = async () => {
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          setProfile(userDoc.data());
-        }
+        const profileData = await getUserMetadata(user.uid);
+        setProfile(profileData);
+
+        const unsubscribe = subscribeToProperties(user.uid, setProperties);
+        return unsubscribe;
       } catch (err) {
-        console.error("Error fetching profile:", err);
-        toast.error("Unable to load profile.");
+        console.error("Error loading profile or properties:", err);
+        toast.error("Something went wrong.");
       }
     };
 
-    const fetchProperties = async () => {
-      try {
-        const snapshot = await getDocs(
-          collection(db, "users", user.uid, "properties")
-        );
-        setProperties(
-          snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        );
-      } catch (err) {
-        console.error("Error fetching properties:", err);
-        toast.error("Unable to load properties.");
-      }
-    };
+    const unsubscribePromise = fetchProfileAndSubscribe();
 
-    fetchProfile();
-    fetchProperties();
+    return () => {
+      unsubscribePromise?.then((unsubscribe) => unsubscribe?.());
+    };
   }, [user]);
 
-  if (!user)
+  if (!user) {
     return (
       <div className="profile-page">Please log in to view your profile.</div>
     );
+  }
 
   return (
     <>
@@ -73,8 +86,7 @@ export default function ProfilePage() {
               <strong>Email:</strong> {user.email}
             </p>
             <p>
-              <strong>Subscription:</strong>{" "}
-              {profile?.subscriptionTier || "Free"}
+              <strong>Subscription:</strong> {tier}
             </p>
           </div>
         </section>
@@ -92,23 +104,31 @@ export default function ProfilePage() {
                   onClick={() => openFileSystem(prop.id)}
                   style={{ cursor: "pointer" }}
                 >
-                  <h3>{prop.propertyAddress || "Unnamed Property"}</h3>
+                  <h3>{prop.propertyAddress?.value || "Unnamed Property"}</h3>
+
                   <p>
                     <strong>Purchase Price:</strong> $
-                    {prop.purchasePrice?.toLocaleString() || "N/A"}
+                    {typeof prop.purchasePrice === "number"
+                      ? prop.purchasePrice.toLocaleString()
+                      : "N/A"}
                   </p>
+
                   <p>
-                    <strong>Units:</strong> {prop.UnitCount || "N/A"}
+                    <strong>Units:</strong> {prop.UnitCount?.value || "N/A"}
                   </p>
+
                   <p>
-                    <strong>Category:</strong> {prop.Category || "N/A"}
+                    <strong>Category:</strong> {prop.Category?.value || "N/A"}
                   </p>
                 </div>
               ))}
             </div>
           )}
         </section>
+        <button onClick={openBillingPortal}>Manage Subscription</button>
+
       </div>
+
       {selectedPropertyId && (
         <FileSystemSidebar
           propertyId={selectedPropertyId}

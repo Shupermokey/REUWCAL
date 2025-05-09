@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { auth, db, storage } from "../../../firebase/firebaseConfig";
-import { deleteFolder as callDeleteFolderCloudFn } from "../../../firebase/deleteFolder";
+import { auth, db, storage } from "../../../services/firebaseConfig";
+import { deleteFolder as callDeleteFolderCloudFn } from "../../../services/deleteFolder";
 import {
   collection,
   doc,

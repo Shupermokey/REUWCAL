@@ -1,87 +1,95 @@
 import "./App.css";
 import {
   BrowserRouter as Router,
-  Route,
   Routes,
+  Route,
   Navigate,
 } from "react-router-dom";
+
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import VerifyEmail from "./pages/VerifyEmail";
 import Home from "./pages/Home";
 import DashboardPage from "./pages/DashboardPage";
 import PricingPage from "./pages/PricingPage";
-import RegisterPage from "./pages/RegisterPage";
-import ProtectedRoute from "./components/ProtectedRoutes/ProtectedRoute";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import VerifyEmail from "./pages/VerifyEmail";
-import { auth } from "./firebase/firebaseConfig";
-import { useEffect, useState } from "react";
-import BaselinePage from "./pages/BaselinePage";
-import { Toaster } from "react-hot-toast";
 import ProfilePage from "./pages/ProfilePage";
+import BaselinePage from "./pages/BaselinePage";
+import Unauthorized from "./pages/Unauthorized";
+import DeveloperTools from "./pages/DeveloperTools";
+import ProtectedRoute from "./components/ProtectedRoutes/ProtectedRoute";
 
 function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
-
-    return () => unsubscribe();
-  }, [auth]);
   return (
-    <>
-      <Toaster position="top-center" />
-      <Router>
-        <Routes>
-          <Route path="/" element={user ? <Home /> : <LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                {" "}
-                <Home />{" "}
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pricing"
-            element={
-              <ProtectedRoute>
-                <PricingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/baseline"
-            element={
-              <ProtectedRoute>
-                <BaselinePage />
-              </ProtectedRoute>
-            }
-          />
-          {/* <Route path="*" element={<Navigate to="/" />} /> Fallback route */}
-        </Routes>
-      </Router>
-    </>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected Routes (No Tier Restriction for Now) */}
+        <Route
+          path="/verify-email"
+          element={
+            <ProtectedRoute>
+              <VerifyEmail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <ProtectedRoute>
+              <PricingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/baseline"
+          element={
+            <ProtectedRoute>
+              <BaselinePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/unauthorized" element={<Unauthorized />} />
+
+        <Route
+          path="/developer-tools"
+          element={
+            <ProtectedRoute allowedTiers={["developer", "price_1Qsv8pEgiGJZMTse04hQCTMM"]}>
+              <DeveloperTools />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
 }
 

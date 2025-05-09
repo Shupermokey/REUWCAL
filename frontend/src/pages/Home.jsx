@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ScenarioProvider } from "../context/ScenarioRowProvider";
-import { RowProvider } from "../context/RowProvider";
+import { ScenarioProvider } from "../app/ScenarioRowProvider"; 
+import { RowProvider } from "../app/RowProvider";
 import Sidebar from "../components/Sidebar";
-import Table from "../components/Table";
-import { useApp } from "../context/AppProvider";
-import { useTable } from "../context/TableProvider";
+import Table from "../features/table/Table";
+import { useApp } from "../app/AppProvider";
 import {
   addDoc,
   collection,
@@ -16,13 +15,11 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../app/AuthProvider";
 import { loadStripe } from "@stripe/stripe-js";
 
-import { getAuth } from "firebase/auth";
-import { db } from "../firebase/firebaseConfig";
-import Pricing from "../components/Pricing/Pricing";
-import PerformaTable from "../components/Performa/PerformaTable";
+import { db } from "../services/firebaseConfig";
+
 
 const stripePromise = loadStripe(
   "pk_test_51NbDDDEgiGJZMTseM8sReTmk3TwiQIQwZLOwEzVHXy0uZFt7Ikn3qIc2sbKts0tFEBN5d73GFG46qA7KMbYBj5OX00SUx5fV2y"

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useAuth } from "../../context/AuthProvider";
+import { useAuth } from "../../app/AuthProvider"; 
 
-// ✅ Replace with your actual Stripe Payment Links from the dashboard
 const plans = [
   {
     name: "Marketing Plan",
@@ -27,7 +26,7 @@ const plans = [
 ];
 
 function Pricing() {
-  const { user } = useAuth(); // Get Firebase user
+  const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   return (

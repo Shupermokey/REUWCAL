@@ -1,23 +1,22 @@
 import React from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthProvider";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../../app/AuthProvider";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedTiers = [] }) => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
 
-  console.log("ProtectedRoute - User:", user);
-  console.log("ProtectedRoute - Loading:", loading);
+  if (loading) return <div>Loading...</div>;
 
-  if (loading) {
-    return <div>Loading...</div>;
-}
+  if (!user) return <Navigate to="/" replace />;
+  if (!user.emailVerified) return <Navigate to="/verify-email" replace />;
 
-if (!user) return <Navigate to="/" />;
+  // 🔐 Tier enforcement
+  const tier = user.subscriptionTier || "free"; // fallback
+  if (allowedTiers.length > 0 && !allowedTiers.includes(tier)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
-if (!user.emailVerified) return <Navigate to="/verify-email" />;
-
-return children;
+  return children;
 };
 
 export default ProtectedRoute;
