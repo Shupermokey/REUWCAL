@@ -11,11 +11,17 @@ import { useAuth } from "../app/AuthProvider";
 import axios from "axios";
 
 export default function ProfilePage() {
-  const { user, tier } = useAuth(); // ✅ use context, not auth.currentUser
+  const { user, tier } = useAuth(); // ✅ from context
   const [profile, setProfile] = useState(null);
   const [properties, setProperties] = useState([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [isFileSidebarOpen, setFileSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+ 
 
   const openFileSystem = (propertyId) => {
     setSelectedPropertyId(propertyId);
@@ -27,14 +33,30 @@ export default function ProfilePage() {
     setFileSidebarOpen(false);
   };
 
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        // Cycle: asc → desc → none
+        const next =
+          prev.direction === "asc"
+            ? "desc"
+            : prev.direction === "desc"
+            ? null
+            : "asc";
+        return { key: next ? key : null, direction: next };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
   const openBillingPortal = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:4000/api/subscription/create-customer-portal-session", // Your backend route
+        "http://localhost:4000/api/subscription/create-customer-portal-session",
         {},
         { headers: { Authorization: `Bearer ${await user.getIdToken()}` } }
       );
-  
+
       if (res.data.portalUrl) {
         window.location.href = res.data.portalUrl;
       } else {
@@ -69,6 +91,50 @@ export default function ProfilePage() {
     };
   }, [user]);
 
+  let filteredProperties = properties.filter((prop) => {
+    const query = searchTerm.toLowerCase();
+    return (
+      prop.propertyAddress?.value?.toLowerCase().includes(query) ||
+      prop.Category?.value?.toLowerCase().includes(query) ||
+      String(prop.purchasePrice || "").includes(query) ||
+      String(prop.UnitCount?.value || "").includes(query)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+  const paginatedProperties = filteredProperties.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // 🔁 Apply sorting if config is set
+  if (sortConfig.key && sortConfig.direction) {
+    filteredProperties.sort((a, b) => {
+      const aValue = extractSortableValue(a, sortConfig.key);
+      const bValue = extractSortableValue(b, sortConfig.key);
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  // 🔧 Helper to safely extract values
+  function extractSortableValue(obj, key) {
+    switch (key) {
+      case "propertyAddress":
+        return obj.propertyAddress?.value?.toLowerCase() || "";
+      case "purchasePrice":
+        return obj.purchasePrice || 0;
+      case "UnitCount":
+        return parseFloat(obj.UnitCount?.value || 0);
+      case "Category":
+        return obj.Category?.value?.toLowerCase() || "";
+      default:
+        return "";
+    }
+  }
+
   if (!user) {
     return (
       <div className="profile-page">Please log in to view your profile.</div>
@@ -93,40 +159,86 @@ export default function ProfilePage() {
 
         <section className="property-section">
           <h2>🏠 Your Properties</h2>
-          {properties.length === 0 ? (
-            <p className="empty-state">You haven’t added any properties yet.</p>
+          <input
+            type="text"
+            placeholder="Search by address, category, or price..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // reset page on search
+            }}
+            
+            className="property-search-input"
+          />
+
+          {filteredProperties.length === 0 ? (
+            <p className="empty-state">No properties match your search.</p>
           ) : (
-            <div className="property-grid">
-              {properties.map((prop) => (
-                <div
-                  key={prop.id}
-                  className="property-card"
-                  onClick={() => openFileSystem(prop.id)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>{prop.propertyAddress?.value || "Unnamed Property"}</h3>
+            <table className="property-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort("propertyAddress")}>Address</th>
+                  <th onClick={() => handleSort("purchasePrice")}>
+                    Purchase Price
+                  </th>
+                  <th onClick={() => handleSort("UnitCount")}>Units</th>
+                  <th onClick={() => handleSort("Category")}>
+                    Category{" "}
+                    {sortConfig.key === "Category"
+                      ? sortConfig.direction === "asc"
+                        ? "↑"
+                        : "↓"
+                      : ""}
+                  </th>
 
-                  <p>
-                    <strong>Purchase Price:</strong> $
-                    {typeof prop.purchasePrice === "number"
-                      ? prop.purchasePrice.toLocaleString()
-                      : "N/A"}
-                  </p>
-
-                  <p>
-                    <strong>Units:</strong> {prop.UnitCount?.value || "N/A"}
-                  </p>
-
-                  <p>
-                    <strong>Category:</strong> {prop.Category?.value || "N/A"}
-                  </p>
-                </div>
-              ))}
-            </div>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedProperties.map((prop) => (
+                  <tr key={prop.id}>
+                    <td>{prop.propertyAddress?.value || "Unnamed Property"}</td>
+                    <td>
+                      {typeof prop.purchasePrice === "number"
+                        ? `$${prop.purchasePrice.toLocaleString()}`
+                        : "N/A"}
+                    </td>
+                    <td>{prop.UnitCount?.value || "N/A"}</td>
+                    <td>{prop.Category?.value || "N/A"}</td>
+                    <td>
+                      <button onClick={() => openFileSystem(prop.id)}>
+                        📁 Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-        </section>
-        <button onClick={openBillingPortal}>Manage Subscription</button>
+          <div className="pagination-controls">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              ◀ Prev
+            </button>
 
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next ▶
+            </button>
+          </div>
+        </section>
+
+        <button onClick={openBillingPortal}>Manage Subscription</button>
       </div>
 
       {selectedPropertyId && (
