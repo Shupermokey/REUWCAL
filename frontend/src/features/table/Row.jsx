@@ -3,6 +3,7 @@ import { useAuth } from "../../app/AuthProvider";
 import { getBaselines } from "../../services/firestoreService";
 import CellDetailsPanel from "../../components/CellDetailsPanel";
 import dropdownStructureMap from "../../nestedDropdownConfig";
+import { getNodeTotal } from "../../components/CustomBreakdownInputs"
 
 export const columnOrder = [
   "propertyAddress",
@@ -126,28 +127,30 @@ function Row({
   };
 
   const handleUpdateFromPanel = (updatedData) => {
-    const total = Object.entries(updatedData.details || {}).reduce(
-      (sum, [_, parentValue]) => {
-        return sum + parseFloat(parentValue.__value || 0);
-      },
-      0
-    );
-
-    setEditableRow((prev) => ({
-      ...prev,
-      [activeColumn]: {
-        ...updatedData,
-        value: total,
-      },
-    }));
-
-    handleCellChange(row.id, activeColumn, {
+    const totalFromCustom = (columnData) => {
+      const inputs = columnData?.customInputsByColumn?.[activeColumn] || [];
+      return inputs.reduce((sum, node) => sum + getNodeTotal(node), 0);
+    };
+    
+    const total = totalFromCustom(updatedData);
+  
+    const updatedCell = {
+      ...editableRow[activeColumn],
       ...updatedData,
       value: total,
-    });
-
+    };
+  
+    setEditableRow((prev) => ({
+      ...prev,
+      [activeColumn]: updatedCell,
+    }));
+  
+    handleCellChange(row.id, activeColumn, updatedCell);
     setShowDetails(false);
   };
+  
+  
+  
 
   return (
     <>

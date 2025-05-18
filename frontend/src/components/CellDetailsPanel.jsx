@@ -3,6 +3,7 @@ import { db } from "../services/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import FileExplorer from "./Sidebar/FileSystem/FileExplorer";
 import "../styles/CellDetailsPanel.css";
+import CustomBreakdownInputs from "./CustomBreakdownInputs";
 
 const CellDetailsPanel = ({
   columnKey,
@@ -10,7 +11,6 @@ const CellDetailsPanel = ({
   onUpdate,
   propertyId,
   userId,
-  onClose,
 }) => {
   const [localData, setLocalData] = useState(data);
   const [newSubInputs, setNewSubInputs] = useState({});
@@ -108,11 +108,33 @@ const CellDetailsPanel = ({
   };
 
   const handleSave = () => {
-    onUpdate(localData);
+    // Sum custom values before save
+    const customItems = localData.customInputs || [];
+    const total = customItems.reduce((sum, item) => {
+      const childSum = (item.children || []).reduce(
+        (c, n) => c + parseFloat(n || 0),
+        0
+      );
+      return sum + (childSum || parseFloat(item.value || 0));
+    }, 0);
+    const updated = {
+      ...localData,
+      value: total,
+      customInputs: [...customItems],
+    };
+    onUpdate(updated);
   };
 
   return (
     <div className="cell-details-panel">
+      <div className="custom-breakdown-section">
+        <h4>📐 Custom Value Breakdown</h4>
+        <CustomBreakdownInputs
+          data={localData}
+          setData={setLocalData}
+          columnKey={columnKey}
+        />
+      </div>
       <div className="panel-header">
         <h3>📊 {columnKey} Breakdown</h3>
         <button
@@ -211,9 +233,6 @@ const CellDetailsPanel = ({
       <div className="panel-footer">
         <button className="btn-save" onClick={handleSave}>
           ✅ Save
-        </button>
-        <button className="btn-cancel" onClick={onClose}>
-          ❌ Cancel
         </button>
       </div>
     </div>
