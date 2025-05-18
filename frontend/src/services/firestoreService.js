@@ -233,7 +233,7 @@ export const initializeFileSystem = async (
     columnOrder.map((header) =>
       setDoc(doc(fileSystemBasePath, header), {
         type: "folder",
-        title: header,
+        name: header,
         createdAt: new Date(),
       })
     )

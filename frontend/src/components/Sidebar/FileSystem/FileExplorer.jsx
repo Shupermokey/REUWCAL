@@ -20,14 +20,19 @@ import {
 import toast from "react-hot-toast";
 import { getFolderPath } from "../../../utils/folderUtils";
 
-export default function FileExplorer({ propertyId }) {
+export default function FileExplorer({ propertyId, folderPath = []  }) {
   const user = auth.currentUser;
-  const [currentPath, setCurrentPath] = useState([]);
+  const [currentPath, setCurrentPath] = useState(folderPath);
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
   const [search, setSearch] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
   const [pendingDeleteFolderId, setPendingDeleteFolderId] = useState(null);
+
+  useEffect(() => {
+    setCurrentPath(folderPath);
+  }, [folderPath]);
+  
 
   const getFolderRef = () => {
     if (!user || !propertyId || !Array.isArray(currentPath)) {

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "../../app/AuthProvider"; 
-import { getBaselines } from "../../services/firestoreService"; 
-import NestedDropdown from "../../components/NestedDropdown";
+import { useAuth } from "../../app/AuthProvider";
+import { getBaselines } from "../../services/firestoreService";
+import CellDetailsPanel from "../../components/CellDetailsPanel";
 import dropdownStructureMap from "../../nestedDropdownConfig";
 
 export const columnOrder = [
@@ -50,9 +50,10 @@ function Row({
   const [editableRow, setEditableRow] = useState({ ...row });
   const [baselines, setBaselines] = useState([]);
   const [invalidFields, setInvalidFields] = useState([]);
-  const [openDropdownKey, setOpenDropdownKey] = useState(null);
   const [activeColumn, setActiveColumn] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   const clickTimerRef = useRef(null);
+  const [activePanelColumn, setActivePanelColumn] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -90,6 +91,7 @@ function Row({
       setEditableRow({ ...row });
       setIsEditing(false);
       setInvalidFields([]);
+      setShowDetails(false);
     }
   };
 
@@ -123,119 +125,161 @@ function Row({
     });
   };
 
+  const handleUpdateFromPanel = (updatedData) => {
+    const total = Object.entries(updatedData.details || {}).reduce(
+      (sum, [_, parentValue]) => {
+        return sum + parseFloat(parentValue.__value || 0);
+      },
+      0
+    );
+
+    setEditableRow((prev) => ({
+      ...prev,
+      [activeColumn]: {
+        ...updatedData,
+        value: total,
+      },
+    }));
+
+    handleCellChange(row.id, activeColumn, {
+      ...updatedData,
+      value: total,
+    });
+
+    setShowDetails(false);
+  };
+
   return (
-    <div
-      className={`row ${isSelected ? "selected" : ""}`}
-      onClick={onSelect}
-      style={{ cursor: "pointer" }}
-    >
-      {columnOrder.map((key) => (
-        <div
-          key={key}
-          className="cell"
-          style={{ position: "relative", overflow: "visible", zIndex: 2, minWidth: 150 }}
-        >
-          {isEditing ? (
-            key === "Category" ? (
-              <div className="editable-cell">
-                <select
-                  value={editableRow[key] || ""}
-                  onChange={(e) => {
-                    handleChange(key, e.target.value);
-                    applyBaseline(e.target.value);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ width: "100%" }}
-                >
-                  <option value="">Select a baseline</option>
-                  {baselines.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name || b.id}</option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <>
-                <div
-                  className="editable-cell"
-                  onClick={() => {
-                    if (clickTimerRef.current) {
+    <>
+      <div
+        className={`row ${isSelected ? "selected" : ""}`}
+        onClick={onSelect}
+        style={{ cursor: "pointer" }}
+      >
+        {columnOrder.map((key) => (
+          <div
+            key={key}
+            className="cell"
+            style={{
+              position: "relative",
+              overflow: "visible",
+              zIndex: 2,
+              minWidth: 150,
+            }}
+          >
+            {isEditing ? (
+              key === "Category" ? (
+                <div className="editable-cell">
+                  <select
+                    value={editableRow[key] || ""}
+                    onChange={(e) => {
+                      handleChange(key, e.target.value);
+                      applyBaseline(e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ width: "100%" }}
+                  >
+                    <option value="">Select a baseline</option>
+                    {baselines.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name || b.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className="editable-cell"
+                    onClick={() => {
+                      if (clickTimerRef.current) {
+                        clearTimeout(clickTimerRef.current);
+                        clickTimerRef.current = null;
+                      }
+                      clickTimerRef.current = setTimeout(() => {
+                        clickTimerRef.current = null;
+                      }, 200);
+                    }}
+                    onDoubleClick={() => {
                       clearTimeout(clickTimerRef.current);
                       clickTimerRef.current = null;
-                    }
-                    clickTimerRef.current = setTimeout(() => {
-                      clickTimerRef.current = null;
-                    }, 200);
-                  }}
-                  onDoubleClick={() => {
-                    clearTimeout(clickTimerRef.current);
-                    clickTimerRef.current = null;
-                    setOpenDropdownKey(row.id);
-                    setActiveColumn(key);
-                  }}
-                >
-                  <input
-                    type="text"
-                    value={editableRow[key]?.value || ""}
-                    onChange={(e) =>
-                      handleChange(key, {
-                        ...(editableRow[key] || {}),
-                        value: e.target.value,
-                        details: editableRow[key]?.details || {},
-                      })
-                    }
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-                {openDropdownKey === row.id && activeColumn === key && (
-                  <NestedDropdown
-                    visible
-                    structure={dropdownStructureMap[key] || []}
-                    data={editableRow[key] || { value: "", details: {} }}
-                    columnKey={key}
-                    propertyId={row.id}
-                    onDataUpdate={(updated) => handleChange(key, updated)}
-                    onRequestClose={() => setOpenDropdownKey(null)}
-                  />
-                )}
-              </>
-            )
+                      setActiveColumn(key);
+                      setActivePanelColumn(key);
+                      setShowDetails(true);
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={editableRow[key]?.value || ""}
+                      onChange={(e) =>
+                        handleChange(key, {
+                          ...(editableRow[key] || {}),
+                          value: e.target.value,
+                          details: editableRow[key]?.details || {},
+                        })
+                      }
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                </>
+              )
+            ) : (
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                {key === "Category"
+                  ? baselines.find((b) => b.id === editableRow[key])?.name ||
+                    "—"
+                  : editableRow[key]?.value || "—"}
+              </span>
+            )}
+          </div>
+        ))}
+
+        <div className="cell">
+          {isEditing ? (
+            <>
+              <button
+                onClick={() => {
+                  if (validateFields()) {
+                    onSave(editableRow);
+                    setIsEditing(false);
+                    setInvalidFields([]);
+                    setShowDetails(false);
+                  } else {
+                    alert("Please fix the highlighted fields before saving.");
+                  }
+                }}
+              >
+                ✔ Save
+              </button>
+              <button onClick={handleCancel}>✖ Cancel</button>
+            </>
           ) : (
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-              {key === "Category"
-                ? baselines.find((b) => b.id === editableRow[key])?.name || "—"
-                : editableRow[key]?.value || "—"}
-            </span>
+            <>
+              <button onClick={() => setIsEditing(true)}>✏</button>
+              <button onClick={() => onDelete(row.id)}>🗑</button>
+              <button onClick={() => onOpenFiles(row.id)}>📁</button>
+            </>
           )}
         </div>
-      ))}
-
-      <div className="cell">
-        {isEditing ? (
-          <>
-            <button
-              onClick={() => {
-                if (validateFields()) {
-                  onSave(editableRow);
-                  setIsEditing(false);
-                  setInvalidFields([]);
-                } else {
-                  alert("Please fix the highlighted fields before saving.");
-                }
-              }}
-            >
-              ✔ Save
-            </button>
-            <button onClick={handleCancel}>✖ Cancel</button>
-          </>
-        ) : (
-          <>
-            <button onClick={() => setIsEditing(true)}>✏</button>
-            <button onClick={() => onDelete(row.id)}>🗑</button>
-            <button onClick={() => onOpenFiles(row.id)}>📁</button>
-          </>
-        )}
       </div>
-    </div>
+
+      {showDetails && activeColumn && (
+        <div className="expanded-details">
+          <CellDetailsPanel
+            columnKey={activeColumn}
+            data={editableRow[activeColumn] || { value: "", details: {} }}
+            propertyId={row.id}
+            userId={user?.uid}
+            onUpdate={handleUpdateFromPanel}
+            onClose={() => {
+              setActivePanelColumn(null);
+              setShowDetails(false);
+            }}
+            
+          />
+        </div>
+      )}
+    </>
   );
 }
 

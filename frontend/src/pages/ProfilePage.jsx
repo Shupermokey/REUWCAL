@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSidebar";
 import "../styles/ProfilePage.css";
 import { useAuth } from "../app/AuthProvider";
-import axios from "axios";
+// import axios from "axios";
 
 export default function ProfilePage() {
   const { user, tier } = useAuth(); // ✅ from context
