@@ -74,10 +74,10 @@ export const breakdownConfig = {
     // Zoning section
     {
       label: "Zoning Category",
-      type: "radio", // changed from select to radio-style
+      type: "radio",
       options: ["Commercial", "Residential"],
-      style: "button", // to render as selectable boxes
-      default: "Residential"
+      style: "button",
+      default: "Residential",
     },
     {
       label: "Zoning Subtype",
@@ -85,9 +85,9 @@ export const breakdownConfig = {
       dependsOn: "Zoning Category",
       map: {
         Commercial: ["Office", "Industrial", "Retail", "Special Use", "OTHER"],
-        Residential: ["Single Family", "Multi Family", "Mixed Use", "OTHER"]
+        Residential: ["Single Family", "Multi Family", "Mixed Use", "OTHER"],
       },
-      persistOther: true
+      persistOther: true,
     },
     { label: "Zoning Code", type: "text" },
     { label: "Zoning Map", type: "folder" },
@@ -104,7 +104,61 @@ export const breakdownConfig = {
     { label: "Traffic Patterns", type: "folder" },
     { label: "Property Reports", type: "folder" },
     { label: "Corporate Governance", type: "folder" },
-  ]
+  ],
+
+  propertyTaxes: [
+    { label: "Tax PIN", type: "text" },
+    { label: "Tax Amount", type: "number", required: true },
+    { label: "Size (sq ft)", type: "number" },
+    { label: "Assessment", type: "folder" },
+    { label: "Property Report", type: "folder" },
+    { label: "Tax Bill", type: "folder" },
+    { label: "Potential Tax Bills", type: "folder" },
+  ],
+
+  propertyGSA: [
+    {
+      label: "Acres",
+      type: "number",
+    },
+    {
+      label: "Square Feet",
+      type: "number",
+    },
+    { label: "Property Survey", type: "folder" },
+  ],
+
+  propertyGBA: [
+    {
+      label: "Gross Building Area (GBA/GLA)",
+      type: "number",
+      required: true,
+    },
+    {
+      label: "Net Rentable Area (NRA)",
+      type: "number",
+    },
+    { label: "Floor Plans", type: "folder" },
+    { label: "Other", type: "folder" },
+  ],
+
+  purchasePrice: [
+    { label: "Contract Price", type: "number" },
+    { label: "Transaction", type: "number" },
+    { label: "Due Diligence", type: "number" },
+    { label: "Other", type: "number" }, // supports subinputs
+    {
+      label: "Capital To Stabilize",
+      type: "number",
+    },
+    {
+      label: "Timeframe",
+      type: "text",
+    },
+    { label: "Capital Reserve", type: "number" },
+    { label: "Other (Purchase Price)", type: "number" },
+  ],
 };
+
 
 export default columnConfig;

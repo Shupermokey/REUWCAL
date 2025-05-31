@@ -20,7 +20,7 @@ import {
 import toast from "react-hot-toast";
 import { getFolderPath } from "../../../utils/folderUtils";
 
-export default function FileExplorer({ propertyId, folderPath = []  }) {
+export default function FileExplorer({ propertyId, folderPath = [] }) {
   const user = auth.currentUser;
   const [currentPath, setCurrentPath] = useState(folderPath);
   const [folders, setFolders] = useState([]);
@@ -30,9 +30,26 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
   const [pendingDeleteFolderId, setPendingDeleteFolderId] = useState(null);
 
   useEffect(() => {
-    setCurrentPath(folderPath);
-  }, [folderPath]);
-  
+    const ref = getFolderRef();
+    if (!ref) return;
+
+    const unsub = onSnapshot(ref, (snap) => {
+      setFolders(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsub();
+  }, [JSON.stringify(currentPath), user?.uid, propertyId]);
+
+  useEffect(() => {
+    const ref = getFileRef();
+    if (!ref) return;
+
+    const unsub = onSnapshot(ref, (snap) => {
+      setFiles(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsub();
+  }, [JSON.stringify(currentPath), user?.uid, propertyId]);
 
   const getFolderRef = () => {
     if (!user || !propertyId || !Array.isArray(currentPath)) {
@@ -93,23 +110,23 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
       : collection(doc(ref, lastId), "files");
   };
 
-  useEffect(() => {
-    const ref = getFolderRef();
-    if (!ref) return;
-    const unsub = onSnapshot(ref, (snap) => {
-      setFolders(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-    return () => unsub();
-  }, [user, propertyId, currentPath]);
+  // useEffect(() => {
+  //   const ref = getFolderRef();
+  //   if (!ref) return;
+  //   const unsub = onSnapshot(ref, (snap) => {
+  //     setFolders(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  //   });
+  //   return () => unsub();
+  // }, [user, propertyId, currentPath]);
 
-  useEffect(() => {
-    const ref = getFileRef();
-    if (!ref) return;
-    const unsub = onSnapshot(ref, (snap) => {
-      setFiles(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    });
-    return () => unsub();
-  }, [user, propertyId, currentPath]);
+  // useEffect(() => {
+  //   const ref = getFileRef();
+  //   if (!ref) return;
+  //   const unsub = onSnapshot(ref, (snap) => {
+  //     setFiles(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  //   });
+  //   return () => unsub();
+  // }, [user, propertyId, currentPath]);
 
   const createFolder = async () => {
     console.log("➕ New Folder clicked");
@@ -151,20 +168,23 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
     }
   };
 
-  
   const handleDeleteFolderClick = (folderId) => {
     setPendingDeleteFolderId(folderId); // show modal
   };
 
   const confirmDeleteFolder = async () => {
     if (!pendingDeleteFolderId || !user || !propertyId) return;
-  
+
     const fullPathArray = [...currentPath, pendingDeleteFolderId];
     const folderPath = fullPathArray.join("/folders/");
     console.log("🔥 Deleting folder at:", folderPath);
-  
+
     try {
-      await callDeleteFolderCloudFn({ userId: user.uid, propertyId, folderPath });
+      await callDeleteFolderCloudFn({
+        userId: user.uid,
+        propertyId,
+        folderPath,
+      });
       toast.success("Folder deleted!");
     } catch (err) {
       console.error("❌ Failed to delete folder:", err);
@@ -173,10 +193,6 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
       setPendingDeleteFolderId(null);
     }
   };
-  
-
-  
-  
 
   const handleUpload = async (file) => {
     const ref = getFileRef();
@@ -207,22 +223,27 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
 
   const handleDeleteFolder = async (folderId) => {
     console.log("🗑️ Delete clicked for:", folderId);
-    const confirmDelete = window.confirm("Delete this folder and its contents?");
+    const confirmDelete = window.confirm(
+      "Delete this folder and its contents?"
+    );
     if (!confirmDelete || !user || !propertyId) return;
-  
+
     const fullPathArray = [...currentPath, folderId];
     const folderPath = getFolderPath(fullPathArray);
     console.log("🔥 Deleting folder at:", folderPath);
-  
+
     try {
-      await callDeleteFolderCloudFn({ userId: user.uid, propertyId, folderPath });
+      await callDeleteFolderCloudFn({
+        userId: user.uid,
+        propertyId,
+        folderPath,
+      });
       toast.success("Folder deleted!");
     } catch (err) {
       console.error("❌ Failed to delete folder:", err);
       toast.error("Failed to delete folder.");
     }
   };
-  
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -251,13 +272,14 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
             <div key={folder.id} style={{ marginBottom: 6 }}>
               <span
                 onClick={() => {
-                  console.log("🗂️ Folder clicked:", folder.id);
-                  setCurrentPath([...currentPath, folder.id]);
+                  console.log("📁 Folder clicked:", folder.id);
+                  setCurrentPath((prev) => [...prev, folder.id]);
                 }}
                 style={{ cursor: "pointer" }}
               >
                 📂 {folder.name}
               </span>
+
               <button
                 onClick={() => {
                   console.log("✏️ Rename clicked for:", folder.id);
@@ -326,48 +348,47 @@ export default function FileExplorer({ propertyId, folderPath = []  }) {
           )}
         </div>
         {pendingDeleteFolderId && (
-  <div
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-    }}
-  >
-    <div
-      style={{
-        background: "#fff",
-        padding: 20,
-        borderRadius: 8,
-        minWidth: 300,
-        textAlign: "center",
-      }}
-    >
-      <p>Are you sure you want to delete this folder?</p>
-      <div style={{ marginTop: 12 }}>
-        <button
-          onClick={confirmDeleteFolder}
-          style={{ marginRight: 8, padding: "6px 12px" }}
-        >
-          Yes, delete
-        </button>
-        <button
-          onClick={() => setPendingDeleteFolderId(null)}
-          style={{ padding: "6px 12px" }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 9999,
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                padding: 20,
+                borderRadius: 8,
+                minWidth: 300,
+                textAlign: "center",
+              }}
+            >
+              <p>Are you sure you want to delete this folder?</p>
+              <div style={{ marginTop: 12 }}>
+                <button
+                  onClick={confirmDeleteFolder}
+                  style={{ marginRight: 8, padding: "6px 12px" }}
+                >
+                  Yes, delete
+                </button>
+                <button
+                  onClick={() => setPendingDeleteFolderId(null)}
+                  style={{ padding: "6px 12px" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DndProvider>
   );

@@ -4,14 +4,17 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  doc,
   getDocs,
-  query,
-  where,
+  updateDoc,
 } from "firebase/firestore";
 import FileExplorer from "./Sidebar/FileSystem/FileExplorer";
 import "../styles/CellDetailsPanel.css";
 import CustomBreakdownInputs from "./CustomBreakdownInputs";
 import { breakdownConfig } from "../columnConfig";
+import EmbeddedFolderExplorer from "./Sidebar/FileSystem/EmbeddedFolderExplorer";
+
+const defaultCategories = ["Commercial", "Residential"];
 
 const CellDetailsPanel = ({
   columnKey,
@@ -22,20 +25,60 @@ const CellDetailsPanel = ({
 }) => {
   const [localData, setLocalData] = useState(data);
   const [folders, setFolders] = useState([]);
-  const [showFileSidebar, setShowFileSidebar] = useState(false);
+  const [showFileSidebar, setShowFileSidebar] = useState(null); // now stores the folder label
   const [customCategories, setCustomCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
-  const defaultCategories = ["Commercial", "Residential"];
+  const [newSubtype, setNewSubtype] = useState("");
+  const [activeCategoryDocId, setActiveCategoryDocId] = useState(null);
+  const [folderPath, setFolderPath] = useState([]);
+  const [defaultSubtypes, setDefaultSubtypes] = useState({
+    Commercial: [],
+    Residential: [],
+  });
+  // 👇 Inside CellDetailsPanel.jsx
+  const [folderStack, setFolderStack] = useState([]); // for navigation
+  const [currentFolder, setCurrentFolder] = useState(null);
+
+  const [openFolderLabel, setOpenFolderLabel] = useState(null);
+
+  // This replaces the previous showFileSidebar logic
+  const openFolder = (label) => {
+    setFolderStack((prev) => [...prev, label]);
+    setCurrentFolder(label);
+  };
+
+  const goBack = () => {
+    setFolderStack((prev) => {
+      const next = prev.slice(0, -1);
+      setCurrentFolder(next[next.length - 1] || null);
+      return next;
+    });
+  };
+
+  const structure = breakdownConfig[columnKey] || [];
 
   useEffect(() => {
-    const loadCustomCategories = async () => {
-      if (!userId) return;
+    setLocalData((prev) => ({
+      ...data,
+      details: {
+        ...(data.details || {}),
+      },
+    }));
+  }, [data]);
+
+  useEffect(() => {
+    const loadZoningCategories = async () => {
       const snap = await getDocs(
         collection(db, "users", userId, "zoningCategories")
       );
-      setCustomCategories(snap.docs.map((doc) => doc.data().label));
+      const custom = snap.docs.map((doc) => ({
+        id: doc.id,
+        label: doc.data().label,
+        subtypes: doc.data().subtypes || [],
+      }));
+      setCustomCategories(custom);
     };
-    loadCustomCategories();
+    loadZoningCategories();
   }, [userId]);
 
   useEffect(() => {
@@ -62,20 +105,25 @@ const CellDetailsPanel = ({
   }, [userId, propertyId, columnKey]);
 
   const handleChange = (label, value) => {
-    setLocalData((prev) => ({
-      ...prev,
-      details: {
+    setLocalData((prev) => {
+      const updatedDetails = {
         ...prev.details,
         [label]: value,
-      },
-    }));
+      };
+      if (label === "Zoning Category") {
+        updatedDetails["Zoning Subtype"] = "";
+      }
+      return {
+        ...prev,
+        details: updatedDetails,
+      };
+    });
   };
 
   const handleSave = () => {
     const valueSum = Object.entries(localData.details || {})
       .filter(([_, val]) => typeof val === "number")
       .reduce((sum, [_, val]) => sum + parseFloat(val || 0), 0);
-
     const updated = {
       ...localData,
       value: valueSum,
@@ -86,193 +134,243 @@ const CellDetailsPanel = ({
   const addNewCategory = async () => {
     const cleaned = newCategory.trim();
     if (!cleaned || defaultCategories.includes(cleaned)) return;
-    const ref = collection(db, "users", userId, "zoningCategories");
-    await addDoc(ref, { label: cleaned });
-    setCustomCategories((prev) => [...prev, cleaned]);
+    const ref = await addDoc(
+      collection(db, "users", userId, "zoningCategories"),
+      {
+        label: cleaned,
+        subtypes: [],
+      }
+    );
+    setCustomCategories((prev) => [
+      ...prev,
+      { id: ref.id, label: cleaned, subtypes: [] },
+    ]);
     setNewCategory("");
   };
 
-  const handleDeleteCategory = async (cat) => {
-    if (!userId || defaultCategories.includes(cat)) return;
-
-    // Fetch all docs in the zoningCategories collection
-    const ref = collection(db, "users", userId, "zoningCategories");
-    const snapshot = await getDocs(ref);
-
-    // Match document by value (case-sensitive match since you stored with original casing)
-    const matchingDoc = snapshot.docs.find((doc) => doc.data().label === cat);
-
-    if (matchingDoc) {
-      await deleteDoc(matchingDoc.ref);
-      setCustomCategories((prev) => prev.filter((c) => c !== cat));
-
-      // Fallback if the deleted category was selected
-      if (localData.details?.["Zoning Category"] === cat) {
-        handleChange("Zoning Category", "Residential");
-      }
-    } else {
-      console.error("No Firestore doc matched for deletion:", cat);
+  const handleDeleteCategory = async (catLabel, docId) => {
+    try {
+      const docRef = doc(db, "users", userId, "zoningCategories", docId);
+      await deleteDoc(docRef);
+      setCustomCategories((prev) => prev.filter((c) => c.label !== catLabel));
+    } catch (error) {
+      console.error("❌ Error deleting Firestore doc:", error);
     }
   };
 
-  const structure = breakdownConfig[columnKey] || [];
+  const addNewSubtype = async () => {
+    if (!newSubtype.trim()) return;
+    const selectedCat = localData.details?.["Zoning Category"];
+    if (defaultCategories.includes(selectedCat)) {
+      setDefaultSubtypes((prev) => ({
+        ...prev,
+        [selectedCat]: [...(prev[selectedCat] || []), newSubtype.trim()],
+      }));
+      setNewSubtype("");
+      return;
+    }
+
+    const match = customCategories.find((c) => c.id === activeCategoryDocId);
+    if (!match) return;
+    const ref = doc(db, "users", userId, "zoningCategories", match.id);
+    const updatedSubtypes = [...(match.subtypes || []), newSubtype.trim()];
+    await updateDoc(ref, { subtypes: updatedSubtypes });
+    setCustomCategories((prev) =>
+      prev.map((c) =>
+        c.id === match.id ? { ...c, subtypes: updatedSubtypes } : c
+      )
+    );
+    setNewSubtype("");
+  };
+
+  const foldersToRender = structure.filter((f) => f.type === "folder");
 
   return (
     <div className="cell-details-panel">
       <div className="modal-section">
-        {structure.map((field) => {
-          const {
-            label,
-            type,
-            options,
-            style,
-            dependsOn,
-            map,
-            default: defaultVal,
-          } = field;
-          const value = localData.details?.[label] || "";
+        {structure
+          .filter((f) => f.type !== "folder")
+          .map((field) => {
+            const { label, type, style, options, dependsOn, map } = field;
+            const value = localData.details?.[label] || "";
 
-          if (type === "folder") return null;
-
-          if (type === "radio" && style === "button") {
-            return (
-              <div className="input-group" key={label}>
-                <label>{label}</label>
-                <div className="button-radio-group">
-                  {[...options, ...customCategories].map((opt) => (
-                    <div className="radio-button-wrapper" key={opt}>
-                      <button
-                        className={`radio-button ${
-                          value === opt ? "active" : ""
-                        } ${
-                          !defaultCategories.includes(opt)
-                            ? "delete-capable"
-                            : ""
-                        }`}
-                        onClick={() => handleChange(label, opt)}
-                        type="button"
-                      >
-                        {opt}
-                      </button>
-
-                      {!defaultCategories.includes(opt) && (
-                        <span
-                          className="delete-icon"
-                          onClick={() => handleDeleteCategory(opt)}
-                          title={`Delete ${opt}`}
+            if (label === "Zoning Category") {
+              return (
+                <div key={label} className="input-group">
+                  <label>{label}</label>
+                  <div className="button-radio-group">
+                    {[
+                      ...defaultCategories.map((label) => ({ label })),
+                      ...customCategories,
+                    ].map(({ label, id }) => (
+                      <div key={label} className="radio-button-wrapper">
+                        <button
+                          className={
+                            value === label
+                              ? "radio-button active"
+                              : "radio-button"
+                          }
+                          onClick={() => {
+                            handleChange("Zoning Category", label);
+                            setActiveCategoryDocId(id || null);
+                          }}
                         >
-                          ×
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{ marginTop: "0.5rem", display: "flex", gap: "6px" }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Add category"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    style={{ flex: 1 }}
-                  />
-                  <button className="btn-save" onClick={addNewCategory}>
-                    ➕
-                  </button>
-                </div>
-              </div>
-            );
-          }
-
-          if (type === "dynamic-select") {
-            const parentVal = localData.details?.[dependsOn] || defaultVal;
-            const dynamicOptions = map?.[parentVal] || [];
-
-            if (!parentVal) return null;
-
-            return (
-              <div key={label} className="input-group">
-                <label>{label}</label>
-                <select
-                  value={value}
-                  onChange={(e) => handleChange(label, e.target.value)}
-                >
-                  <option value="">Select</option>
-                  {dynamicOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                  {value && !dynamicOptions.includes(value) && (
-                    <option value={value}>{value} (Custom)</option>
-                  )}
-                </select>
-              </div>
-            );
-          }
-
-          if (type === "select") {
-            return (
-              <div key={label} className="input-group">
-                <label>{label}</label>
-                <select
-                  value={value}
-                  onChange={(e) => handleChange(label, e.target.value)}
-                >
-                  <option value="">Select</option>
-                  {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                  {value && !options.includes(value) && (
-                    <option value={value}>{value} (Custom)</option>
-                  )}
-                </select>
-              </div>
-            );
-          }
-
-          return (
-            <div key={label} className="input-group">
-              <label>{label}</label>
-              <input
-                type={type}
-                value={value}
-                onChange={(e) => handleChange(label, e.target.value)}
-              />
-            </div>
-          );
-        })}
-
-        {/* Folder icons */}
-        {structure.some((f) => f.type === "folder") && (
-          <div className="folder-grid-group">
-            <div className="folder-grid">
-              {structure
-                .filter((f) => f.type === "folder")
-                .map(({ label }) => (
-                  <div
-                    key={label}
-                    className="folder-icon"
-                    onClick={() => setShowFileSidebar(true)}
-                  >
-                    <div className="icon">📁</div>
-                    <div className="label">{label}</div>
+                          {label}
+                        </button>
+                        {!defaultCategories.includes(label) && (
+                          <span
+                            className="delete-icon"
+                            title={`Delete ${label}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCategory(label, id);
+                            }}
+                          >
+                            ×
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
-            </div>
+                  <div
+                    style={{ marginTop: "0.5rem", display: "flex", gap: "6px" }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Add category"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                    />
+                    <button className="btn-save" onClick={addNewCategory}>
+                      ➕
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            if (label === "Zoning Subtype") {
+              const selectedCat = localData.details?.["Zoning Category"];
+              const isDefault = defaultCategories.includes(selectedCat);
+              const defaultMap = map?.[selectedCat] || [];
+              const extraDefaults = defaultSubtypes[selectedCat] || [];
+              const found = customCategories.find(
+                (c) => c.label === selectedCat
+              );
+              const customSubtypes = found?.subtypes || [];
+              const finalSubtypes = isDefault
+                ? [...new Set([...defaultMap, ...extraDefaults])]
+                : customSubtypes;
+
+              return (
+                <div key={label} className="input-group">
+                  <label>{label}</label>
+                  <select
+                    value={value}
+                    onChange={(e) => handleChange(label, e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    {finalSubtypes.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                    {value && !finalSubtypes.includes(value) && (
+                      <option value={value}>{value} (Custom)</option>
+                    )}
+                  </select>
+                  {selectedCat && (
+                    <div
+                      style={{
+                        marginTop: "0.5rem",
+                        display: "flex",
+                        gap: "6px",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Add subtype"
+                        value={newSubtype}
+                        onChange={(e) => setNewSubtype(e.target.value)}
+                      />
+                      <button className="btn-save" onClick={addNewSubtype}>
+                        ➕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div key={label} className="input-group">
+                <label>{label}</label>
+                <input
+                  type={type}
+                  value={value}
+                  onChange={(e) => handleChange(label, e.target.value)}
+                />
+              </div>
+            );
+          })}
+
+        <div className="folder-grid-group">
+          <div className="folder-grid">
+            {foldersToRender.map(({ label }) => (
+              <div
+                key={label}
+                className="folder-icon"
+                onClick={() => setOpenFolderLabel(label)}
+                title={`Open ${label}`}
+              >
+                <div className="icon">📁</div>
+                <div className="label">{label}</div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
+      {openFolderLabel && (
+        <div
+          style={{
+            marginTop: "1rem",
+            borderTop: "1px solid #ccc",
+            paddingTop: "1rem",
+          }}
+        >
+          <button
+            onClick={() => setOpenFolderLabel(null)}
+            style={{ marginBottom: "0.5rem" }}
+          >
+            🔙 Back to folders
+          </button>
+          <EmbeddedFolderExplorer
+            userId={userId}
+            propertyId={propertyId}
+            columnKey={`${columnKey}-${openFolderLabel.replace(/\s+/g, "_")}`}
+          />
+        </div>
+      )}
 
       <div className="panel-footer">
         <button className="btn-save" onClick={handleSave}>
           ✅ Save
         </button>
       </div>
+
+      {showFileSidebar && (
+        <FileExplorer
+          userId={userId}
+          propertyId={propertyId}
+          columnKey={columnKey}
+          folderPath={folderPath}
+          setFolderPath={setFolderPath}
+          onClose={() => {
+            setShowFileSidebar(false);
+            setFolderPath([]); // reset to original view
+          }}
+        />
+      )}
     </div>
   );
 };

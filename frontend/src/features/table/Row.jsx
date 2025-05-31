@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import { getBaselines } from "../../services/firestoreService";
 import CellDetailsPanel from "../../components/CellDetailsPanel";
-import columnConfig, { columnOrder } from "../../columnConfig";
+import columnConfig, { columnOrder, breakdownConfig } from "../../columnConfig";
 import { getNodeTotal } from "../../components/CustomBreakdownInputs";
 
 function Row({
@@ -14,14 +14,28 @@ function Row({
   isSelected,
   onOpenFiles,
 }) {
+  const normalizeRow = (raw) => {
+    const wrapped = {};
+    for (const [key, val] of Object.entries(raw)) {
+      if (key === "id" || key === "baselineSnapshot") {
+        wrapped[key] = val;
+        continue;
+      }
+      wrapped[key] =
+        typeof val === "object" && val !== null && "value" in val
+          ? val
+          : { value: val };
+    }
+    return wrapped;
+  };
+
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(row.id === "new");
-  const [editableRow, setEditableRow] = useState({ ...row });
+  const [editableRow, setEditableRow] = useState(normalizeRow(row));
   const [baselines, setBaselines] = useState([]);
   const [invalidFields, setInvalidFields] = useState([]);
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const clickTimerRef = useRef(null);
 
   useEffect(() => {
     if (!user) return;
@@ -49,22 +63,8 @@ function Row({
     const selectedBaseline = baselines.find((b) => b.id === baselineId);
     if (!selectedBaseline) return;
 
-    const getRate = (name) => {
-      const row = selectedBaseline.rows.find((r) => r.name === name);
-      return row?.growthRate ? parseFloat(row.growthRate.replace("%", "")) : "";
-    };
-
     const updates = {
       Category: baselineId,
-      // baseRentGrowth: getRate("Base Rent (MR) Growth Rate"),
-      // vacancyRate: getRate("Vacancy Rate"),
-      // propertyTaxExpenses: getRate("Property Tax Expenses"),
-      // insurance: getRate("Property Insurance Expenses"),
-      // utilities: getRate("Property Utility Expenses"),
-      // repairs: getRate("Property Repair Expenses"),
-      // cam: getRate("Property CAM Expenses"),
-      // management: getRate("Property Management Expenses"),
-      // capex: getRate("CAP Ex"),
       baselineSnapshot: selectedBaseline.rows,
     };
 
@@ -73,17 +73,55 @@ function Row({
   };
 
   const handleUpdateFromPanel = (updatedData) => {
-    const inputs = updatedData?.customInputsByColumn?.[activeColumn] || [];
-    const total = inputs.reduce((sum, node) => sum + getNodeTotal(node), 0);
+    const details = updatedData.details || {};
+    const column = activeColumn;
+    let updatedValue = 0;
 
-    const updatedCell = {
-      ...editableRow[activeColumn],
-      ...updatedData,
-      value: total,
+    const getNumber = (label) => {
+      const val = details[label];
+      if (typeof val === "number") return val;
+      if (typeof val === "string") return parseFloat(val) || 0;
+      return 0;
     };
 
-    setEditableRow((prev) => ({ ...prev, [activeColumn]: updatedCell }));
-    handleCellChange(row.id, activeColumn, updatedCell);
+    if (column === "propertyAddress") {
+      updatedValue = details["Property Address"] || "";
+    } else if (column === "propertyGSA") {
+      updatedValue = parseFloat(details["Square Feet"]) || 0;
+    } else if (column === "propertyGBA") {
+      updatedValue = parseFloat(details["Gross Building Area (GBA/GLA)"]) || 0;
+    } else if (column === "purchasePrice") {
+      const numericFields = [
+        "Contract Price",
+        "Transaction",
+        "Due Diligence",
+        "Other",
+        "Capital To Stabilize",
+        "Capital Reserve",
+        "Other (Purchase Price)",
+      ];
+
+      updatedValue = numericFields.reduce((sum, key) => {
+        const val = details[key];
+        const parsed = typeof val === "number" ? val : parseFloat(val);
+        return !isNaN(parsed) ? sum + parsed : sum;
+      }, 0);
+    } else {
+      const inputs = updatedData?.customInputsByColumn?.[column] || [];
+      updatedValue = inputs.reduce((sum, node) => sum + getNodeTotal(node), 0);
+    }
+
+    const updatedCell = {
+      ...updatedData,
+      value: updatedValue,
+    };
+
+    setEditableRow((prev) => ({
+      ...prev,
+      [column]: updatedCell,
+    }));
+
+    handleCellChange(row.id, column, updatedCell);
     setShowDetails(false);
   };
 
@@ -100,7 +138,6 @@ function Row({
             applyBaseline(e.target.value);
           }}
           onClick={(e) => e.stopPropagation()}
-          style={{ width: "100%" }}
         >
           <option value="">Select a baseline</option>
           {baselines.map((b) => (
@@ -137,24 +174,21 @@ function Row({
       );
     }
 
-    // ✅ Fix for showing object value
-    const currentValue = typeof editableRow[key] === "object"
-      ? editableRow[key]?.value || ""
-      : editableRow[key] || "";
+    const currentValue =
+      typeof editableRow[key] === "object"
+        ? editableRow[key]?.value || ""
+        : editableRow[key] || "";
 
     return (
       <input
         type={inputType === "number" ? "number" : "text"}
         value={currentValue}
         onChange={(e) => {
-          const rawValue = e.target.value;
-          const parsedValue = inputType === "number" ? Number(rawValue) : rawValue;
-          const base = typeof editableRow[key] === "object" ? editableRow[key] : {};
-
-          handleChange(key, {
-            ...base,
-            value: parsedValue,
-          });
+          const parsed =
+            inputType === "number" ? Number(e.target.value) : e.target.value;
+          const base =
+            typeof editableRow[key] === "object" ? editableRow[key] : {};
+          handleChange(key, { ...base, value: parsed });
         }}
         onClick={(e) => e.stopPropagation()}
       />
@@ -162,18 +196,16 @@ function Row({
   };
 
   const renderDisplayValue = (key) => {
-    return key === "Category"
-      ? baselines.find((b) => b.id === editableRow[key])?.name || "—"
-      : editableRow[key]?.value || editableRow[key] || "—";
+    const val = editableRow[key];
+    if (val && typeof val === "object" && "value" in val) {
+      return val.value;
+    }
+    return typeof val === "string" || typeof val === "number" ? val : "—";
   };
 
   return (
     <>
-      <div
-        className={`row ${isSelected ? "selected" : ""}`}
-        onClick={onSelect}
-        style={{ cursor: "pointer" }}
-      >
+      <div className={`row ${isSelected ? "selected" : ""}`} onClick={onSelect}>
         {columnOrder.map((key) => (
           <div
             key={key}
@@ -196,7 +228,7 @@ function Row({
                           setInvalidFields([]);
                           setShowDetails(false);
                         } else {
-                          alert("Please fix the highlighted fields before saving.");
+                          alert("Please fix highlighted fields.");
                         }
                       }}
                     >
@@ -206,7 +238,7 @@ function Row({
                       onClick={() => {
                         if (row.id === "new") onDelete(row.id);
                         else {
-                          setEditableRow({ ...row });
+                          setEditableRow(normalizeRow(row));
                           setIsEditing(false);
                           setInvalidFields([]);
                           setShowDetails(false);
@@ -218,7 +250,22 @@ function Row({
                   </>
                 ) : (
                   <>
-                    <button onClick={() => setIsEditing(true)}>✏</button>
+                    <button
+                      onClick={() => {
+                        const normalized = {};
+                        columnOrder.forEach((key) => {
+                          const val = editableRow[key];
+                          normalized[key] =
+                            typeof val === "object"
+                              ? val
+                              : { value: val, details: {} };
+                        });
+                        setEditableRow(normalized);
+                        setIsEditing(true);
+                      }}
+                    >
+                      ✏
+                    </button>
                     <button onClick={() => onDelete(row.id)}>🗑</button>
                     <button onClick={() => onOpenFiles(row.id)}>📁</button>
                   </>
@@ -239,7 +286,23 @@ function Row({
         <div className="expanded-details">
           <CellDetailsPanel
             columnKey={activeColumn}
-            data={editableRow[activeColumn] || { value: "", details: {} }}
+            data={{
+              ...editableRow[activeColumn],
+              details: {
+                ...(editableRow[activeColumn]?.details || {}),
+                ...Object.fromEntries(
+                  Object.entries(editableRow).flatMap(([key, val]) => {
+                    if (key === activeColumn) return [];
+                    const label = columnConfig[key]?.label || key;
+                    const value =
+                      typeof val === "object" && val?.value !== undefined
+                        ? val.value
+                        : val;
+                    return [[label, value]];
+                  })
+                ),
+              },
+            }}
             propertyId={row.id}
             userId={user?.uid}
             onUpdate={handleUpdateFromPanel}

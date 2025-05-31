@@ -94,35 +94,41 @@ function Table({ onRowSelect }) {
 
     setSelectedRow("new");
   };
+const handleSaveRow = async (rowData) => {
+  if (!user) return;
 
-  const handleSaveRow = async (rowData) => {
-    if (!user) return;
+  // Unwrap { value: ... } before saving to Firestore
+  const sanitizedData = Object.fromEntries(
+    Object.entries(rowData).map(([key, value]) => {
+      if (typeof value === "object" && value?.value !== undefined) {
+        return [key, value.value];
+      }
+      return [key, value || ""];
+    })
+  );
 
-    const sanitizedData = Object.fromEntries(
-      Object.entries(rowData).map(([key, value]) => [key, value || ""])
+  if (rowData.id === "new") {
+    const { id, ...rowWithoutId } = sanitizedData;
+    const newId = await addProperty(user.uid, rowWithoutId);
+
+    await initializeFileSystem(user.uid, newId, columnOrder);
+
+    setRows((prevRows) =>
+      prevRows.map((row) => (row.id === "new" ? { ...row, id: newId } : row))
     );
+  } else {
+    await updateProperty(user.uid, rowData.id, sanitizedData);
 
-    if (rowData.id === "new") {
-      const { id, ...rowWithoutId } = sanitizedData;
-      const newId = await addProperty(user.uid, rowWithoutId);
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === rowData.id ? { ...row, ...sanitizedData } : row
+      )
+    );
+  }
 
-      await initializeFileSystem(user.uid, newId, columnOrder);
+  setIsSaving(false);
+};
 
-      setRows((prevRows) =>
-        prevRows.map((row) => (row.id === "new" ? { ...row, id: newId } : row))
-      );
-    } else {
-      await updateProperty(user.uid, rowData.id, sanitizedData);
-
-      setRows((prevRows) =>
-        prevRows.map((row) =>
-          row.id === rowData.id ? { ...row, ...sanitizedData } : row
-        )
-      );
-    }
-
-    setIsSaving(false);
-  };
 
   const handleCancelRow = () => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== "new")); // ✅ Remove only the "new" row
