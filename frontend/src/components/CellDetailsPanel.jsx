@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../services/firebaseConfig";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import FileExplorer from "./Sidebar/FileSystem/FileExplorer";
 import "../styles/CellDetailsPanel.css";
 import CustomBreakdownInputs from "./CustomBreakdownInputs";
@@ -16,7 +23,6 @@ const CellDetailsPanel = ({
   const [localData, setLocalData] = useState(data);
   const [folders, setFolders] = useState([]);
   const [showFileSidebar, setShowFileSidebar] = useState(false);
-
   const [customCategories, setCustomCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
   const defaultCategories = ["Commercial", "Residential"];
@@ -67,7 +73,7 @@ const CellDetailsPanel = ({
 
   const handleSave = () => {
     const valueSum = Object.entries(localData.details || {})
-      .filter(([key, val]) => typeof val === "number")
+      .filter(([_, val]) => typeof val === "number")
       .reduce((sum, [_, val]) => sum + parseFloat(val || 0), 0);
 
     const updated = {
@@ -78,26 +84,34 @@ const CellDetailsPanel = ({
   };
 
   const addNewCategory = async () => {
-    if (!newCategory.trim()) return;
+    const cleaned = newCategory.trim();
+    if (!cleaned || defaultCategories.includes(cleaned)) return;
     const ref = collection(db, "users", userId, "zoningCategories");
-    await addDoc(ref, { label: newCategory.trim() });
-    setCustomCategories((prev) => [...prev, newCategory.trim()]);
+    await addDoc(ref, { label: cleaned });
+    setCustomCategories((prev) => [...prev, cleaned]);
     setNewCategory("");
   };
 
   const handleDeleteCategory = async (cat) => {
-    if (!user || defaultCategories.includes(cat)) return;
+    if (!userId || defaultCategories.includes(cat)) return;
 
-    const q = query(
-      collection(db, "users", user.uid, "zoningCategories"),
-      where("name", "==", cat)
-    );
-    const snapshot = await getDocs(q);
-    const match = snapshot.docs[0];
-    if (match) {
-      await deleteDoc(match.ref);
-      setZoningCategories((prev) => prev.filter((c) => c !== cat));
-      if (selected === cat) setSelected("Residential"); // fallback
+    // Fetch all docs in the zoningCategories collection
+    const ref = collection(db, "users", userId, "zoningCategories");
+    const snapshot = await getDocs(ref);
+
+    // Match document by value (case-sensitive match since you stored with original casing)
+    const matchingDoc = snapshot.docs.find((doc) => doc.data().label === cat);
+
+    if (matchingDoc) {
+      await deleteDoc(matchingDoc.ref);
+      setCustomCategories((prev) => prev.filter((c) => c !== cat));
+
+      // Fallback if the deleted category was selected
+      if (localData.details?.["Zoning Category"] === cat) {
+        handleChange("Zoning Category", "Residential");
+      }
+    } else {
+      console.error("No Firestore doc matched for deletion:", cat);
     }
   };
 
@@ -105,35 +119,6 @@ const CellDetailsPanel = ({
 
   return (
     <div className="cell-details-panel">
-      {/* <div className="custom-breakdown-section">
-        <h4>📐 Custom Value Breakdown</h4>
-        <CustomBreakdownInputs
-          data={localData}
-          setData={setLocalData}
-          columnKey={columnKey}
-        />
-      </div> */}
-
-      {/* <div className="panel-header">
-        <h3>📊 {columnKey} Breakdown</h3>
-        <button
-          className="open-folder-btn"
-          onClick={() => setShowFileSidebar(!showFileSidebar)}
-        >
-          📂 Toggle Folder View
-        </button>
-      </div> */}
-
-      {/* {showFileSidebar && (
-        <div className="file-sidebar">
-          <FileExplorer
-            propertyId={propertyId}
-            folderPath={[columnKey]}
-            defaultPath={[columnKey]}
-          />
-        </div>
-      )} */}
-
       <div className="modal-section">
         {structure.map((field) => {
           const {
@@ -147,26 +132,42 @@ const CellDetailsPanel = ({
           } = field;
           const value = localData.details?.[label] || "";
 
-          if (type === "folder") return null; // ✅ skip folders in main loop
+          if (type === "folder") return null;
 
           if (type === "radio" && style === "button") {
             return (
-              <div className="input-group">
-                <label>Zoning Category</label>
+              <div className="input-group" key={label}>
+                <label>{label}</label>
                 <div className="button-radio-group">
                   {[...options, ...customCategories].map((opt) => (
-                    <button
-                      key={opt}
-                      className={
-                        value === opt ? "radio-button active" : "radio-button"
-                      }
-                      onClick={() => handleChange("Zoning Category", opt)}
-                      type="button"
-                    >
-                      {opt}
-                    </button>
+                    <div className="radio-button-wrapper" key={opt}>
+                      <button
+                        className={`radio-button ${
+                          value === opt ? "active" : ""
+                        } ${
+                          !defaultCategories.includes(opt)
+                            ? "delete-capable"
+                            : ""
+                        }`}
+                        onClick={() => handleChange(label, opt)}
+                        type="button"
+                      >
+                        {opt}
+                      </button>
+
+                      {!defaultCategories.includes(opt) && (
+                        <span
+                          className="delete-icon"
+                          onClick={() => handleDeleteCategory(opt)}
+                          title={`Delete ${opt}`}
+                        >
+                          ×
+                        </span>
+                      )}
+                    </div>
                   ))}
                 </div>
+
                 <div
                   style={{ marginTop: "0.5rem", display: "flex", gap: "6px" }}
                 >
@@ -181,7 +182,6 @@ const CellDetailsPanel = ({
                     ➕
                   </button>
                 </div>
-                
               </div>
             );
           }
@@ -247,7 +247,7 @@ const CellDetailsPanel = ({
           );
         })}
 
-        {/* ✅ Folder grid rendered once here */}
+        {/* Folder icons */}
         {structure.some((f) => f.type === "folder") && (
           <div className="folder-grid-group">
             <div className="folder-grid">
@@ -257,10 +257,7 @@ const CellDetailsPanel = ({
                   <div
                     key={label}
                     className="folder-icon"
-                    onClick={() => {
-                      setShowFileSidebar(true);
-                      // Optional: could store activeFolder if you want per-folder behavior
-                    }}
+                    onClick={() => setShowFileSidebar(true)}
                   >
                     <div className="icon">📁</div>
                     <div className="label">{label}</div>

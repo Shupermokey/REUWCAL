@@ -1240,6 +1240,43 @@ input[type=number] {
   cursor: pointer;
   font-size: 0.9rem;
 }
+.button-radio-group > div {
+  display: flex;
+  align-items: center;
+}
+
+.radio-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.radio-button.delete-capable {
+  padding-right: 24px; /* space for the X */
+}
+
+.radio-button-wrapper .delete-icon {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  padding: 2px;
+  cursor: pointer;
+  color: #c00;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-button-wrapper .delete-icon:hover {
+  background: #fdd;
+  border-color: #c00;
+}
 
 
 
