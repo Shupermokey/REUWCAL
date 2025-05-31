@@ -4,7 +4,7 @@ import Row from "./Row";
 import { useAuth } from "../../app/AuthProvider";
 import FileExplorer from "../../components/Sidebar/FileSystem/FileExplorer";
 import PropertyFileSidebar from "../../components/Sidebar/PropertyFileSidebar";
-import { columnOrder } from "./Row";
+
 import {
   getProperties,
   addProperty,
@@ -13,6 +13,7 @@ import {
   initializeFileSystem,
   subscribeToProperties,
 } from "../../services/firestoreService";
+import columnConfig, { columnOrder, columnWidths } from "../../columnConfig";
 
 function Table({ onRowSelect }) {
   const { rows, setRows, selectedRow, setSelectedRow } = useTable();
@@ -28,24 +29,33 @@ function Table({ onRowSelect }) {
     });
     return () => unsubscribe(); // 🔥 auto cleanup
   }, [user, setRows]);
-  
-  
+
+  // // Function to create a blank row
+  // const createBlankRow = () => ({
+  //   id: "new",
+  //   propertyAddress: "",
+  //   purchasePriceSF: "",
+  //   purchasePrice: "",
+  //   ACQCAPXSF: "",
+  //   ACQCAPX: "",
+  //   UnitCount: "",
+  //   GrossBuildingArea: "",
+  //   GrossSiteArea: "",
+  //   REPropertyTax: "",
+  //   MarketRate: "",
+  //   ServiceStructure: "",
+  //   PropertyClass: "",
+  //   Category: "",
+  // });
 
   // Function to create a blank row
   const createBlankRow = () => ({
     id: "new",
     propertyAddress: "",
-    purchasePriceSF: "",
+    propertyTaxes: "",
+    propertyGSA: "",
+    propertyGBA: "",
     purchasePrice: "",
-    ACQCAPXSF: "",
-    ACQCAPX: "",
-    UnitCount: "",
-    GrossBuildingArea: "",
-    GrossSiteArea: "",
-    REPropertyTax: "",
-    MarketRate: "",
-    ServiceStructure: "",
-    PropertyClass: "",
     Category: "",
   });
 
@@ -57,21 +67,28 @@ function Table({ onRowSelect }) {
     setRows((prevRows) => [
       ...prevRows,
       {
+        // id: "new",
+        // propertyAddress: "",
+        // purchasePriceSF: "",
+        // purchasePrice: "",
+        // ACQCAPXSF: "",
+        // ACQCAPX: "",
+        // UnitCount: "",
+        // GrossBuildingArea: "",
+        // GrossSiteArea: "",
+        // REPropertyTax: "",
+        // MarketRate: "",
+        // ServiceStructure: "",
+        // PropertyClass: "",
+        // Category: "",
+        // ScenarioRows: [],
         id: "new",
         propertyAddress: "",
-        purchasePriceSF: "",
+        propertyTaxes: "",
+        propertyGSA: "",
+        propertyGBA: "",
         purchasePrice: "",
-        ACQCAPXSF: "",
-        ACQCAPX: "",
-        UnitCount: "",
-        GrossBuildingArea: "",
-        GrossSiteArea: "",
-        REPropertyTax: "",
-        MarketRate: "",
-        ServiceStructure: "",
-        PropertyClass: "",
         Category: "",
-        ScenarioRows: [],
       },
     ]);
 
@@ -124,20 +141,25 @@ function Table({ onRowSelect }) {
   return (
     <div className="table">
       {/* Table Headers */}
-      <div className="row">
+      {/* <div className="row">
         {[
-          "Property Address",
-          "Purchase Price ($/SF)",
-          "Purchase Price",
-          "ACQ CAPx ($/SF)",
-          "ACQ CAPx ($)",
-          "Unit Count",
-          "Gross Building Area",
-          "Gross Site Area (Acres)",
-          "RE Property Tax",
-          "Market Rate",
-          "Service Structure",
-          "Property Class",
+          // "Property Address",
+          // "Purchase Price ($/SF)",
+          // "Purchase Price",
+          // "ACQ CAPx ($/SF)",
+          // "ACQ CAPx ($)",
+          // "Unit Count",
+          // "Gross Building Area",
+          // "Gross Site Area (Acres)",
+          // "RE Property Tax",
+          // "Market Rate",
+          // "Service Structure",
+          // "Property Class",
+          "propertyAddress", //NEW
+          "propertyTaxes",   //NEW
+          "propertyGSA",     //NEW
+          "propertyGBA",     //NEW
+          "purchasePrice",   //NEW
           "Category",
           "EditingTools",
         ].map((header, index) => (
@@ -145,6 +167,22 @@ function Table({ onRowSelect }) {
             {header}
           </div>
         ))}
+      </div> */}
+      <div className="row table-header">
+        {columnOrder.map((key) => (
+          <div
+            key={key}
+            className="cell"
+            style={{
+              width: columnConfig[key].width,
+              minWidth: columnConfig[key].width,
+              maxWidth: columnConfig[key].width,
+            }}
+          >
+            {columnConfig[key]?.label || key}
+          </div>
+        ))}
+
       </div>
 
       {/* Table Rows */}
