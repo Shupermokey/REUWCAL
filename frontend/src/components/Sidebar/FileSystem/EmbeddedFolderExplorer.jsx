@@ -14,7 +14,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { db, storage } from "../../../services/firebaseConfig.js"
+import { db, storage } from "../../../services/firebaseConfig.js";
 import toast from "react-hot-toast";
 
 const EmbeddedFolderExplorer = ({ userId, propertyId, columnKey }) => {
@@ -23,6 +23,7 @@ const EmbeddedFolderExplorer = ({ userId, propertyId, columnKey }) => {
   const [files, setFiles] = useState([]);
   const [newFolderName, setNewFolderName] = useState("");
   const [search, setSearch] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   const getFolderRef = () => {
     let base = collection(
@@ -72,19 +73,17 @@ const EmbeddedFolderExplorer = ({ userId, propertyId, columnKey }) => {
   };
 
   useEffect(() => {
-    const folderRef = getFolderRef();
-    const unsub = onSnapshot(folderRef, (snap) => {
+    const unsubFolders = onSnapshot(getFolderRef(), (snap) => {
       setFolders(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsub();
+    return () => unsubFolders();
   }, [userId, propertyId, columnKey, JSON.stringify(path)]);
 
   useEffect(() => {
-    const fileRef = getFileRef();
-    const unsub = onSnapshot(fileRef, (snap) => {
+    const unsubFiles = onSnapshot(getFileRef(), (snap) => {
       setFiles(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsub();
+    return () => unsubFiles();
   }, [userId, propertyId, columnKey, JSON.stringify(path)]);
 
   const createFolder = async () => {
@@ -95,52 +94,111 @@ const EmbeddedFolderExplorer = ({ userId, propertyId, columnKey }) => {
       createdAt: new Date(),
     });
     setNewFolderName("");
-    toast.success("Folder created");
+    toast.success("📁 Folder created");
   };
 
   const renameFolder = async (folderId, currentName) => {
     const newName = prompt("Rename folder", currentName);
     if (!newName) return;
-    const folderRef = getFolderRef();
-    await updateDoc(doc(folderRef, folderId), { name: newName });
+    await updateDoc(doc(getFolderRef(), folderId), { name: newName });
+    toast.success("✏ Folder renamed");
   };
 
   const deleteFolder = async (folderId) => {
     const confirmed = window.confirm("Delete this folder?");
     if (!confirmed) return;
-    const folderRef = getFolderRef();
-    await deleteDoc(doc(folderRef, folderId));
+    await deleteDoc(doc(getFolderRef(), folderId));
+    toast.success("🗑 Folder deleted");
   };
 
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    const items = Array.from(e.dataTransfer.files);
 
-    for (const file of items) {
-      const ref = getFileRef();
-      const storagePath = [
-        userId,
-        "properties",
-        propertyId,
-        "fileSystem",
-        columnKey,
-        ...path.flatMap((id) => [id, "folders"]),
-        "files",
-        file.name,
-      ].join("/");
+  const deleteFile = async (file) => {
+  try {
+    // Delete from Firebase Storage
+    const fileRef = storageRef(storage, file.path);
+    await deleteObject(fileRef);
 
-      const sRef = storageRef(storage, storagePath);
-      await uploadBytes(sRef, file);
-      const url = await getDownloadURL(sRef);
+    // Delete from Firestore
+    await deleteDoc(doc(getFileRef(), file.id));
 
-      await addDoc(ref, {
-        name: file.name,
-        url,
-        type: file.type,
-        path: storagePath,
-        createdAt: new Date(),
+    toast.success("🗑 File deleted");
+  } catch (err) {
+    console.error("❌ Failed to delete file:", err);
+    toast.error("❌ Failed to delete file");
+  }
+};
+const traverseAndUpload = async (entry, currentPath = "") => {
+  if (entry.isFile) {
+    await new Promise((resolve) => {
+      entry.file(async (file) => {
+        const fullPath = currentPath ? `${currentPath}/${file.name}` : file.name;
+
+        const storagePath = [
+          "users",
+          userId,
+          "properties",
+          propertyId,
+          "fileSystem",
+          columnKey,
+          ...path.flatMap((id) => [id, "folders"]),
+          "files",
+          fullPath,
+        ].join("/");
+
+        const sRef = storageRef(storage, storagePath);
+        await uploadBytes(sRef, file);
+        const url = await getDownloadURL(sRef);
+
+        await addDoc(getFileRef(), {
+          name: fullPath,
+          url,
+          type: file.type,
+          path: storagePath,
+          createdAt: new Date(),
+        });
+
+        toast.success(`📁 Uploaded: ${fullPath}`);
+        resolve();
       });
+    });
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader();
+    const readEntries = () =>
+      new Promise((resolve) => reader.readEntries(resolve));
+
+    let entries = await readEntries();
+    while (entries.length) {
+      for (const subEntry of entries) {
+        await traverseAndUpload(subEntry, `${currentPath}/${entry.name}`);
+      }
+      entries = await readEntries();
     }
+  }
+};
+
+
+const handleDrop = async (e) => {
+  e.preventDefault();
+  setIsDragging(false);
+
+  const items = Array.from(e.dataTransfer.items);
+
+  for (const item of items) {
+    const entry = item.webkitGetAsEntry?.();
+    if (entry) {
+      await traverseAndUpload(entry);
+    }
+  }
+};
+
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -187,56 +245,129 @@ const EmbeddedFolderExplorer = ({ userId, propertyId, columnKey }) => {
       </div>
 
       {/* Folder list */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-        {folders.map((f) => (
-          <div
-            key={f.id}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              width: 80,
-            }}
-          >
+      {folders.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          {folders.map((f) => (
             <div
-              onClick={() => setPath([...path, f.id])}
-              style={{ cursor: "pointer", fontSize: 28 }}
-              title="Open"
+              key={f.id}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 80,
+              }}
             >
-              📁
+              <div
+                onClick={() => setPath([...path, f.id])}
+                style={{ cursor: "pointer", fontSize: 28 }}
+                title="Open"
+              >
+                📁
+              </div>
+              <div style={{ fontSize: 12 }}>{f.name}</div>
+              <div>
+                <button onClick={() => renameFolder(f.id, f.name)}>✏</button>
+                <button onClick={() => deleteFolder(f.id)}>🗑</button>
+              </div>
             </div>
-            <div style={{ fontSize: 12 }}>{f.name}</div>
-            <div>
-              <button onClick={() => renameFolder(f.id, f.name)}>✏</button>
-              <button onClick={() => deleteFolder(f.id)}>🗑</button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Dropzone */}
       <div
-        onDragOver={(e) => e.preventDefault()}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         style={{
           marginTop: 20,
-          padding: 20,
-          border: "2px dashed #aaa",
+          padding: 16,
+          border: isDragging ? "2px dashed #007bff" : "2px dashed #ccc",
+          backgroundColor: isDragging ? "#f0f8ff" : "#fff",
           textAlign: "center",
           minHeight: 100,
+          borderRadius: 8,
+          transition: "all 0.2s ease-in-out",
         }}
       >
-        <p>Drag files here to upload</p>
-        {files.length > 0 &&
-          files
-            .filter((file) =>
-              file.name.toLowerCase().includes(search.toLowerCase())
-            )
-            .map((file) => (
-              <div key={file.id} style={{ marginTop: 6 }}>
-                🧾 {file.name}
+        <p style={{ marginBottom: 12, color: "#666" }}>
+          Drag files here to upload
+        </p>
+
+        {files.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              marginTop: 10,
+            }}
+          >
+            {files.map((file) => (
+              <div
+                key={file.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "8px 12px",
+                  border: "1px solid #ddd",
+                  borderRadius: 6,
+                  backgroundColor: "#fafafa",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                }}
+              >
+                {/* Thumbnail */}
+                {file.type?.startsWith("image") ? (
+                  <img
+                    src={file.url}
+                    alt={file.name}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      objectFit: "cover",
+                      borderRadius: 4,
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: 24 }}>📄</span>
+                )}
+
+                {/* File name with ellipsis */}
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    flex: 1,
+                    textDecoration: "none",
+                    color: "#007bff",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {file.name}
+                </a>
+
+                {/* Optional delete button */}
+                <button
+                  onClick={() => deleteFile(file)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontSize: 18,
+                    color: "#d00",
+                    cursor: "pointer",
+                  }}
+                  title="Delete file"
+                >
+                  ❌
+                </button>
               </div>
             ))}
+          </div>
+        )}
       </div>
     </div>
   );

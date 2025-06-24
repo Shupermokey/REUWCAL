@@ -63,6 +63,7 @@ Gross Sight area (possibly add in Property Address section) // 2 Input fields fo
 #4
 Gross Building area
 - GBA (also known as GLA): Number*
+- GLA (Gross Living Area)
 - Net rentable area (NRA): Number
 - Folder for Floor Plans
 - Other
@@ -77,6 +78,28 @@ Property Taxes (could live under property address)  // Pin | Tax | Size (portion
 - Size
 
 
+
+
+
+
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+Property Taxes
+title: Assessor MV (market v)
+input: Land values
+input: Improvements
+p: Total Value (maybe a p tag): 
+
+title: Assessor AV (assessed)
+input: Land values
+input: Improvements
+p: Total Value (maybe a p tag):
+
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+Income Statement
+-BRI add /sq ft
+vacancy loss: % loss
 
 
 

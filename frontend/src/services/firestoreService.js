@@ -269,6 +269,19 @@ export const createUserProfile = async (userId, data) => {
 };
 
 
+//Income Statement
+export const getIncomeStatement = async (userId, propertyId) => {
+  const ref = doc(db, "users", userId, "properties", propertyId, "incomeStatement");
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+};
+
+export const saveIncomeStatement = async (userId, propertyId, data) => {
+  const ref = doc(db, "users", userId, "properties", propertyId, "incomeStatement", "statement"); // <— NEW
+  await setDoc(ref, data, { merge: true });
+};
+
+
 
 
 

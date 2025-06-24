@@ -16,20 +16,47 @@
 }
 
 .table {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   width: 100%;
+  border-collapse: collapse;
+  border-radius: 5px;
+  margin-top: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  background-color: rgba(184, 146, 32, 0.705);
 }
+
 
 .row {
   display: flex;
-  border: 1px solid black;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease-in-out;
 }
 
-.row.selected {
-  background-color: red !important;
+.row:hover {
+  background-color: #f9f9f9;
+}
+
+.selected {
+  background-color: #b3dcb7 !important;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #00c853;
+  box-shadow: 0 0 0 2px rgba(0, 200, 83, 0.1);
 }
 
 .row div:last-child, .table-header:last-child {
@@ -37,20 +64,21 @@
 }
 
 .table-header {
-  font-weight: bold;
-  background-color: #f0f0f0;
-  /* padding: 10px; */
+  background-color: #75f971c4;
+  font-weight: 600;
+  border-bottom: 2px solid #ddd;
+    border-radius: 5px;
 }
 
 .cell {
-  padding: 8px;
-  border-right: 1px solid #ccc;
-  /* ✅ Remove these so React inline styles take effect */
-  /* width: 150px; */
-  /* max-width: 150px; */
+  padding: 12px;
+  flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-right: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
 }
 
 
@@ -68,10 +96,25 @@
   background-color: transparent !important;
 }
 
+.cell:last-child {
+  border-right: none;
+}
+
 .add-row-btn {
-  font-size: large;
-  border: 1px solid black;
-  margin-top: 0.5rem;
+  margin: 20px auto;
+  display: block;
+  font-size: 20px;
+  background: #00c853;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-row-btn:hover {
+  background-color: #00b44b;
 }
 
 .modal-popup {
@@ -94,6 +137,22 @@
   border: 1px solid black;
 }
 
+.editing-tools button {
+  border: none;
+  background: #f1f1f1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.editing-tools button:hover {
+  background-color: #e0e0e0;
+}
+
+.editing-tools {
+  justify-content: flex-end;
+}
 .edit-row,
 .delete-row {
   border: 1px solid black;
@@ -1325,4 +1384,11 @@ input[type=number] {
 .zoning-chip .chip-close:hover {
   background-color: #ffcdd2;
   transform: scale(1.05);
+}
+
+
+.upload-area {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }

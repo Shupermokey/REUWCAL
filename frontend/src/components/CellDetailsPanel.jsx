@@ -55,6 +55,13 @@ const CellDetailsPanel = ({
     });
   };
 
+  const handleCustomInputChange = (updated) => {
+    setLocalData((prev) => ({
+      ...prev,
+      customInputs: updated,
+    }));
+  };
+
   const structure = breakdownConfig[columnKey] || [];
 
   useEffect(() => {
@@ -314,21 +321,23 @@ const CellDetailsPanel = ({
             );
           })}
 
-        <div className="folder-grid-group">
-          <div className="folder-grid">
-            {foldersToRender.map(({ label }) => (
-              <div
-                key={label}
-                className="folder-icon"
-                onClick={() => setOpenFolderLabel(label)}
-                title={`Open ${label}`}
-              >
-                <div className="icon">📁</div>
-                <div className="label">{label}</div>
-              </div>
-            ))}
+        {!openFolderLabel && (
+          <div className="folder-grid-group">
+            <div className="folder-grid">
+              {foldersToRender.map(({ label }) => (
+                <div
+                  key={label}
+                  className="folder-icon"
+                  onClick={() => setOpenFolderLabel(label)}
+                  title={`Open ${label}`}
+                >
+                  <div className="icon">📁</div>
+                  <div className="label">{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
       {openFolderLabel && (
         <div
@@ -351,6 +360,65 @@ const CellDetailsPanel = ({
           />
         </div>
       )}
+{(localData.customInputs || []).map((input, idx) => (
+  <div
+    key={idx}
+    className="input-group"
+    style={{ position: "relative", paddingRight: 24 }}
+  >
+    <label>{input.label || `Custom #${idx + 1}`}</label>
+    <input
+      type="number"
+      value={input.value}
+      onChange={(e) => {
+        const updated = [...localData.customInputs];
+        updated[idx].value = parseFloat(e.target.value) || 0;
+        handleCustomInputChange(updated);
+      }}
+    />
+    <button
+      onClick={() => {
+        const updated = localData.customInputs.filter((_, i) => i !== idx);
+        handleCustomInputChange(updated);
+      }}
+      title="Remove line item"
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        border: "none",
+        background: "transparent",
+        color: "#c00",
+        fontSize: "18px",
+        cursor: "pointer",
+        padding: 4,
+        lineHeight: 1,
+      }}
+    >
+      ×
+    </button>
+  </div>
+))}
+
+
+
+
+      <button
+  className="btn-save"
+  style={{ marginTop: 10 }}
+  onClick={() => {
+    const label = prompt("Enter a name for the new line item:");
+    if (!label) return;
+    handleCustomInputChange([
+      ...(localData.customInputs || []),
+      { label, value: 0 },
+    ]);
+  }}
+>
+  ➕ Add Line Item
+</button>
+
+
 
       <div className="panel-footer">
         <button className="btn-save" onClick={handleSave}>

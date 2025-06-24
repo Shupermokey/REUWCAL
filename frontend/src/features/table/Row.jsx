@@ -4,6 +4,7 @@ import { getBaselines } from "../../services/firestoreService";
 import CellDetailsPanel from "../../components/CellDetailsPanel";
 import columnConfig, { columnOrder, breakdownConfig } from "../../columnConfig";
 import { getNodeTotal } from "../../components/CustomBreakdownInputs";
+import PropertyIncomeStatement from "../../components/PropertyIncomeStatement";
 
 function Row({
   row,
@@ -98,14 +99,25 @@ function Row({
         "Other",
         "Capital To Stabilize",
         "Capital Reserve",
-        "Other (Purchase Price)",
       ];
 
-      updatedValue = numericFields.reduce((sum, key) => {
+      // Sum default purchase price items
+      const defaultTotal = numericFields.reduce((sum, key) => {
         const val = details[key];
         const parsed = typeof val === "number" ? val : parseFloat(val);
         return !isNaN(parsed) ? sum + parsed : sum;
       }, 0);
+
+      // Sum customInputs if they exist
+      const customTotal = (updatedData.customInputs || []).reduce(
+        (sum, input) => {
+          const num = parseFloat(input.value);
+          return !isNaN(num) ? sum + num : sum;
+        },
+        0
+      );
+
+      updatedValue = defaultTotal + customTotal;
     } else {
       const inputs = updatedData?.customInputsByColumn?.[column] || [];
       updatedValue = inputs.reduce((sum, node) => sum + getNodeTotal(node), 0);
@@ -128,11 +140,16 @@ function Row({
   const renderEditableCell = (key) => {
     const config = columnConfig[key];
     const inputType = config?.input;
+    const isInvalid = invalidFields.includes(key);
 
     if (key === "Category") {
       return (
         <select
           value={editableRow[key] || ""}
+          style={{
+            border: isInvalid ? "1px solid #e53935" : undefined,
+            backgroundColor: isInvalid ? "#ffebee" : undefined,
+          }}
           onChange={(e) => {
             handleChange(key, e.target.value);
             applyBaseline(e.target.value);
@@ -153,6 +170,10 @@ function Row({
       return (
         <div
           className="editable-cell"
+          style={{
+            border: isInvalid ? "1px solid #e53935" : undefined,
+            backgroundColor: isInvalid ? "#ffebee" : undefined,
+          }}
           onDoubleClick={() => {
             setActiveColumn(key);
             setShowDetails(true);
@@ -183,6 +204,10 @@ function Row({
       <input
         type={inputType === "number" ? "number" : "text"}
         value={currentValue}
+        style={{
+          border: isInvalid ? "1px solid #e53935" : undefined,
+          backgroundColor: isInvalid ? "#ffebee" : undefined,
+        }}
         onChange={(e) => {
           const parsed =
             inputType === "number" ? Number(e.target.value) : e.target.value;
@@ -197,9 +222,18 @@ function Row({
 
   const renderDisplayValue = (key) => {
     const val = editableRow[key];
+
+    if (key === "Category") {
+      const selected = baselines.find(
+        (b) => b.id === val || b.id === val?.value
+      );
+      return selected?.name || val?.value || val || "—";
+    }
+
     if (val && typeof val === "object" && "value" in val) {
       return val.value;
     }
+
     return typeof val === "string" || typeof val === "number" ? val : "—";
   };
 
@@ -274,7 +308,13 @@ function Row({
             ) : isEditing ? (
               renderEditableCell(key)
             ) : (
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  width: "100%",
+                }}
+              >
                 {renderDisplayValue(key)}
               </span>
             )}
@@ -282,7 +322,7 @@ function Row({
         ))}
       </div>
 
-      {showDetails && activeColumn && (
+      {/* {showDetails && activeColumn && (
         <div className="expanded-details">
           <CellDetailsPanel
             columnKey={activeColumn}
@@ -308,6 +348,53 @@ function Row({
             onUpdate={handleUpdateFromPanel}
             onClose={() => setShowDetails(false)}
           />
+        </div>
+      )} */}
+
+      {showDetails && activeColumn && (
+        <div style={{ display: "flex", position: "relative", width: "100%" }}>
+          <div className="expanded-details" style={{ flex: 1 }}>
+            <CellDetailsPanel
+              columnKey={activeColumn}
+              data={{
+                ...editableRow[activeColumn],
+                details: {
+                  ...(editableRow[activeColumn]?.details || {}),
+                  ...Object.fromEntries(
+                    Object.entries(editableRow).flatMap(([key, val]) => {
+                      if (key === activeColumn) return [];
+                      const label = columnConfig[key]?.label || key;
+                      const value =
+                        typeof val === "object" && val?.value !== undefined
+                          ? val.value
+                          : val;
+                      return [[label, value]];
+                    })
+                  ),
+                },
+              }}
+              propertyId={row.id}
+              userId={user?.uid}
+              onUpdate={handleUpdateFromPanel}
+              onClose={() => setShowDetails(false)}
+            />
+          </div>
+
+          {/* Show income statement only for purchasePrice */}
+          {activeColumn === "incomeStatement" && (
+            <div
+              style={{
+                flexBasis: "400px",
+                minWidth: "360px",
+                borderLeft: "1px solid #ccc",
+              }}
+            >
+              <PropertyIncomeStatement
+                rowData={editableRow}
+                propertyId={row.id}
+              />
+            </div>
+          )}
         </div>
       )}
     </>

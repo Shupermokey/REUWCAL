@@ -29,6 +29,12 @@ const columnConfig = {
     input: "custom",
     width: 150,
   },
+  incomeStatement: {
+    label: "Income Statement",
+    type: "number",
+    input: "custom",
+    width: 150,
+  },
   Category: {
     label: "Category",
     type: "string",
@@ -44,7 +50,6 @@ const columnConfig = {
   },
 };
 
-
 // 👇 add this so `columnOrder` becomes available as a named export
 export const columnOrder = [
   "propertyAddress",
@@ -52,6 +57,7 @@ export const columnOrder = [
   "propertyGSA",
   "propertyGBA",
   "purchasePrice",
+  "incomeStatement",
   "Category",
   "EditingTools",
 ];
@@ -62,6 +68,7 @@ export const columnWidths = {
   propertyGSA: 150,
   propertyGBA: 150,
   purchasePrice: 150,
+  incomeStatement: 150,
   Category: 150,
   EditingTools: 200, // wider to fit all buttons
 };
@@ -130,9 +137,13 @@ export const breakdownConfig = {
 
   propertyGBA: [
     {
-      label: "Gross Building Area (GBA/GLA)",
+      label: "Gross Building Area (GBA)",
       type: "number",
       required: true,
+    },
+    {
+      label: "Gross Living Area (GLA)",
+      type: "number",
     },
     {
       label: "Net Rentable Area (NRA)",
@@ -158,7 +169,25 @@ export const breakdownConfig = {
     { label: "Capital Reserve", type: "number" },
     { label: "Other (Purchase Price)", type: "number" },
   ],
+    incomeStatement: [
+    { label: "Temp", type: "number" },
+  ],
+  marketRate: [
+    { label: "Contract Price", type: "number" },
+    { label: "Transaction", type: "number" },
+    { label: "Due Diligence", type: "number" },
+    { label: "Other", type: "number" }, // supports subinputs
+    {
+      label: "Capital To Stabilize",
+      type: "number",
+    },
+    {
+      label: "Timeframe",
+      type: "text",
+    },
+    { label: "Capital Reserve", type: "number" },
+    { label: "Other (Purchase Price)", type: "number" },
+  ],
 };
-
 
 export default columnConfig;
