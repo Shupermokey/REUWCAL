@@ -4,13 +4,13 @@ import {
   deleteUser,
   sendEmailVerification,
 } from "firebase/auth";
-import { getDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../../services/firebaseConfig";
-import { handleCheckout } from "../../../utils/stripeService";
+
+import { auth } from "../../../services/firebaseConfig";           // modular SDK
+import { createUserProfile } from "../../../services/firestoreService";
+import { handleCheckout } from "../../../utils/stripeService";     // keeps your existing API
 import { handleSignInWithGoogle } from "../../../services/authService";
 import { useAuth } from "../../../app/AuthProvider";
-import { createUserProfile } from "../../../services/firestoreService"; 
 
 const Register = () => {
   const { setSubscription } = useAuth();
@@ -18,7 +18,7 @@ const Register = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tier, setTier] = useState("free");
+  const [tier, setTier] = useState("free"); // 'free' | 'marketing' | 'developer' | 'syndicator'
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,51 +32,44 @@ const Register = () => {
         throw new Error("Please fill in all required fields.");
       }
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // 1) Create the auth user
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
       const uid = user.uid;
 
+      // 2) Send verification email (optional to gate features by verification later)
       await sendEmailVerification(user);
       alert("📧 Verification email sent! Please check your inbox.");
 
-      // Wait for Stripe Extension to attach stripeCustomerId
-      let stripeCustomerId = null;
-      const customerRef = doc(auth.firestore || auth._delegate.firestore, "customers", uid); // fallback fix
-
-      for (let attempts = 0; attempts < 5; attempts++) {
-        const customerSnap = await getDoc(customerRef);
-        if (customerSnap.exists() && customerSnap.data().stripeId) {
-          stripeCustomerId = customerSnap.data().stripeId;
-          break;
-        }
-        await new Promise((res) => setTimeout(res, 3000));
-      }
-
-      if (!stripeCustomerId) {
-        throw new Error("Stripe integration failed. Please try again.");
-      }
-
+      // 3) Create user profile doc (store Free as current tier; keep intendedTier for reference)
       await createUserProfile(uid, {
         email,
-        subscriptionTier: tier,
-        stripeCustomerId,
+        subscriptionTier: "free",   // actual access is derived from Stripe subs
+        intendedTier: tier,         // what they chose at signup
+        createdVia: "email_password",
       });
 
+      // 4) If they selected a paid plan, start Checkout.
+      //    Your handleCheckout(uid, tier) is preserved (expects the tier string).
       if (tier !== "free") {
         await handleCheckout(uid, tier);
+        // ^ will redirect to Stripe; no further code runs in this tab after navigation
+        return;
       }
 
-      navigate("/");
-    } catch (err) {
-      console.error("❌ Registration failed:", err.message);
-      setError(err.message);
+      // 5) Free plan → go to login (or home), your choice:
+      navigate("/", { replace: true }); // back to login page
+      // navigate("/home", { replace: true }); // or take them into the app
 
-      // Cleanup user if registration fails
+    } catch (err) {
+      console.error("❌ Registration failed:", err);
+      setError(err?.message || "Registration failed. Please try again.");
+
+      // Cleanup auth user if we created one but something else failed
       const current = auth.currentUser;
       if (current) {
-        await deleteUser(current).catch((error) =>
-          console.warn("⚠️ Failed to delete user:", error.message)
-        );
+        try { await deleteUser(current); } catch (e) {
+          console.warn("⚠️ Failed to delete user after error:", e?.message || e);
+        }
       }
     } finally {
       setLoading(false);
@@ -86,17 +79,21 @@ const Register = () => {
   return (
     <div className="register-container">
       <h2>Join Our Exclusive Real Estate Network</h2>
+
       <form onSubmit={handleRegister} className="register-form">
         <input
           type="email"
           placeholder="Email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+
         <input
           type="password"
           placeholder="Password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -108,7 +105,7 @@ const Register = () => {
           value={tier}
           onChange={(e) => {
             setTier(e.target.value);
-            setSubscription(e.target.value);
+            setSubscription?.(e.target.value); // keep your local context behavior
           }}
         >
           <option value="free">Free</option>
@@ -118,6 +115,7 @@ const Register = () => {
         </select>
 
         {error && <p className="error-message">{error}</p>}
+
         <button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>

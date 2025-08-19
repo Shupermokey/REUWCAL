@@ -15,17 +15,21 @@ function Row({
   isSelected,
   onOpenFiles,
 }) {
-  const normalizeRow = (raw) => {
+const normalizeRow = (raw) => {
     const wrapped = {};
     for (const [key, val] of Object.entries(raw)) {
       if (key === "id" || key === "baselineSnapshot") {
         wrapped[key] = val;
         continue;
       }
-      wrapped[key] =
-        typeof val === "object" && val !== null && "value" in val
-          ? val
-          : { value: val };
+      if (val !== null && typeof val === "object") {
+        // already an object — if it already has a "value" we keep it,
+        // otherwise leave it as-is (breakdowns, folders, etc.)
+        wrapped[key] = ("value" in val) ? val : val;
+      } else {
+        // primitives get wrapped once
+        wrapped[key] = { value: val };
+      }
     }
     return wrapped;
   };
@@ -194,11 +198,12 @@ function Row({
         </div>
       );
     }
+// ✅ unwrap one level if present; otherwise empty string
+const currentValue =
+  editableRow[key] && typeof editableRow[key] === "object"
+    ? (editableRow[key].value ?? "")
+    : (editableRow[key] ?? "");
 
-    const currentValue =
-      typeof editableRow[key] === "object"
-        ? editableRow[key]?.value || ""
-        : editableRow[key] || "";
 
     return (
       <input
@@ -219,23 +224,33 @@ function Row({
       />
     );
   };
-
-  const renderDisplayValue = (key) => {
-    const val = editableRow[key];
-
-    if (key === "Category") {
-      const selected = baselines.find(
-        (b) => b.id === val || b.id === val?.value
-      );
-      return selected?.name || val?.value || val || "—";
-    }
-
-    if (val && typeof val === "object" && "value" in val) {
-      return val.value;
-    }
-
-    return typeof val === "string" || typeof val === "number" ? val : "—";
+const renderDisplayValue = (key) => {
+  const unwrap = (v) => {
+    let x = v;
+    // unwrap chains like { value: { value: 123 } }
+    while (x && typeof x === "object" && "value" in x) x = x.value;
+    return x;
   };
+
+  const raw = editableRow[key];
+
+  // Special case: Category shows the baseline name
+  if (key === "Category") {
+    const id = unwrap(raw);
+    const selected = baselines.find((b) => b.id === id);
+    return selected?.name ?? id ?? "—";
+  }
+
+  const val = unwrap(raw);
+
+  if (val === null || val === undefined) return "—";
+  if (typeof val === "number" || typeof val === "string") return val;
+  if (typeof val === "boolean") return val ? "Yes" : "No";
+
+  // Any other object type (folders/details/etc.) is not directly renderable
+  return "—";
+};
+
 
   return (
     <>
@@ -352,7 +367,7 @@ function Row({
       )} */}
 
       {showDetails && activeColumn && (
-        <div style={{ display: "flex", position: "relative", width: "100%" }}>
+        <div style={{  position: "relative", width: "100%" }}>
           <div className="expanded-details" style={{ flex: 1 }}>
             <CellDetailsPanel
               columnKey={activeColumn}

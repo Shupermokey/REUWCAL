@@ -1,22 +1,27 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../../app/AuthProvider";
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../../app/AuthProvider';
+import { useTier } from '../../hooks/useTier';
+import { meetsTier, TIERS } from '../../constants/tiers';
 
-const ProtectedRoute = ({ children, allowedTiers = [] }) => {
-  const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+export default function ProtectedRoute({ minTier = TIERS.Free }) {
+  const { user, loading: authLoading } = useAuth();
+  const { tier, isLoading: tierLoading } = useTier();
+  const location = useLocation();
 
-  if (!user) return <Navigate to="/" replace />;
-  if (!user.emailVerified) return <Navigate to="/verify-email" replace />;
-
-  // 🔐 Tier enforcement
-  const tier = user.subscriptionTier || "free"; // fallback
-  if (allowedTiers.length > 0 && !allowedTiers.includes(tier)) {
-    return <Navigate to="/unauthorized" replace />;
+  if (authLoading || tierLoading) {
+    return <div style={{ padding: 16 }}>Loading…</div>;
   }
 
-  return children;
-};
+  if (!user) {
+    // Not logged in → go to login
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
 
-export default ProtectedRoute;
+  if (!meetsTier(tier, minTier)) {
+    // Logged in but not enough privileges → take to Pricing (upsell)
+    return <Navigate to="/pricing" replace state={{ from: location, need: minTier }} />;
+  }
+
+  return <Outlet />;
+}

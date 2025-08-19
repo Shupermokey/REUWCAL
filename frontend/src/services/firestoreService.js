@@ -268,18 +268,37 @@ export const createUserProfile = async (userId, data) => {
   }, { merge: true });
 };
 
+const DEBUG = true;
+const log = (...a) => DEBUG && console.debug("[IncomeStmt]", ...a);
 
-//Income Statement
-export const getIncomeStatement = async (userId, propertyId) => {
-  const ref = doc(db, "users", userId, "properties", propertyId, "incomeStatement");
+const incomeStatementDocRef = (uid, propertyId) =>
+  doc(db, "users", uid, "properties", propertyId, "incomeStatement", "current");
+
+export async function getIncomeStatement(uid, propertyId) {
+  const ref = incomeStatementDocRef(uid, propertyId);
+  log("GET path:", ref.path);
   const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
-};
+  if (!snap.exists()) {
+    log("GET result: <missing>");
+    return null;
+  }
+  const data = snap.data();
+  // be careful not to stringify circular refs
+  log("GET result keys:", Object.keys(data));
+  log("GET Income keys:", Object.keys(data?.Income || {}));
+  return data;
+}
 
-export const saveIncomeStatement = async (userId, propertyId, data) => {
-  const ref = doc(db, "users", userId, "properties", propertyId, "incomeStatement", "statement"); // <— NEW
+export async function saveIncomeStatement(uid, propertyId, data) {
+  const ref = incomeStatementDocRef(uid, propertyId);
+  // Shallow preview of what we’re about to write:
+  log("SAVE path:", ref.path);
+  log("SAVE root keys:", Object.keys(data || {}));
+  log("SAVE Income keys:", Object.keys(data?.Income || {}));
   await setDoc(ref, data, { merge: true });
-};
+  log("SAVE done");
+}
+
 
 
 

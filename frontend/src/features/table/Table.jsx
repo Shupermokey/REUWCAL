@@ -4,16 +4,16 @@ import Row from "./Row";
 import { useAuth } from "../../app/AuthProvider";
 import FileExplorer from "../../components/Sidebar/FileSystem/FileExplorer";
 import PropertyFileSidebar from "../../components/Sidebar/PropertyFileSidebar";
+import { subscribeToBaselines } from "../../services/firestoreService";
 
 import {
-  getProperties,
   addProperty,
   updateProperty,
   deleteProperty,
   initializeFileSystem,
   subscribeToProperties,
 } from "../../services/firestoreService";
-import columnConfig, { columnOrder, columnWidths } from "../../columnConfig";
+import columnConfig, { columnOrder } from "../../columnConfig";
 
 function Table({ onRowSelect }) {
   const { rows, setRows, selectedRow, setSelectedRow } = useTable();
@@ -21,34 +21,26 @@ function Table({ onRowSelect }) {
   const [isSaving, setIsSaving] = useState(false);
   const [activeFolder, setActiveFolder] = useState(null);
   const [activeSidebar, setActiveSidebar] = useState(null);
+  const [baselines, setBaselines] = useState([]);
 
+  // 🔹 Load Baselines
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToBaselines(user.uid, (data) => {
+      setBaselines(data);
+    });
+    return () => unsub();
+  }, [user]);
+
+  // 🔹 Load Properties
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeToProperties(user.uid, (data) => {
       setRows(data.length > 0 ? data : [createBlankRow()]);
     });
-    return () => unsubscribe(); // 🔥 auto cleanup
+    return () => unsubscribe();
   }, [user, setRows]);
 
-  // // Function to create a blank row
-  // const createBlankRow = () => ({
-  //   id: "new",
-  //   propertyAddress: "",
-  //   purchasePriceSF: "",
-  //   purchasePrice: "",
-  //   ACQCAPXSF: "",
-  //   ACQCAPX: "",
-  //   UnitCount: "",
-  //   GrossBuildingArea: "",
-  //   GrossSiteArea: "",
-  //   REPropertyTax: "",
-  //   MarketRate: "",
-  //   ServiceStructure: "",
-  //   PropertyClass: "",
-  //   Category: "",
-  // });
-
-  // Function to create a blank row
   const createBlankRow = () => ({
     id: "new",
     propertyAddress: "",
@@ -59,121 +51,68 @@ function Table({ onRowSelect }) {
     Category: "",
   });
 
-  // Prevent multiple new rows until saved
   const handleAddRow = () => {
-    if (rows.some((row) => row.id === "new")) return; // ✅ Prevent multiple unsaved rows
-
+    if (rows.some((row) => row.id === "new")) return;
     setIsSaving(true);
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        // id: "new",
-        // propertyAddress: "",
-        // purchasePriceSF: "",
-        // purchasePrice: "",
-        // ACQCAPXSF: "",
-        // ACQCAPX: "",
-        // UnitCount: "",
-        // GrossBuildingArea: "",
-        // GrossSiteArea: "",
-        // REPropertyTax: "",
-        // MarketRate: "",
-        // ServiceStructure: "",
-        // PropertyClass: "",
-        // Category: "",
-        // ScenarioRows: [],
-        id: "new",
-        propertyAddress: "",
-        propertyTaxes: "",
-        propertyGSA: "",
-        propertyGBA: "",
-        purchasePrice: "",
-        Category: "",
-      },
-    ]);
-
+    setRows((prev) => [...prev, createBlankRow()]);
     setSelectedRow("new");
   };
-const handleSaveRow = async (rowData) => {
-  if (!user) return;
 
-  // Unwrap { value: ... } before saving to Firestore
-  const sanitizedData = Object.fromEntries(
-    Object.entries(rowData).map(([key, value]) => {
-      if (typeof value === "object" && value?.value !== undefined) {
-        return [key, value.value];
-      }
-      return [key, value || ""];
-    })
-  );
+  const handleSaveRow = async (rowData) => {
+    if (!user) return;
 
-  if (rowData.id === "new") {
-    const { id, ...rowWithoutId } = sanitizedData;
-    const newId = await addProperty(user.uid, rowWithoutId);
+    const unwrap = (v) => {
+      let x = v;
+      while (x && typeof x === "object" && "value" in x) x = x.value;
+      return x ?? "";
+    };
 
-    await initializeFileSystem(user.uid, newId, columnOrder);
-
-    setRows((prevRows) =>
-      prevRows.map((row) => (row.id === "new" ? { ...row, id: newId } : row))
+    const sanitizedData = Object.fromEntries(
+      Object.entries(rowData).map(([key, value]) => {
+        if (value && typeof value === "object" && !("value" in value)) {
+          return [key, value];
+        }
+        return [key, unwrap(value)];
+      })
     );
-  } else {
-    await updateProperty(user.uid, rowData.id, sanitizedData);
 
-    setRows((prevRows) =>
-      prevRows.map((row) =>
-        row.id === rowData.id ? { ...row, ...sanitizedData } : row
-      )
-    );
-  }
+    if (rowData.id === "new") {
+      const { id, ...rowWithoutId } = sanitizedData;
+      const newId = await addProperty(user.uid, rowWithoutId);
+      await initializeFileSystem(user.uid, newId, columnOrder);
 
-  setIsSaving(false);
-};
+      setRows((prev) =>
+        prev.map((row) => (row.id === "new" ? { ...row, id: newId } : row))
+      );
+    } else {
+      await updateProperty(user.uid, rowData.id, sanitizedData);
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === rowData.id ? { ...row, ...sanitizedData } : row
+        )
+      );
+    }
 
+    setIsSaving(false);
+  };
 
   const handleCancelRow = () => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== "new")); // ✅ Remove only the "new" row
-    setIsSaving(false); // ✅ Reset isSaving so "+ Add Row" button reappears
+    setRows((prev) => prev.filter((row) => row.id !== "new"));
+    setIsSaving(false);
   };
 
   const handleDeleteRow = async (id) => {
     if (id === "new") {
-      setRows((prevRows) => prevRows.filter((row) => row.id !== "new"));
+      setRows((prev) => prev.filter((row) => row.id !== "new"));
     } else {
       await deleteProperty(user.uid, id);
-      setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+      setRows((prev) => prev.filter((row) => row.id !== id));
     }
   };
 
   return (
     <div className="table">
       {/* Table Headers */}
-      {/* <div className="row">
-        {[
-          // "Property Address",
-          // "Purchase Price ($/SF)",
-          // "Purchase Price",
-          // "ACQ CAPx ($/SF)",
-          // "ACQ CAPx ($)",
-          // "Unit Count",
-          // "Gross Building Area",
-          // "Gross Site Area (Acres)",
-          // "RE Property Tax",
-          // "Market Rate",
-          // "Service Structure",
-          // "Property Class",
-          "propertyAddress", //NEW
-          "propertyTaxes",   //NEW
-          "propertyGSA",     //NEW
-          "propertyGBA",     //NEW
-          "purchasePrice",   //NEW
-          "Category",
-          "EditingTools",
-        ].map((header, index) => (
-          <div key={index} className="table-header">
-            {header}
-          </div>
-        ))}
-      </div> */}
       <div className="row table-header">
         {columnOrder.map((key) => (
           <div
@@ -188,7 +127,6 @@ const handleSaveRow = async (rowData) => {
             {columnConfig[key]?.label || key}
           </div>
         ))}
-
       </div>
 
       {/* Table Rows */}
@@ -196,6 +134,7 @@ const handleSaveRow = async (rowData) => {
         <Row
           key={row.id}
           row={row}
+          baselines={baselines} // 🔹 Pass baselines down
           handleCellChange={(id, field, value) => {
             setRows((prevRows) =>
               prevRows.map((row) =>
@@ -223,12 +162,10 @@ const handleSaveRow = async (rowData) => {
           +
         </button>
       )}
+
       {activeFolder && (
         <div className="file-explorer-sidebar">
-          <FileExplorer
-            propertyId={activeFolder}
-            folderPath={[]} // root level
-          />
+          <FileExplorer propertyId={activeFolder} folderPath={[]} />
         </div>
       )}
 

@@ -23,6 +23,12 @@ const columnConfig = {
     input: "custom",
     width: 150,
   },
+  units: {
+    label: "Units",
+    type: "number",
+    input: "custom",
+    width: 150,
+  },
   purchasePrice: {
     label: "Purchase Price",
     type: "number",
@@ -56,6 +62,7 @@ export const columnOrder = [
   "propertyTaxes",
   "propertyGSA",
   "propertyGBA",
+  "units",
   "purchasePrice",
   "incomeStatement",
   "Category",
@@ -67,6 +74,7 @@ export const columnWidths = {
   propertyTaxes: 150,
   propertyGSA: 150,
   propertyGBA: 150,
+  units: 150,
   purchasePrice: 150,
   incomeStatement: 150,
   Category: 150,
