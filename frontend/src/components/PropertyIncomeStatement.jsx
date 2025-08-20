@@ -205,6 +205,7 @@ export default function PropertyIncomeStatement({ rowData, propertyId }) {
   const [saveError, setSaveError] = useState(null);
   const [justSaved, setJustSaved] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [viewMode, setViewMode] = useState("annual"); // 'annual' | 'monthly'
 
   // UI: grouped vs compact (two groups vs one flat row)
   const [groupedView, setGroupedView] = useState(true);
@@ -406,6 +407,16 @@ export default function PropertyIncomeStatement({ rowData, propertyId }) {
 
           <button
             className="btn-save"
+            onClick={() =>
+              setViewMode((m) => (m === "annual" ? "monthly" : "annual"))
+            }
+            disabled={saving}
+          >
+            {viewMode === "annual" ? "Monthly View" : "Annual View"}
+          </button>
+
+          <button
+            className="btn-save"
             onClick={() => setGroupedView((v) => !v)}
             disabled={saving}
           >
@@ -431,6 +442,7 @@ export default function PropertyIncomeStatement({ rowData, propertyId }) {
               setData((prev) => ({ ...prev, [section]: updated }))
             }
             groupedView={groupedView}
+            viewMode={viewMode}
           />
         )
       )}
@@ -458,7 +470,13 @@ export default function PropertyIncomeStatement({ rowData, propertyId }) {
 
 /** ========== Recursive renderer ========== */
 /** ========== Recursive renderer (collapsible branches) ========== */
-function RecursiveSection({ title, data = {}, onChange, groupedView }) {
+function RecursiveSection({
+  title,
+  data = {},
+  onChange,
+  groupedView,
+  viewMode,
+}) {
   const [collapsed, setCollapsed] = useState(false);
 
   const { prompt, confirm } = useDialog(); // ⬅️ add this
@@ -480,6 +498,33 @@ function RecursiveSection({ title, data = {}, onChange, groupedView }) {
     setAtPath(path, (prev) => {
       const leaf = isLeaf(prev) ? { ...prev } : newLeaf();
       leaf[columnKey] = Number.isFinite(value) ? value : 0;
+      return leaf;
+    });
+  };
+
+  const updateLeafCellSynced = (path, logicalKey, value) => {
+    // logicalKey ∈ {'gross','psf','punit'}
+    const n = Number.isFinite(value) ? value : 0;
+    const map = {
+      annual: { gross: "grossAnnual", psf: "psfAnnual", punit: "pUnitAnnual" },
+      monthly: {
+        gross: "grossMonthly",
+        psf: "psfMonthly",
+        punit: "pUnitMonthly",
+      },
+    };
+    const kA = map.annual[logicalKey];
+    const kM = map.monthly[logicalKey];
+
+    setAtPath(path, (prev) => {
+      const leaf = isLeaf(prev) ? { ...prev } : newLeaf();
+      if (viewMode === "annual") {
+        leaf[kA] = n;
+        leaf[kM] = n / 12;
+      } else {
+        leaf[kM] = n;
+        leaf[kA] = n * 12;
+      }
       return leaf;
     });
   };
@@ -612,49 +657,31 @@ function RecursiveSection({ title, data = {}, onChange, groupedView }) {
   /** ---- leaf editor (grouped / compact) ---- */
   const renderLeaf = (fullPath, val) => {
     if (groupedView) {
+      const title = viewMode === "annual" ? "Annual" : "Monthly";
+      const grossKey = viewMode === "annual" ? "grossAnnual" : "grossMonthly";
+      const psfKey = viewMode === "annual" ? "psfAnnual" : "psfMonthly";
+      const puKey = viewMode === "annual" ? "pUnitAnnual" : "pUnitMonthly";
       return (
-        <>
-          <div className="group-card">
-            <div className="group-title">Annual</div>
-            <div className="group-grid">
-              <Field
-                label="Gross Annual"
-                value={val.grossAnnual}
-                onChange={(n) => updateLeafCell(fullPath, "grossAnnual", n)}
-              />
-              <Field
-                label="PSF"
-                value={val.psfAnnual}
-                onChange={(n) => updateLeafCell(fullPath, "psfAnnual", n)}
-              />
-              <Field
-                label="PUnit"
-                value={val.pUnitAnnual}
-                onChange={(n) => updateLeafCell(fullPath, "pUnitAnnual", n)}
-              />
-            </div>
+        <div className="group-card">
+          <div className="group-title">{title}</div>
+          <div className="group-grid">
+            <Field
+              label={title === "Annual" ? "Gross Annual" : "Gross Monthly"}
+              value={val[grossKey]}
+              onChange={(n) => updateLeafCellSynced(fullPath, "gross", n)}
+            />
+            <Field
+              label="PSF"
+              value={val[psfKey]}
+              onChange={(n) => updateLeafCellSynced(fullPath, "psf", n)}
+            />
+            <Field
+              label="PUnit"
+              value={val[puKey]}
+              onChange={(n) => updateLeafCellSynced(fullPath, "punit", n)}
+            />
           </div>
-          <div className="group-card">
-            <div className="group-title">Monthly</div>
-            <div className="group-grid">
-              <Field
-                label="Gross Monthly"
-                value={val.grossMonthly}
-                onChange={(n) => updateLeafCell(fullPath, "grossMonthly", n)}
-              />
-              <Field
-                label="PSF"
-                value={val.psfMonthly}
-                onChange={(n) => updateLeafCell(fullPath, "psfMonthly", n)}
-              />
-              <Field
-                label="PUnit"
-                value={val.pUnitMonthly}
-                onChange={(n) => updateLeafCell(fullPath, "pUnitMonthly", n)}
-              />
-            </div>
-          </div>
-        </>
+        </div>
       );
     }
     return (
@@ -697,24 +724,25 @@ function RecursiveSection({ title, data = {}, onChange, groupedView }) {
   const renderBranchTotals = (val) => {
     const t = sumNode(val);
     return groupedView ? (
-      <>
-        <div className="group-card totals-card">
-          <div className="group-title">Annual (Subtotal)</div>
-          <div className="group-grid">
-            <ReadOnly label="Gross Annual" value={t.grossAnnual} />
-            <ReadOnly label="PSF" value={t.psfAnnual} />
-            <ReadOnly label="PUnit" value={t.pUnitAnnual} />
-          </div>
+      <div className="group-card totals-card">
+        <div className="group-title">
+          {viewMode === "annual" ? "Annual (Subtotal)" : "Monthly (Subtotal)"}
         </div>
-        <div className="group-card totals-card">
-          <div className="group-title">Monthly (Subtotal)</div>
-          <div className="group-grid">
-            <ReadOnly label="Gross Monthly" value={t.grossMonthly} />
-            <ReadOnly label="PSF" value={t.psfMonthly} />
-            <ReadOnly label="PUnit" value={t.pUnitMonthly} />
-          </div>
+        <div className="group-grid">
+          <ReadOnly
+            label={viewMode === "annual" ? "Gross Annual" : "Gross Monthly"}
+            value={viewMode === "annual" ? t.grossAnnual : t.grossMonthly}
+          />
+          <ReadOnly
+            label="PSF"
+            value={viewMode === "annual" ? t.psfAnnual : t.psfMonthly}
+          />
+          <ReadOnly
+            label="PUnit"
+            value={viewMode === "annual" ? t.pUnitAnnual : t.pUnitMonthly}
+          />
         </div>
-      </>
+      </div>
     ) : (
       <div className="six-col-inputs totals-row">
         <ReadOnly label="Gross Annual" value={t.grossAnnual} />
@@ -802,7 +830,9 @@ function RecursiveSection({ title, data = {}, onChange, groupedView }) {
     <div className="statement-section">
       <h4 onClick={() => setCollapsed((c) => !c)}>
         <span>
-          {collapsed ? "▸" : "▾"} {title}
+          <span>
+            {collapsed ? "▸" : "▾"} {title} {groupedView ? `• ${viewMode}` : ""}
+          </span>
         </span>
         <span style={{ display: "flex", gap: 8 }}>
           <button

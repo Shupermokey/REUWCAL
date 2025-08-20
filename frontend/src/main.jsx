@@ -6,6 +6,7 @@ import { TableProvider } from "./app/TableProvider.jsx";
 import { AuthProvider } from "./app/AuthProvider.jsx";
 import SubscriptionProvider from "./app/SubscriptionProvider.jsx";
 import { DialogProvider } from "./app/DialogProvider.jsx";
+import { IncomeViewProvider } from "./app/IncomeViewContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <SubscriptionProvider>
         <TableProvider>
           <DialogProvider>
-            <App />
+            <IncomeViewProvider>
+              <App />
+            </IncomeViewProvider>
           </DialogProvider>
         </TableProvider>
       </SubscriptionProvider>

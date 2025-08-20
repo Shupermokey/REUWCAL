@@ -5,6 +5,7 @@ import CellDetailsPanel from "../../components/CellDetailsPanel";
 import columnConfig, { columnOrder, breakdownConfig } from "../../columnConfig";
 import { getNodeTotal } from "../../components/CustomBreakdownInputs";
 import PropertyIncomeStatement from "../../components/PropertyIncomeStatement";
+import IncomeStatement from "../../components/Income/IncomeStatement";
 
 function Row({
   row,
@@ -404,7 +405,7 @@ const renderDisplayValue = (key) => {
                 borderLeft: "1px solid #ccc",
               }}
             >
-              <PropertyIncomeStatement
+              <IncomeStatement
                 rowData={editableRow}
                 propertyId={row.id}
               />
