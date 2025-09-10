@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useIncomeView } from "../../app/IncomeViewContext.jsx";
 
 const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
 const isLeaf = (v) =>
@@ -6,7 +7,6 @@ const isLeaf = (v) =>
   ["grossAnnual","psfAnnual","punitAnnual","rateAnnual","grossMonthly","psfMonthly","punitMonthly","rateMonthly"]
     .every((k) => typeof v[k] === "number" || v[k] === "");
 
-// depth-first sum
 const sumNode = (node) => {
   const t = {
     grossAnnual:0, psfAnnual:0, punitAnnual:0, rateAnnual:0,
@@ -31,32 +31,39 @@ const sumNode = (node) => {
   return t;
 };
 
-export default function BranchTotals({ value, displayMode }) {
-  const totals = useMemo(() => sumNode(value), [value]);
+export default function SectionTotal({ data, title }) {
+  const { displayMode } = useIncomeView();
+  const totals = useMemo(() => sumNode(data), [data]);
 
   const showAnnual  = displayMode === "annual"  || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
-
   const fmt = (n) => (Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "");
 
   return (
-    <>
+    <div className="section-total section-row">
+      <span className="caret-spacer" />
+      <span className="line-label total-label">Total {title}</span>
+
+      {/* values */}
       {showMonthly && (
         <>
-          <div className="branch-totals total-cell">{fmt(totals.grossMonthly)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.psfMonthly)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.punitMonthly)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.rateMonthly)}</div>
+          <div className="total-chip">{fmt(totals.grossMonthly)}</div>
+          <div className="total-chip">{fmt(totals.psfMonthly)}</div>
+          <div className="total-chip">{fmt(totals.punitMonthly)}</div>
+          <div className="total-chip">{fmt(totals.rateMonthly)}</div>
         </>
       )}
       {showAnnual && (
         <>
-          <div className="branch-totals total-cell">{fmt(totals.grossAnnual)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.psfAnnual)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.punitAnnual)}</div>
-          <div className="branch-totals total-cell">{fmt(totals.rateAnnual)}</div>
+          <div className="total-chip">{fmt(totals.grossAnnual)}</div>
+          <div className="total-chip">{fmt(totals.psfAnnual)}</div>
+          <div className="total-chip">{fmt(totals.punitAnnual)}</div>
+          <div className="total-chip">{fmt(totals.rateAnnual)}</div>
         </>
       )}
-    </>
+
+      {/* actions column placeholder */}
+      <span />
+    </div>
   );
 }

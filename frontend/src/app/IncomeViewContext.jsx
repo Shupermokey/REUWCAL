@@ -1,19 +1,21 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
 
-const Ctx = createContext(null);
+const IncomeViewCtx = createContext(null);
 
 export function IncomeViewProvider({ children }) {
-  const [viewMode, setViewMode] = useState("annual"); // 'annual' | 'monthly'
-  const [groupedView, setGroupedView] = useState(true);
-  return (
-    <Ctx.Provider value={{ viewMode, setViewMode, groupedView, setGroupedView }}>
-      {children}
-    </Ctx.Provider>
-  );
+  // 'monthly' | 'annual' | 'both'
+  const [displayMode, setDisplayMode] = useState('monthly');
+
+  const value = useMemo(() => ({
+    displayMode,
+    setDisplayMode,
+  }), [displayMode]);
+
+  return <IncomeViewCtx.Provider value={value}>{children}</IncomeViewCtx.Provider>;
 }
 
-export const useIncomeView = () => {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useIncomeView must be used within IncomeViewProvider");
+export function useIncomeView() {
+  const ctx = useContext(IncomeViewCtx);
+  if (!ctx) throw new Error("useIncomeView must be used inside IncomeViewProvider");
   return ctx;
-};
+}
