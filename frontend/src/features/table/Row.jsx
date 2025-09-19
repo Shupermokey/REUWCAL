@@ -138,6 +138,7 @@ const normalizeRow = (raw) => {
       [column]: updatedCell,
     }));
 
+    
     handleCellChange(row.id, column, updatedCell);
     setShowDetails(false);
   };
