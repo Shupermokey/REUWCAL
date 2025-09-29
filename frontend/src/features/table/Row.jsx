@@ -138,7 +138,7 @@ const normalizeRow = (raw) => {
       [column]: updatedCell,
     }));
 
-    
+
     handleCellChange(row.id, column, updatedCell);
     setShowDetails(false);
   };
@@ -339,34 +339,6 @@ const renderDisplayValue = (key) => {
         ))}
       </div>
 
-      {/* {showDetails && activeColumn && (
-        <div className="expanded-details">
-          <CellDetailsPanel
-            columnKey={activeColumn}
-            data={{
-              ...editableRow[activeColumn],
-              details: {
-                ...(editableRow[activeColumn]?.details || {}),
-                ...Object.fromEntries(
-                  Object.entries(editableRow).flatMap(([key, val]) => {
-                    if (key === activeColumn) return [];
-                    const label = columnConfig[key]?.label || key;
-                    const value =
-                      typeof val === "object" && val?.value !== undefined
-                        ? val.value
-                        : val;
-                    return [[label, value]];
-                  })
-                ),
-              },
-            }}
-            propertyId={row.id}
-            userId={user?.uid}
-            onUpdate={handleUpdateFromPanel}
-            onClose={() => setShowDetails(false)}
-          />
-        </div>
-      )} */}
 
       {showDetails && activeColumn && (
         <div style={{  position: "relative", width: "100%" }}>
@@ -409,6 +381,28 @@ const renderDisplayValue = (key) => {
               <IncomeStatement
                 rowData={editableRow}
                 propertyId={row.id}
+                onSaveRowValue={(totalIncomeAnnual) => {
+                 // keep existing object shape (value + details)
+                 const prev = editableRow.incomeStatement || {};
+                 const updatedCell = {
+                   ...prev,
+                   value: totalIncomeAnnual,
+                   details: {
+                     ...(prev.details || {}),
+                     source: "IncomeStatement",
+                     lastSyncedAt: new Date().toISOString(),
+                   },
+                 };
+
+                 // update local row state
+                 setEditableRow((prevRow) => ({
+                   ...prevRow,
+                   incomeStatement: updatedCell,
+                 }));
+
+                 // bubble to parent (your existing plumbed handler)
+                 handleCellChange(row.id, "incomeStatement", updatedCell);
+               }}
               />
             </div>
           )}

@@ -190,6 +190,20 @@
 .row-actions button:active,
 .add-btn:active { transform: translateY(1px); }
 
+/* Hide actions and lock inputs for computed rows in OPEX */
+
+.is-computed-row input.cell-input {
+  pointer-events: none;          /* prevent typing */
+  background: #f7f9fc;           /* subtle "read-only" look (optional) */
+  font-weight: 600;              /* optional emphasis */
+}
+
+/* optional, keeps spacing intact */
+.is-computed-row .row-actions { visibility: hidden; }
+.section-grid input.ro { background: #f7f9fc; font-weight: 600; }
+
+
+.section-grid input.ro { background: #f7f9fc; font-weight: 600; }
 /* --- Ensure leaf-editor feeds inputs into the grid --- */
 .section-grid .leaf-editor {
   display: contents;

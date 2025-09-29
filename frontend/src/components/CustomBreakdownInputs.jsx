@@ -131,16 +131,7 @@ const RecursiveInput = ({
           onChange={(e) => handleLabelChange(e.target.value)}
           style={{ marginRight: 8 }}
         />
-        {/* <input
-          type="number"
-          value={
-            node.children && node.children.length > 0
-              ? getNodeTotal(node).toFixed(2)
-              : node.value || 0
-          }
-          onChange={(e) => handleValueChange(e.target.value)}
-          disabled={node.children && node.children.length > 0}
-        /> */}
+        
         {node.children && node.children.length > 0 ? (
           <input type="number" value={getNodeTotal(node).toFixed(2)} disabled />
         ) : (

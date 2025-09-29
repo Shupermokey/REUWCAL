@@ -41,6 +41,13 @@ const columnConfig = {
     input: "custom",
     width: 150,
   },
+    financing: {
+    label: "Financing",
+    type: "string",
+    input: "dropdown",
+    optionsFrom: "baselines",
+    width: 150,
+  },
   Category: {
     label: "Category",
     type: "string",
@@ -65,6 +72,7 @@ export const columnOrder = [
   "units",
   "purchasePrice",
   "incomeStatement",
+  "financing",
   "Category",
   "EditingTools",
 ];
@@ -77,6 +85,7 @@ export const columnWidths = {
   units: 150,
   purchasePrice: 150,
   incomeStatement: 150,
+  financing: 150,
   Category: 150,
   EditingTools: 200, // wider to fit all buttons
 };
