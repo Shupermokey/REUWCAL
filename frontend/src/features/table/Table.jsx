@@ -14,6 +14,8 @@ import {
   subscribeToProperties,
 } from "../../services/firestoreService";
 import columnConfig, { columnOrder } from "../../columnConfig";
+import { makeBlankRow } from "../../utils/rows/rowSchema";
+import { normalizeForSave } from "../../utils/rows/rowNormalize";
 
 function Table({ onRowSelect }) {
   const { rows, setRows, selectedRow, setSelectedRow } = useTable();
@@ -22,6 +24,7 @@ function Table({ onRowSelect }) {
   const [activeFolder, setActiveFolder] = useState(null);
   const [activeSidebar, setActiveSidebar] = useState(null);
   const [baselines, setBaselines] = useState([]);
+  const hasDraft = rows?.some((r) => r.id === "new");
 
   // 🔹 Load Baselines
   useEffect(() => {
@@ -36,64 +39,43 @@ function Table({ onRowSelect }) {
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeToProperties(user.uid, (data) => {
-      setRows(data.length > 0 ? data : [createBlankRow()]);
+      setRows((prev) => {
+        const draft = prev.find((r) => r.id === "new");
+        return draft ? [...data, draft] : data;
+      });
     });
     return () => unsubscribe();
   }, [user, setRows]);
 
-  const createBlankRow = () => ({
-    id: "new",
-    propertyAddress: "",
-    propertyTaxes: "",
-    propertyGSA: "",
-    propertyGBA: "",
-    purchasePrice: "",
-    Category: "",
-  });
+  const createBlankRow = () => makeBlankRow();
 
   const handleAddRow = () => {
-    if (rows.some((row) => row.id === "new")) return;
+    if (rows.some((row) => row.id === "new")) return; //Prevents multiple 'new' rows being created
     setIsSaving(true);
     setRows((prev) => [...prev, createBlankRow()]);
     setSelectedRow("new");
   };
 
   const handleSaveRow = async (rowData) => {
+    console.debug("Saving rowData from Row:", rowData); // should show your typed values
     if (!user) return;
-
-    const unwrap = (v) => {
-      let x = v;
-      while (x && typeof x === "object" && "value" in x) x = x.value;
-      return x ?? "";
-    };
-
-    const sanitizedData = Object.fromEntries(
-      Object.entries(rowData).map(([key, value]) => {
-        if (value && typeof value === "object" && !("value" in value)) {
-          return [key, value];
-        }
-        return [key, unwrap(value)];
-      })
-    );
-
-    if (rowData.id === "new") {
-      const { id, ...rowWithoutId } = sanitizedData;
-      const newId = await addProperty(user.uid, rowWithoutId);
-      await initializeFileSystem(user.uid, newId, columnOrder);
-
-      setRows((prev) =>
-        prev.map((row) => (row.id === "new" ? { ...row, id: newId } : row))
-      );
-    } else {
-      await updateProperty(user.uid, rowData.id, sanitizedData);
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === rowData.id ? { ...row, ...sanitizedData } : row
-        )
-      );
+    try {
+      setIsSaving(true);
+      const sanitizedData = normalizeForSave(rowData);
+      if (rowData.id === "new") {
+        const { id, ...rowWithoutId } = sanitizedData;
+        const newId = await addProperty(user.uid, rowWithoutId);
+        await initializeFileSystem(user.uid, newId, columnOrder);
+        setRows((prev) => prev.filter((r) => r.id !== "new"));
+      } else {
+        await updateProperty(user.uid, rowData.id, sanitizedData);
+      }
+      setSelectedRow(null);
+    } catch (e) {
+      console.error("Save failed", e);
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsSaving(false);
   };
 
   const handleCancelRow = () => {
@@ -143,7 +125,7 @@ function Table({ onRowSelect }) {
             );
           }}
           isSelected={row.id === selectedRow}
-          onSave={() => handleSaveRow(row)}
+          onSave={handleSaveRow}
           onCancel={handleCancelRow}
           onDelete={handleDeleteRow}
           onSelect={() => {
@@ -156,12 +138,26 @@ function Table({ onRowSelect }) {
         />
       ))}
 
-      {/* Add Row Button */}
+      {/* Add Row Button
       {!rows.some((row) => row.id === "new") && (
+        
         <button onClick={handleAddRow} className="add-row-btn">
           +
         </button>
-      )}
+      )} */}
+
+      {
+        
+        <div className="table-actions">
+          <button
+            onClick={handleAddRow}
+            disabled={isSaving || hasDraft}
+            title={hasDraft ? "Save or cancel the current row first" : ""}
+          >
+            + Add Row
+          </button>
+        </div>
+      }
 
       {activeFolder && (
         <div className="file-explorer-sidebar">

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import LeafEditor from "./LeafEditor.jsx";
 import BranchTotals from "./BranchTotals.jsx";
-import { newLeaf } from "../../utils/incomeDefaults.js";
+import { newLeaf } from "../../utils/income/incomeDefaults.js";
 import { useIncomeView } from "../../app/IncomeViewContext.jsx";
 import { useDialog } from "../../app/DialogProvider";
 import ViewToggle from "./ViewToggle.jsx";

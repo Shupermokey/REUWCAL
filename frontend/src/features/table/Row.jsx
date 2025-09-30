@@ -6,9 +6,16 @@ import columnConfig, { columnOrder, breakdownConfig } from "../../columnConfig";
 import { getNodeTotal } from "../../components/CustomBreakdownInputs";
 import PropertyIncomeStatement from "../../components/PropertyIncomeStatement";
 import IncomeStatement from "../../components/Income/IncomeStatement";
+import {
+  normalizeRow,
+  unwrapValue,
+  displayValue,
+} from "../../utils/rows/rowHelpers";
+import { validateFields } from "../../utils/rows/rowValidation";
 
 function Row({
   row,
+  baselines = [],
   handleCellChange,
   onSave,
   onDelete,
@@ -16,53 +23,17 @@ function Row({
   isSelected,
   onOpenFiles,
 }) {
-const normalizeRow = (raw) => {
-    const wrapped = {};
-    for (const [key, val] of Object.entries(raw)) {
-      if (key === "id" || key === "baselineSnapshot") {
-        wrapped[key] = val;
-        continue;
-      }
-      if (val !== null && typeof val === "object") {
-        // already an object — if it already has a "value" we keep it,
-        // otherwise leave it as-is (breakdowns, folders, etc.)
-        wrapped[key] = ("value" in val) ? val : val;
-      } else {
-        // primitives get wrapped once
-        wrapped[key] = { value: val };
-      }
-    }
-    return wrapped;
-  };
-
   const { user } = useAuth();
+
   const [isEditing, setIsEditing] = useState(row.id === "new");
   const [editableRow, setEditableRow] = useState(normalizeRow(row));
-  const [baselines, setBaselines] = useState([]);
   const [invalidFields, setInvalidFields] = useState([]);
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    getBaselines(user.uid).then(setBaselines);
-  }, [user]);
 
-  const handleChange = (field, value) => {
+  const setLocal = (field, value) => {
     setEditableRow((prev) => ({ ...prev, [field]: value }));
-    handleCellChange(row.id, field, value);
-  };
-
-  const validateFields = () => {
-    const invalids = columnOrder.filter((key) => {
-      const expected = columnConfig[key]?.type;
-      const value = editableRow[key]?.value ?? editableRow[key];
-      if (expected === "number") return value === "" || isNaN(Number(value));
-      if (expected === "string") return typeof value !== "string";
-      return false;
-    });
-    setInvalidFields(invalids);
-    return invalids.length === 0;
   };
 
   const applyBaseline = (baselineId) => {
@@ -138,7 +109,6 @@ const normalizeRow = (raw) => {
       [column]: updatedCell,
     }));
 
-
     handleCellChange(row.id, column, updatedCell);
     setShowDetails(false);
   };
@@ -149,15 +119,15 @@ const normalizeRow = (raw) => {
     const isInvalid = invalidFields.includes(key);
 
     if (key === "Category") {
+      const catValue = unwrapValue(editableRow[key]) ?? "";
       return (
         <select
-          value={editableRow[key] || ""}
+          value={catValue}
           style={{
             border: isInvalid ? "1px solid #e53935" : undefined,
             backgroundColor: isInvalid ? "#ffebee" : undefined,
           }}
           onChange={(e) => {
-            handleChange(key, e.target.value);
             applyBaseline(e.target.value);
           }}
           onClick={(e) => e.stopPropagation()}
@@ -189,7 +159,7 @@ const normalizeRow = (raw) => {
             type="text"
             value={editableRow[key]?.value || ""}
             onChange={(e) =>
-              handleChange(key, {
+              setLocal(key, {
                 ...(editableRow[key] || {}),
                 value: e.target.value,
                 details: editableRow[key]?.details || {},
@@ -200,12 +170,8 @@ const normalizeRow = (raw) => {
         </div>
       );
     }
-// ✅ unwrap one level if present; otherwise empty string
-const currentValue =
-  editableRow[key] && typeof editableRow[key] === "object"
-    ? (editableRow[key].value ?? "")
-    : (editableRow[key] ?? "");
-
+    // ✅ unwrap one level if present; otherwise empty string
+    const currentValue = unwrapValue(editableRow[key]) ?? "";
 
     return (
       <input
@@ -216,43 +182,26 @@ const currentValue =
           backgroundColor: isInvalid ? "#ffebee" : undefined,
         }}
         onChange={(e) => {
-          const parsed =
-            inputType === "number" ? Number(e.target.value) : e.target.value;
           const base =
             typeof editableRow[key] === "object" ? editableRow[key] : {};
-          handleChange(key, { ...base, value: parsed });
+          // keep raw string while typing; Table will coerce on Save
+          setLocal(key, { ...base, value: e.target.value });
         }}
         onClick={(e) => e.stopPropagation()}
       />
     );
   };
-const renderDisplayValue = (key) => {
-  const unwrap = (v) => {
-    let x = v;
-    // unwrap chains like { value: { value: 123 } }
-    while (x && typeof x === "object" && "value" in x) x = x.value;
-    return x;
+
+  const renderDisplayValue = (key) => {
+    const raw = editableRow[key];
+    if (key === "Category") {
+      const id = unwrapValue(raw);
+      const selected = baselines.find((b) => b.id === id);
+      return selected?.name ?? id ?? "—";
+    }
+
+    return displayValue(raw);
   };
-
-  const raw = editableRow[key];
-
-  // Special case: Category shows the baseline name
-  if (key === "Category") {
-    const id = unwrap(raw);
-    const selected = baselines.find((b) => b.id === id);
-    return selected?.name ?? id ?? "—";
-  }
-
-  const val = unwrap(raw);
-
-  if (val === null || val === undefined) return "—";
-  if (typeof val === "number" || typeof val === "string") return val;
-  if (typeof val === "boolean") return val ? "Yes" : "No";
-
-  // Any other object type (folders/details/etc.) is not directly renderable
-  return "—";
-};
-
 
   return (
     <>
@@ -273,14 +222,19 @@ const renderDisplayValue = (key) => {
                   <>
                     <button
                       onClick={() => {
-                        if (validateFields()) {
-                          onSave(editableRow);
-                          setIsEditing(false);
-                          setInvalidFields([]);
-                          setShowDetails(false);
-                        } else {
+                        const { ok, invalids } = validateFields(
+                          editableRow,
+                          columnOrder,
+                          columnConfig
+                        );
+                        setInvalidFields(invalids);
+                        if (!ok) {
                           alert("Please fix highlighted fields.");
+                          return;
                         }
+                        onSave(editableRow);
+                        setIsEditing(false);
+                        setShowDetails(false);
                       }}
                     >
                       ✔
@@ -339,9 +293,8 @@ const renderDisplayValue = (key) => {
         ))}
       </div>
 
-
       {showDetails && activeColumn && (
-        <div style={{  position: "relative", width: "100%" }}>
+        <div style={{ position: "relative", width: "100%" }}>
           <div className="expanded-details" style={{ flex: 1 }}>
             <CellDetailsPanel
               columnKey={activeColumn}
@@ -382,27 +335,27 @@ const renderDisplayValue = (key) => {
                 rowData={editableRow}
                 propertyId={row.id}
                 onSaveRowValue={(totalIncomeAnnual) => {
-                 // keep existing object shape (value + details)
-                 const prev = editableRow.incomeStatement || {};
-                 const updatedCell = {
-                   ...prev,
-                   value: totalIncomeAnnual,
-                   details: {
-                     ...(prev.details || {}),
-                     source: "IncomeStatement",
-                     lastSyncedAt: new Date().toISOString(),
-                   },
-                 };
+                  // keep existing object shape (value + details)
+                  const prev = editableRow.incomeStatement || {};
+                  const updatedCell = {
+                    ...prev,
+                    value: totalIncomeAnnual,
+                    details: {
+                      ...(prev.details || {}),
+                      source: "IncomeStatement",
+                      lastSyncedAt: new Date().toISOString(),
+                    },
+                  };
 
-                 // update local row state
-                 setEditableRow((prevRow) => ({
-                   ...prevRow,
-                   incomeStatement: updatedCell,
-                 }));
+                  // update local row state
+                  setEditableRow((prevRow) => ({
+                    ...prevRow,
+                    incomeStatement: updatedCell,
+                  }));
 
-                 // bubble to parent (your existing plumbed handler)
-                 handleCellChange(row.id, "incomeStatement", updatedCell);
-               }}
+                  // bubble to parent (your existing plumbed handler)
+                  handleCellChange(row.id, "incomeStatement", updatedCell);
+                }}
               />
             </div>
           )}

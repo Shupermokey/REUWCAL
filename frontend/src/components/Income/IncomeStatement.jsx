@@ -6,15 +6,15 @@ import {
   getIncomeStatement,
   saveIncomeStatement,
 } from "../../services/firestoreService";
-import { migrateMixedNodes } from "../../utils/incomeMigrate.js";
-import { defaultStructure, newLeaf } from "../../utils/incomeDefaults.js";
+import { migrateMixedNodes } from "../../utils/income/incomeMigrate.js";
+import { defaultStructure, newLeaf } from "../../utils/income/incomeDefaults.js";
 import HeaderBar from "./HeaderBar.jsx";
 import Section from "./Section.jsx";
 import TotalsBar from "./TotalsBar.jsx";
-import { exportCSV, exportPDF } from "../../utils/exportIncome.js";
+import { exportCSV, exportPDF } from "../../utils/income/exportIncome.js";
 import { useIncomeView } from "../../app/IncomeViewContext.jsx";
 import "../../styles/income-statement.css";
-import { SECTION_LAYOUT } from "../../utils/incomeLayout.js";
+import { SECTION_LAYOUT } from "../../utils/income/incomeLayout.js";
 
 // ---------------- Shared helpers ----------------
 const LEAF_KEYS = [
