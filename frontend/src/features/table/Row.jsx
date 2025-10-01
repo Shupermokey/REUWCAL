@@ -18,6 +18,7 @@ function Row({
   baselines = [],
   handleCellChange,
   onSave,
+  onCancel,
   onDelete,
   onSelect,
   isSelected,
@@ -53,13 +54,6 @@ function Row({
     const details = updatedData.details || {};
     const column = activeColumn;
     let updatedValue = 0;
-
-    const getNumber = (label) => {
-      const val = details[label];
-      if (typeof val === "number") return val;
-      if (typeof val === "string") return parseFloat(val) || 0;
-      return 0;
-    };
 
     if (column === "propertyAddress") {
       updatedValue = details["Property Address"] || "";
@@ -241,7 +235,7 @@ function Row({
                     </button>
                     <button
                       onClick={() => {
-                        if (row.id === "new") onDelete(row.id);
+                        if (row.id === "new") onCancel?.();
                         else {
                           setEditableRow(normalizeRow(row));
                           setIsEditing(false);
@@ -257,21 +251,22 @@ function Row({
                   <>
                     <button
                       onClick={() => {
-                        const normalized = {};
-                        columnOrder.forEach((key) => {
-                          const val = editableRow[key];
-                          normalized[key] =
-                            typeof val === "object"
-                              ? val
-                              : { value: val, details: {} };
-                        });
-                        setEditableRow(normalized);
+                        // const normalized = {};
+                        // columnOrder.forEach((key) => {
+                        //   const val = editableRow[key];
+                        //   normalized[key] =
+                        //     typeof val === "object"
+                        //       ? val
+                        //       : { value: val, details: {} };
+                        // });
+                        // setEditableRow(normalized);
+                        setEditableRow(normalizeRow(row));
                         setIsEditing(true);
                       }}
                     >
                       ✏
                     </button>
-                    <button onClick={() => onDelete(row.id)}>🗑</button>
+                    <button onClick={() => onDelete(row.id)}>X</button>
                     <button onClick={() => onOpenFiles(row.id)}>📁</button>
                   </>
                 )}

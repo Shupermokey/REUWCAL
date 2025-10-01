@@ -122,18 +122,21 @@ const TAX_KEYS = [
   "Municipality-Level Property Taxes",
   "Other Taxes",
 ];
+
 const INS_KEYS = [
   "Property Insurance",
   "Casualty Insurance",
   "Flood Insurance",
   "Other Insurance",
 ];
+
 const CAM_KEYS = [
   "Common-Area Utilities",
-  "Common-Area Repairs & Maintenance",
+  "CAM",
   "Common-Area Routine Labor",
   "Other CAM",
 ];
+
 const ADMIN_KEYS = [
   "Management",
   "Administrative & Legal",
@@ -176,7 +179,6 @@ const buildOperatingExpensesView = (opex, includeInlineTotal = false) => {
   return out;
 };
 
-
 const sumKeys = (section, keys) => {
   const out = ZERO_LEAF();
   keys.forEach((k) => {
@@ -198,11 +200,11 @@ export default function IncomeStatement({
   const [error, setError] = useState(null);
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const { groupedView } = useIncomeView(); // kept for compatibility
+  const { groupedView } = useIncomeView();
   const [viewMode, setViewMode] = useState("monthly");
   const opexRef = useRef(null);
 
-useEffect(() => {
+  useEffect(() => {
   const root = opexRef.current;
   if (!root) return;
 
@@ -240,9 +242,7 @@ useEffect(() => {
       }
     });
   });
-}, [data.OperatingExpenses, viewMode]);
-
-
+  }, [data.OperatingExpenses, viewMode]);
 
   useEffect(() => {
     if (!user || !propertyId) return;
@@ -276,8 +276,7 @@ useEffect(() => {
   const egi = inc.grossAnnual;
   const noi = egi - opx.grossAnnual;
   const unlevered = noi - capx.grossAnnual;
-  const financing =
-    data?.CapitalExpenses?.["Financing Expense"]?.grossAnnual || 0;
+  const financing = data?.CapitalExpenses?.["Financing Expense"]?.grossAnnual || 0;
   const levered = unlevered - financing;
 
   const onSave = async () => {
@@ -298,7 +297,7 @@ useEffect(() => {
   };
 
   // Derived (display-only) OPEX with subtotals (preserves nested lines)
-const opexView = buildOperatingExpensesView(data.OperatingExpenses || {}, false);
+  const opexView = buildOperatingExpensesView(data.OperatingExpenses || {}, false);
 
   // ---- onChange that works with BOTH Section signatures ----
   const handleSectionChange =
@@ -406,7 +405,7 @@ const opexView = buildOperatingExpensesView(data.OperatingExpenses || {}, false)
       <TotalsBar label="Unlevered Free Cash Flow" value={unlevered} />
       <TotalsBar label="Leveraged Free Cash Flow" value={levered} />
 
-      <div style={{ marginTop: "1rem", display: "flex", gap: "10px" }}>
+      {/* <div style={{ marginTop: "1rem", display: "flex", gap: "10px" }}>
         <button
           className="btn-save"
           onClick={() => exportCSV(data, propertyId)}
@@ -419,7 +418,7 @@ const opexView = buildOperatingExpensesView(data.OperatingExpenses || {}, false)
         >
           📄 Export PDF
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

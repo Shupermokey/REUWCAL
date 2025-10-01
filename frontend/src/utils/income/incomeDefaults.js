@@ -39,7 +39,7 @@ export const defaultStructure = {
     "Other Insurance": newLeaf(),
 
     "Common-Area Utilities": newLeaf(),
-    "Common-Area Repairs & Maintenance": newLeaf(),
+    "CAM": newLeaf(),
     "Common-Area Routine Labor": newLeaf(),
     "Other CAM": newLeaf(),
 

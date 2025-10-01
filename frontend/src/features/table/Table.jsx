@@ -24,7 +24,9 @@ function Table({ onRowSelect }) {
   const [activeFolder, setActiveFolder] = useState(null);
   const [activeSidebar, setActiveSidebar] = useState(null);
   const [baselines, setBaselines] = useState([]);
+  const [savingNew, setSavingNew] = useState(false); //Removes flicker of 2 rows
   const hasDraft = rows?.some((r) => r.id === "new");
+
 
   // 🔹 Load Baselines
   useEffect(() => {
@@ -41,6 +43,7 @@ function Table({ onRowSelect }) {
     const unsubscribe = subscribeToProperties(user.uid, (data) => {
       setRows((prev) => {
         const draft = prev.find((r) => r.id === "new");
+        if (!draft) return data;
         return draft ? [...data, draft] : data;
       });
     });
@@ -51,18 +54,19 @@ function Table({ onRowSelect }) {
 
   const handleAddRow = () => {
     if (rows.some((row) => row.id === "new")) return; //Prevents multiple 'new' rows being created
-    setIsSaving(true);
     setRows((prev) => [...prev, createBlankRow()]);
     setSelectedRow("new");
   };
 
   const handleSaveRow = async (rowData) => {
+    const isNew = rowData.id === "new";
     console.debug("Saving rowData from Row:", rowData); // should show your typed values
     if (!user) return;
     try {
       setIsSaving(true);
       const sanitizedData = normalizeForSave(rowData);
       if (rowData.id === "new") {
+        if (isNew) setSavingNew(true);
         const { id, ...rowWithoutId } = sanitizedData;
         const newId = await addProperty(user.uid, rowWithoutId);
         await initializeFileSystem(user.uid, newId, columnOrder);
@@ -74,6 +78,7 @@ function Table({ onRowSelect }) {
     } catch (e) {
       console.error("Save failed", e);
     } finally {
+      setIsSaving(false);
       setIsSaving(false);
     }
   };
@@ -138,13 +143,6 @@ function Table({ onRowSelect }) {
         />
       ))}
 
-      {/* Add Row Button
-      {!rows.some((row) => row.id === "new") && (
-        
-        <button onClick={handleAddRow} className="add-row-btn">
-          +
-        </button>
-      )} */}
 
       {
         
