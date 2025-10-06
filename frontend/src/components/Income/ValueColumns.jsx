@@ -3,7 +3,8 @@ import { useIncomeView } from "../../app/IncomeViewContext.jsx";
 
 export default function ValueColumns() {
   const { displayMode } = useIncomeView();
-  const headers = ["Gross", "PSF", "PUnit", "Rate"];
+  const headers = [ "Rate", "Gross", "PSF", "PUnit"];
+  
 
   if (displayMode === "both") {
     return (

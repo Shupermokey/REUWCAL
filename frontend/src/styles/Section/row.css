@@ -1,0 +1,103 @@
+/* Top-level row WRAPPER – never grid */
+.sec__row {
+  position: relative;
+  display: block;
+  margin: 6px 0;
+  touch-action: none;
+}
+
+/* Header buttons all the way right */
+.sec__header > span:last-child { justify-self: end; display: inline-flex; gap: 8px; }
+
+/* Grid for the main line */
+.sec__rowGrid {
+  display: grid;
+  align-items: center;
+  column-gap: 12px;
+  grid-template-columns:
+    24px
+    minmax(220px, 1fr)                       /* LABEL */
+    repeat(var(--value-cols, 4), minmax(120px, 1fr)) /* VALUE COLS */
+    1fr                                       /* SPACER */
+    auto;                                     /* ACTIONS */
+  padding: 4px 6px;
+  min-height: 34px;
+  box-sizing: border-box;
+}
+
+/* First cell (caret + handle) */
+.sec__firstCell { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; }
+.sec__caret { border: none; background: transparent; font-size: 14px; line-height: 1; cursor: pointer; padding: 0 2px; }
+
+/* Drag handle inside first cell */
+.sec__drag { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: grab; user-select: none; border: none; background: transparent; opacity: .75; padding: 0; }
+.sec__drag:active { cursor: grabbing; }
+.sec__drag.is-disabled { cursor: default; opacity: .25; }
+
+/* Label/values/actions cells */
+.sec__label { display: inline-flex; align-items: center; min-height: 28px; min-width: 0; }
+.sec__indent { width: 0; }
+.sec__labelText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sec__values {
+  display: grid;
+  grid-template-columns: repeat(var(--value-cols, 4), minmax(100px, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Make LeafEditor/BranchTotals feed inputs into grid columns */
+.sec__values .leaf-editor { display: contents; }
+.sec__values .branch-totals { display: contents; }
+.sec__values .cell { display: contents; }
+
+.sec__actions { display: inline-flex; gap: 6px; justify-content: flex-end; justify-self: end; }
+.sec__actions .danger-btn { color: #b40000; }
+
+/* Subtree under the main line */
+.sec__childSpanner { display: block; }
+
+/* Child rows are their own grids (same recipe) */
+.sec__childRow {
+  display: grid;
+  align-items: center;
+  column-gap: 12px;
+  grid-template-columns:
+    24px
+    minmax(220px, 1fr)
+    repeat(var(--value-cols, 4), minmax(120px, 1fr))
+    1fr
+    auto;
+  padding: 2px 6px;
+  box-sizing: border-box;
+}
+.sec__childRow .sec__label { padding-left: calc(8px + (var(--depth, 0) * 16px)); }
+
+/* Drag visuals */
+.sec__row.is-dragging .sec__rowGrid {
+  outline: 2px solid rgba(58, 167, 65, 0.4);
+  background: rgba(58, 167, 65, 0.06);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+
+/* Adapter for legacy totals row (same columns; spacer before actions) */
+.sec .section-total.section-row {
+  display: grid !important;
+  align-items: center;
+  column-gap: 12px;
+  grid-template-columns:
+    24px
+    minmax(220px, 1fr)
+    repeat(var(--value-cols, 4), minmax(100px, 1fr))
+    1fr
+    auto;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+.sec .section-total .caret-spacer { width: 24px; height: 24px; display: inline-block; }
+.sec .section-total .line-label.total-label { display: inline-flex; align-items: center; font-weight: 700; min-height: 28px; min-width: 0; }
+.sec .section-total .total-chip { justify-self: stretch; text-align: right; padding: 8px 10px; background: #f1f5ff; border: 1px solid #dbe3ff; border-radius: 12px; font-variant-numeric: tabular-nums; }
+.sec .section-total .value-grid { display: contents; }
+
+/* Circuit breaker for legacy `.section-row { display: contents }` */
+.sec .section-row { display: block !important; }

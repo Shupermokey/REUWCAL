@@ -12,6 +12,7 @@ import {
   displayValue,
 } from "../../utils/rows/rowHelpers";
 import { validateFields } from "../../utils/rows/rowValidation";
+import { useRowCalcs } from "../../hooks/useRowCalcs";
 
 function Row({
   row,
@@ -32,6 +33,10 @@ function Row({
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  const RENT_KEYS = new Set(["grossRentalIncome", "psf", "punit", "rate"]);
+  const isRentKey = (k) => RENT_KEYS.has(k);
+  const toLastEditedKey = (k) => (k === "grossRentalIncome" ? "gross" : k); // maps UI key -> calc key
+  const { setLastEdited, recompute } = useRowCalcs();
 
   const setLocal = (field, value) => {
     setEditableRow((prev) => ({ ...prev, [field]: value }));
@@ -137,6 +142,7 @@ function Row({
     }
 
     if (inputType === "custom") {
+      const readOnly = !!config.readOnly;
       return (
         <div
           className="editable-cell"
@@ -151,14 +157,15 @@ function Row({
         >
           <input
             type="text"
-            value={editableRow[key]?.value || ""}
-            onChange={(e) =>
+            readOnly={readOnly} // 👈 lock typing
+            value={unwrapValue(editableRow[key]) || ""}
+            onChange={(e) => {
+              if (readOnly) return; // ignore typing
               setLocal(key, {
                 ...(editableRow[key] || {}),
                 value: e.target.value,
-                details: editableRow[key]?.details || {},
-              })
-            }
+              });
+            }}
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -178,8 +185,22 @@ function Row({
         onChange={(e) => {
           const base =
             typeof editableRow[key] === "object" ? editableRow[key] : {};
-          // keep raw string while typing; Table will coerce on Save
-          setLocal(key, { ...base, value: e.target.value });
+          const nextCell = { ...base, value: e.target.value };
+          // 1) update local cell immediately
+          setLocal(key, nextCell);
+          // 2) if this change affects rent math, recompute the linked fields
+          if (isRentKey(key) || key === "propertyGBA" || key === "units") {
+            if (isRentKey(key)) {
+              // remember which rent field the user is driving
+              setLastEdited(toLastEditedKey(key)); // "gross"|"psf"|"punit"|"rate"
+            }
+            // build a 'next row' snapshot with the just-typed value
+            const nextRow = { ...editableRow, [key]: nextCell };
+            const patch = recompute(nextRow); // returns { grossRentalIncome?, psf?, punit?, rate? } wrapped
+            if (patch && Object.keys(patch).length) {
+              setEditableRow((prev) => ({ ...prev, ...patch }));
+            }
+          }
         }}
         onClick={(e) => e.stopPropagation()}
       />
@@ -194,7 +215,7 @@ function Row({
       return selected?.name ?? id ?? "—";
     }
 
-    return displayValue(raw);
+    return displayValue(raw, columnConfig[key]);
   };
 
   return (

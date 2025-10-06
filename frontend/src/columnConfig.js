@@ -40,6 +40,7 @@ const columnConfig = {
     type: "number",
     input: "custom",
     width: 150,
+    readOnly: true,
   },
     financing: {
     label: "Financing",
@@ -206,5 +207,7 @@ export const breakdownConfig = {
     { label: "Other (Purchase Price)", type: "number" },
   ],
 };
+
+
 
 export default columnConfig;

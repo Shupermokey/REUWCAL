@@ -110,9 +110,6 @@
 }
 
 
-
-
-
 .section-grid .line-item:hover .line-label {
   color: #0b5cff;
 }
@@ -297,3 +294,7 @@
   }
   .line-label { min-width: 140px; }
 }
+
+
+
+
