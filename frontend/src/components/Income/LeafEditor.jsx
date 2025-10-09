@@ -1,62 +1,149 @@
-import React from "react";
+// components/Income/LeafEditor.jsx
+import React, { useEffect } from "react";
 
-// helper: convert between annual/monthly
+const isNum = (v) => v !== "" && v != null && Number.isFinite(+v);
+const roundN = (n, d = 4) => (isNum(n) ? Number((+n).toFixed(d)) : n);
 const toMonthly = (n) => (Number.isFinite(+n) ? +n / 12 : 0);
 const toAnnual  = (n) => (Number.isFinite(+n) ? +n * 12 : 0);
 
-// which fields live in each view
-const M_KEYS = ["rateMonthly", "grossMonthly", "psfMonthly", "punitMonthly"];
-const A_KEYS = ["rateAnnual",  "grossAnnual",  "psfAnnual",  "punitAnnual"];
-
-export default function LeafEditor({ fullPath, val, setAtPath, displayMode }) {
+export default function LeafEditor({
+  fullPath,
+  val,
+  setAtPath,
+  displayMode,
+  metrics,             // { gbaSqft, units }
+  deriveFromMetrics,   // boolean – enable rent⇄psf⇄punit logic
+}) {
   const showAnnual  = displayMode === "annual"  || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
 
-  // one handler covers all eight inputs
+  // ✅ metrics are ONLY read inside the component
+  const GBA   = Number(metrics?.gbaSqft) || 0;
+  const UNITS = Number(metrics?.units)   || 0;
+
+  // --- helpers that work in "monthly space" as the source of truth
+  const fromMonthlyGross = (next) => {
+    const g = next.grossMonthly;
+    next.psfMonthly   = isNum(g) && GBA   > 0 ? roundN(g / GBA)   : "";
+    next.punitMonthly = isNum(g) && UNITS > 0 ? roundN(g / UNITS) : "";
+  };
+
+  const fromMonthlyPSF = (next) => {
+    const p = next.psfMonthly;
+    if (isNum(p) && GBA > 0) {
+      next.grossMonthly = roundN(p * GBA);
+      next.punitMonthly = UNITS > 0 ? roundN(next.grossMonthly / UNITS) : "";
+    } else {
+      next.grossMonthly = "";
+      next.punitMonthly = "";
+    }
+  };
+
+  const fromMonthlyPUnit = (next) => {
+    const u = next.punitMonthly;
+    if (isNum(u) && UNITS > 0) {
+      next.grossMonthly = roundN(u * UNITS);
+      next.psfMonthly   = GBA > 0 ? roundN(next.grossMonthly / GBA) : "";
+    } else {
+      next.grossMonthly = "";
+      next.psfMonthly   = "";
+    }
+  };
+
+  const mirrorAnnualFromMonthly = (next) => {
+    next.grossAnnual  = isNum(next.grossMonthly)  ? roundN(toAnnual(next.grossMonthly))  : "";
+    next.psfAnnual    = isNum(next.psfMonthly)    ? roundN(toAnnual(next.psfMonthly))    : "";
+    next.punitAnnual  = isNum(next.punitMonthly)  ? roundN(toAnnual(next.punitMonthly))  : "";
+    if (isNum(next.rateMonthly)) next.rateAnnual = roundN(toAnnual(next.rateMonthly));
+  };
+
+  const normalizeMonthlyFromAnnual = (next) => {
+    if (isNum(next.grossAnnual))  next.grossMonthly  = roundN(toMonthly(next.grossAnnual));
+    if (isNum(next.psfAnnual))    next.psfMonthly    = roundN(toMonthly(next.psfAnnual));
+    if (isNum(next.punitAnnual))  next.punitMonthly  = roundN(toMonthly(next.punitAnnual));
+    if (isNum(next.rateAnnual))   next.rateMonthly   = roundN(toMonthly(next.rateAnnual));
+  };
+
   const handleChange = (field) => (e) => {
     const raw = e.target.value;
     const n   = raw === "" ? "" : Number(raw);
 
-    setAtPath(fullPath, (prev) => {
+    setAtPath(fullPath, (prev = {}) => {
       const next = { ...prev, [field]: n };
 
-      // keep counterparts in sync: last edited wins
-      // monthly <-> annual by 12x across ALL metrics (Rate, Gross, PSF, PUnit)
-      switch (field) {
-        case "grossMonthly": next.grossAnnual  = raw === "" ? "" : toAnnual(n);  break;
-        case "psfMonthly":   next.psfAnnual    = raw === "" ? "" : toAnnual(n);  break;
-        case "punitMonthly": next.punitAnnual  = raw === "" ? "" : toAnnual(n);  break;
-        case "rateMonthly":  next.rateAnnual   = raw === "" ? "" : toAnnual(n);  break;
+      // 1) normalize to monthly if the user typed in annual
+      if (field.endsWith("Annual")) normalizeMonthlyFromAnnual(next);
 
-        case "grossAnnual":  next.grossMonthly = raw === "" ? "" : toMonthly(n); break;
-        case "psfAnnual":    next.psfMonthly   = raw === "" ? "" : toMonthly(n); break;
-        case "punitAnnual":  next.punitMonthly = raw === "" ? "" : toMonthly(n); break;
-        case "rateAnnual":   next.rateMonthly  = raw === "" ? "" : toMonthly(n); break;
-        default: break;
+      // 2) auto-math using GBA/Units if enabled for this line
+      if (deriveFromMetrics && (GBA > 0 || UNITS > 0)) {
+        if (field === "grossMonthly" || field === "grossAnnual") {
+          fromMonthlyGross(next);
+        } else if (field === "psfMonthly" || field === "psfAnnual") {
+          fromMonthlyPSF(next);
+        } else if (field === "punitMonthly" || field === "punitAnnual") {
+          fromMonthlyPUnit(next);
+        }
+        // rate does not drive others
       }
+
+      // 3) mirror monthly → annual for display
+      mirrorAnnualFromMonthly(next);
       return next;
     });
   };
 
-  // a tiny formatter so empty string stays empty while typing
-  const valOr0 = (v) => (v === "" || v === undefined || v === null ? "" : v);
+  // 🔁 Optional: re-calc PSF/PUnit when GBA/Units change after Gross is set
+  useEffect(() => {
+    if (!deriveFromMetrics) return;
+    if (!(GBA > 0 || UNITS > 0)) return;
+
+    setAtPath(fullPath, (prev = {}) => {
+      const next = { ...prev };
+
+      // prefer monthly; derive it if only annual exists
+      if (!isNum(next.grossMonthly) && isNum(next.grossAnnual)) {
+        next.grossMonthly = roundN(next.grossAnnual / 12);
+      }
+      if (!isNum(next.grossMonthly)) return prev;
+
+      fromMonthlyGross(next);
+      mirrorAnnualFromMonthly(next);
+
+      const unchanged =
+        next.psfMonthly   === prev.psfMonthly &&
+        next.punitMonthly === prev.punitMonthly &&
+        next.psfAnnual    === prev.psfAnnual &&
+        next.punitAnnual  === prev.punitAnnual;
+
+      return unchanged ? prev : next;
+    });
+  }, [GBA, UNITS, deriveFromMetrics, fullPath, setAtPath]);
+
+  const v = (k) => (val?.[k] === "" || val?.[k] == null ? "" : val[k]);
+
+  // prevent dnd-kit from stealing focus
+  const guard = {
+    onPointerDownCapture: (e) => e.stopPropagation(),
+    onMouseDownCapture: (e) => e.stopPropagation(),
+    onKeyDownCapture: (e) => e.stopPropagation(),
+  };
 
   return (
     <div className="leaf-editor">
       {showMonthly && (
         <>
-          <input type="number" value={valOr0(val.grossMonthly)} onChange={handleChange("grossMonthly")} />
-          <input type="number" value={valOr0(val.psfMonthly)}   onChange={handleChange("psfMonthly")} />
-          <input type="number" value={valOr0(val.punitMonthly)} onChange={handleChange("punitMonthly")} />
-          <input type="number" value={valOr0(val.rateMonthly)}  onChange={handleChange("rateMonthly")} />
+          <input type="number" value={v("rateMonthly")}  onChange={handleChange("rateMonthly")}  {...guard} />
+          <input type="number" value={v("grossMonthly")} onChange={handleChange("grossMonthly")} {...guard} />
+          <input type="number" value={v("psfMonthly")}   onChange={handleChange("psfMonthly")}   {...guard} />
+          <input type="number" value={v("punitMonthly")} onChange={handleChange("punitMonthly")} {...guard} />
         </>
       )}
       {showAnnual && (
         <>
-          <input type="number" value={valOr0(val.grossAnnual)} onChange={handleChange("grossAnnual")} />
-          <input type="number" value={valOr0(val.psfAnnual)}   onChange={handleChange("psfAnnual")} />
-          <input type="number" value={valOr0(val.punitAnnual)} onChange={handleChange("punitAnnual")} />
-          <input type="number" value={valOr0(val.rateAnnual)}  onChange={handleChange("rateAnnual")} />
+          <input type="number" value={v("rateAnnual")}   onChange={handleChange("rateAnnual")}   {...guard} />
+          <input type="number" value={v("grossAnnual")}  onChange={handleChange("grossAnnual")}  {...guard} />
+          <input type="number" value={v("psfAnnual")}    onChange={handleChange("psfAnnual")}    {...guard} />
+          <input type="number" value={v("punitAnnual")}  onChange={handleChange("punitAnnual")}  {...guard} />
         </>
       )}
     </div>

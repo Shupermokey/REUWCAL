@@ -8,10 +8,10 @@ import { useDialog } from "../../app/DialogProvider";
 import ValueColumns from "./ValueColumns.jsx";
 import SectionTotal from "./SectionTotal.jsx";
 
-// NEW: split, namespaced styles
-import "../../styles/Section/base.css"
-import "../../styles/Section/row.css"
-import "../../styles/Section/responsive.css"
+import "../../styles/Section/base.css";
+import "../../styles/Section/row.css";
+import "../../styles/Section/responsive.css";
+
 import {
   DndContext,
   PointerSensor,
@@ -30,33 +30,57 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 /* ---------------- helpers ---------------- */
 const LEAF_KEYS = [
-  "grossAnnual","psfAnnual","punitAnnual","rateAnnual",
-  "grossMonthly","psfMonthly","punitMonthly","rateMonthly",
+  "grossAnnual",
+  "psfAnnual",
+  "punitAnnual",
+  "rateAnnual",
+  "grossMonthly",
+  "psfMonthly",
+  "punitMonthly",
+  "rateMonthly",
 ];
-
 export const LEGACY_LEAF_KEYS = [
-  "grossAnnual","psfAnnual","pUnitAnnual",
-  "grossMonthly","psfMonthly","pUnitMonthly",
+  "grossAnnual",
+  "psfAnnual",
+  "pUnitAnnual",
+  "grossMonthly",
+  "psfMonthly",
+  "pUnitMonthly",
 ];
 
-const isPO = (v) => v && typeof v === "object" && Object.getPrototypeOf(v) === Object.prototype;
-const isLeafNode = (v) => isPO(v) && LEAF_KEYS.some((k) => k in v && typeof v[k] !== "object");
+const isPO = (v) =>
+  v && typeof v === "object" && Object.getPrototypeOf(v) === Object.prototype;
+const isLeafNode = (v) =>
+  isPO(v) && LEAF_KEYS.some((k) => k in v && typeof v[k] !== "object");
 
-/* ---------------- Sortable item (top-level row + its subtree) --------------- */
+const parentPath = (full) =>
+  full.includes(".") ? full.split(".").slice(0, -1).join(".") : "";
+const leafKey = (full) => full.split(".").pop();
+
+hjhgyuy
+/* ---------------- reusable sortable row (used for all levels) --------------- */
 function SortableRow({ id, disabled, mainRow, childrenBelow }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id, disabled });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id, disabled });
 
   return (
     <div
       ref={setNodeRef}
-      className={`sec__row ${isDragging ? "is-dragging" : ""}`}
+      className={`sec__row ${isDragging ? "is-dragging" : ""} ${
+        childrenBelow ? "has-children" : ""
+      }`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       data-key={id}
     >
       <div className="sec__rowGrid">
         <span className="sec__firstCell">
-          {mainRow.leading}
+          {/* drag dots */}
           <button
             type="button"
             className={`sec__drag ${disabled ? "is-disabled" : ""}`}
@@ -66,6 +90,8 @@ function SortableRow({ id, disabled, mainRow, childrenBelow }) {
           >
             ⋮⋮
           </button>
+          {/* caret / any leading adornment */}
+          {mainRow.leading}
         </span>
 
         <span className="sec__label" data-depth={0} style={{ "--depth": 0 }}>
@@ -73,11 +99,15 @@ function SortableRow({ id, disabled, mainRow, childrenBelow }) {
           <span className="sec__labelText">{mainRow.label}</span>
         </span>
 
+        {/* value tracks are "contents" so they occupy the grid tracks directly */}
         <div className="sec__values">{mainRow.values}</div>
+
         <div className="sec__actions">{mainRow.actions}</div>
       </div>
 
-      {childrenBelow ? <div className="sec__childSpanner">{childrenBelow}</div> : null}
+      {childrenBelow ? (
+        <div className="sec__childSpanner">{childrenBelow}</div>
+      ) : null}
     </div>
   );
 }
@@ -88,8 +118,10 @@ export default function Section({
   data = {},
   onChange,
   showTotal = true,
-  enableSort = false,
+  enableSort = false, // kept for compatibility (top-level only)
   lockKeys = new Set(),
+  metrics = { gbaSqft: 0, units: 0 },
+  deriveKeys = new Set(["Gross Scheduled Rent"]), // NEW: which labels auto-calc
 }) {
   const { displayMode } = useIncomeView();
   const { prompt, confirm } = useDialog();
@@ -98,16 +130,23 @@ export default function Section({
   const [collapsedPaths, setCollapsedPaths] = useState(() => new Set());
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    // small drag threshold & guard against accidental drags
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
   const modeClass =
-    displayMode === "both" ? "mode-both" :
-    displayMode === "monthly" ? "mode-monthly" : "mode-annual";
+    displayMode === "both"
+      ? "mode-both"
+      : displayMode === "monthly"
+      ? "mode-monthly"
+      : "mode-annual";
 
-  /* -------- top-level ordering -------- */
+  /* -------- top-level ordering state (visual only) -------- */
   const topLevelKeys = useMemo(
-    () => Object.keys(data || {}).filter((k) => !LEAF_KEYS.includes(k) && !LEGACY_LEAF_KEYS.includes(k)),
+    () =>
+      Object.keys(data || {}).filter(
+        (k) => !LEAF_KEYS.includes(k) && !LEGACY_LEAF_KEYS.includes(k)
+      ),
     [data]
   );
   const [order, setOrder] = useState(topLevelKeys);
@@ -121,44 +160,74 @@ export default function Section({
 
   /* ---------------- mutations ---------------- */
   const setAtPath = (path, updater) => {
-    const keys = path.split(".");
+    const keys = path ? path.split(".") : [];
     const updated = structuredClone(data);
     let cur = updated;
-    for (let i = 0; i < keys.length - 1; i++) cur = (cur[keys[i]] ||= {});
-    const k = keys.at(-1);
-    cur[k] = updater(cur[k]);
+    for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]] ||= {};
+    if (keys.length) {
+      const k = keys.at(-1);
+      cur[k] = updater(cur[k]);
+    } else {
+      // setting at root (rare)
+      return onChange(updater(updated));
+    }
     onChange(updated);
   };
 
   const addItem = async (path = "") => {
-    const raw = await prompt({ title: "New line item", message: path ? `Parent: ${path}` : `Add to ${title ?? "Section"}`, placeholder: "e.g., Landscaping" });
+    const raw = await prompt({
+      title: "New line item",
+      message: path ? `Parent: ${path}` : `Add to ${title ?? "Section"}`,
+      placeholder: "e.g., Landscaping",
+    });
     if (raw == null) return;
-    const label = String(raw).trim().replace(/[~*/\[\]]/g, " ").replace(/\s+/g, " ").slice(0, 80) || "Item";
+    const label =
+      String(raw)
+        .trim()
+        .replace(/[~*/\[\]]/g, " ")
+        .replace(/\s+/g, " ")
+        .slice(0, 80) || "Item";
     const updated = structuredClone(data);
     let cur = updated;
-    if (path) path.split(".").forEach((k) => (cur = (cur[k] ||= {})));
-    let key = label, i = 2;
-    while (Object.prototype.hasOwnProperty.call(cur, key)) key = `${label} ${i++}`;
+    if (path) path.split(".").forEach((k) => (cur = cur[k] ||= {}));
+    let key = label,
+      i = 2;
+    while (Object.prototype.hasOwnProperty.call(cur, key))
+      key = `${label} ${i++}`;
     cur[key] = newLeaf();
     onChange(updated);
   };
 
   const promoteToObject = async (path) => {
-    const raw = await prompt({ title: "Add a sub-item", message: `Parent: ${path}`, placeholder: "e.g., Landscaping" });
+    const raw = await prompt({
+      title: "Add a sub-item",
+      message: `Parent: ${path}`,
+      placeholder: "e.g., Landscaping",
+    });
     if (raw == null) return;
-    const label = String(raw).trim().replace(/[~*/\[\]]/g, " ").replace(/\s+/g, " ").slice(0, 80) || "Subitem";
+    const label =
+      String(raw)
+        .trim()
+        .replace(/[~*/\[\]]/g, " ")
+        .replace(/\s+/g, " ")
+        .slice(0, 80) || "Subitem";
     setAtPath(path, (prev) => {
       const leaf = isLeafNode(prev) ? prev : newLeaf();
       const branch = {};
-      let k = label, i = 2;
-      while (Object.prototype.hasOwnProperty.call(branch, k)) k = `${label} ${i++}`;
+      let k = label,
+        i = 2;
+      while (Object.prototype.hasOwnProperty.call(branch, k))
+        k = `${label} ${i++}`;
       branch[k] = { ...leaf };
       return branch;
     });
   };
 
   const deleteAtPath = async (path) => {
-    const ok = await confirm({ title: "Delete this item?", message: `This will remove "${path}" and its sub-items.` });
+    const ok = await confirm({
+      title: "Delete this item?",
+      message: `This will remove "${path}" and its sub-items.`,
+    });
     if (!ok) return;
     const keys = path.split(".");
     const updated = structuredClone(data);
@@ -193,35 +262,142 @@ export default function Section({
   };
   const expandAll = () => setCollapsedPaths(new Set());
 
-  /* ---------------- child renderers ---------------- */
-  const ChildLeaf = ({ path, depth, label, val }) => (
-    <div className="sec__childRow" data-depth={depth}>
-      <span className="sec__firstCell" />
-      <span className="sec__label" data-depth={depth} style={{ "--depth": depth }}>
-        <span className="sec__indent" />
-        <span className="sec__labelText">{label}</span>
-      </span>
-      <div className="sec__values">
-        <LeafEditor fullPath={path} val={val} setAtPath={setAtPath} displayMode={displayMode} />
-      </div>
-      <div className="sec__actions">
-        <button className="sub-btn" onClick={async () => await promoteToObject(path)}>+ Sub</button>
-        <button className="danger-btn" onClick={async () => await deleteAtPath(path)}>Delete</button>
-      </div>
-    </div>
-  );
+  /* ---------------- drag/reorder ---------------- */
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const aParent = parentPath(active.id);
+    const bParent = parentPath(over.id);
+    if (aParent !== bParent) return; // only within same parent
 
-  const ChildBranch = ({ path, depth, label, val }) => {
-    const collapsed = isCollapsed(path);
+    // top-level reorder
+    if (aParent === "") {
+      setOrder((prev) => {
+        const from = prev.indexOf(active.id);
+        const to = prev.indexOf(over.id);
+        if (from === -1 || to === -1) return prev;
+        return arrayMove(prev, from, to);
+      });
+      return;
+    }
+
+    // nested reorder (mutate object property order)
+    setAtPath(aParent, (prev) => {
+      if (!isPO(prev)) return prev;
+      const keys = Object.keys(prev).filter(
+        (k) => !LEAF_KEYS.includes(k) && !LEGACY_LEAF_KEYS.includes(k)
+      );
+      const from = keys.indexOf(leafKey(active.id));
+      const to = keys.indexOf(leafKey(over.id));
+      if (from < 0 || to < 0) return prev;
+      const reordered = {};
+      arrayMove(keys, from, to).forEach((k) => (reordered[k] = prev[k]));
+      return reordered;
+    });
+  };
+
+  /* ---------------- child renderers (each child is sortable) ---------------- */
+  const ChildLeaf = ({ full, depth, label, val }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: full });
+
     return (
-      <>
-        <div className="sec__childRow" data-depth={depth}>
+      <div
+        ref={setNodeRef}
+        className={`sec__row ${isDragging ? "is-dragging" : ""}`}
+        style={{ transform: CSS.Transform.toString(transform), transition }}
+      >
+        <div className="sec__rowGrid" data-depth={depth}>
           <span className="sec__firstCell">
-            <button className="sec__caret" onClick={() => togglePath(path)}>
+            <button
+              className="sec__drag"
+              {...attributes}
+              {...listeners}
+              aria-label="Drag row"
+            >
+              ⋮⋮
+            </button>
+          </span>
+          <span
+            className="sec__label"
+            data-depth={depth}
+            style={{ "--depth": depth }}
+          >
+            <span className="sec__indent" />
+            <span className="sec__labelText">{label}</span>
+          </span>
+          <div className="sec__values">
+            <LeafEditor
+              fullPath={full}
+              val={val}
+              setAtPath={setAtPath}
+              displayMode={displayMode}
+              metrics={metrics}
+              deriveFromMetrics={deriveKeys.has(label)} // e.g., new Set(["Gross Scheduled Rent"])
+            />
+          </div>
+          <div className="sec__actions">
+            <button
+              className="sub-btn"
+              onClick={async () => await promoteToObject(full)}
+            >
+              + Sub
+            </button>
+            <button
+              className="danger-btn"
+              onClick={async () => await deleteAtPath(full)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ChildBranch = ({ full, depth, label, val }) => {
+    const collapsed = isCollapsed(full);
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: full });
+
+    return (
+      <div
+        ref={setNodeRef}
+        className={`sec__row ${isDragging ? "is-dragging" : ""} ${
+          !collapsed ? "has-children" : ""
+        }`}
+        style={{ transform: CSS.Transform.toString(transform), transition }}
+      >
+        <div className="sec__rowGrid" data-depth={depth}>
+          <span className="sec__firstCell">
+            <button
+              className="sec__drag"
+              {...attributes}
+              {...listeners}
+              aria-label="Drag row"
+            >
+              ⋮⋮
+            </button>
+            <button className="sec__caret" onClick={() => togglePath(full)}>
               {collapsed ? "▸" : "▾"}
             </button>
           </span>
-          <span className="sec__label" data-depth={depth} style={{ "--depth": depth }}>
+          <span
+            className="sec__label"
+            data-depth={depth}
+            style={{ "--depth": depth }}
+          >
             <span className="sec__indent" />
             <span className="sec__labelText">{label}</span>
           </span>
@@ -229,24 +405,57 @@ export default function Section({
             <BranchTotals value={val} displayMode={displayMode} />
           </div>
           <div className="sec__actions">
-            <button className="sub-btn" onClick={async () => await addItem(path)}>+ Sub</button>
-            <button className="danger-btn" onClick={async () => await deleteAtPath(path)}>Delete</button>
+            <button
+              className="sub-btn"
+              onClick={async () => await addItem(full)}
+            >
+              + Sub
+            </button>
+            <button
+              className="danger-btn"
+              onClick={async () => await deleteAtPath(full)}
+            >
+              Delete
+            </button>
           </div>
         </div>
-        {!collapsed && renderChildren(val, path, depth + 1)}
-      </>
+
+        {!collapsed && renderChildren(val, full, depth + 1)}
+      </div>
     );
   };
 
   const renderChildren = (obj, path, depth) => {
     if (!isPO(obj)) return null;
-    const entries = Object.entries(obj).filter(([k]) => !LEAF_KEYS.includes(k) && !LEGACY_LEAF_KEYS.includes(k));
-    return entries.map(([key, val]) => {
-      const full = path ? `${path}.${key}` : key;
-      return isLeafNode(val)
-        ? <ChildLeaf key={full} path={full} depth={depth} label={key} val={val} />
-        : <ChildBranch key={full} path={full} depth={depth} label={key} val={val} />;
-    });
+    const entries = Object.entries(obj).filter(
+      ([k]) => !LEAF_KEYS.includes(k) && !LEGACY_LEAF_KEYS.includes(k)
+    );
+    const items = entries.map(([k]) => (path ? `${path}.${k}` : k));
+
+    return (
+      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        {entries.map(([key, val]) => {
+          const full = path ? `${path}.${key}` : key;
+          return isLeafNode(val) ? (
+            <ChildLeaf
+              key={full}
+              full={full}
+              depth={depth}
+              label={key}
+              val={val}
+            />
+          ) : (
+            <ChildBranch
+              key={full}
+              full={full}
+              depth={depth}
+              label={key}
+              val={val}
+            />
+          );
+        })}
+      </SortableContext>
+    );
   };
 
   /* ------------- top-level render (sortable; children INSIDE each item) ------ */
@@ -255,15 +464,7 @@ export default function Section({
       sensors={sensors}
       modifiers={[restrictToVerticalAxis]}
       collisionDetection={closestCenter}
-      onDragEnd={({ active, over }) => {
-        if (!over || active.id === over.id) return;
-        setOrder((prev) => {
-          const from = prev.indexOf(active.id);
-          const to = prev.indexOf(over.id);
-          if (from === -1 || to === -1) return prev;
-          return arrayMove(prev, from, to);
-        });
-      }}
+      onDragEnd={handleDragEnd}
     >
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         {order.map((key) => {
@@ -280,24 +481,39 @@ export default function Section({
             ) : null,
             label: key,
             values: isLeafTop ? (
-              <LeafEditor fullPath={key} val={val} setAtPath={setAtPath} displayMode={displayMode} />
+              <LeafEditor
+                fullPath={key}
+                val={val}
+                setAtPath={setAtPath}
+                displayMode={displayMode}
+                metrics={metrics}
+                deriveFromMetrics={deriveKeys.has(key)}
+              />
             ) : (
               <BranchTotals value={val} displayMode={displayMode} />
             ),
-            actions: isLeafTop ? (
+            actions: (
               <>
-                <button className="sub-btn" onClick={async () => await promoteToObject(key)}>+ Sub</button>
-                <button className="danger-btn" onClick={async () => await deleteAtPath(key)}>Delete</button>
-              </>
-            ) : (
-              <>
-                <button className="sub-btn" onClick={async () => await addItem(key)}>+ Sub</button>
-                <button className="danger-btn" onClick={async () => await deleteAtPath(key)}>Delete</button>
+                <button
+                  className="sub-btn"
+                  onClick={async () =>
+                    await (isLeafTop ? promoteToObject(key) : addItem(key))
+                  }
+                >
+                  + Sub
+                </button>
+                <button
+                  className="danger-btn"
+                  onClick={async () => await deleteAtPath(key)}
+                >
+                  Delete
+                </button>
               </>
             ),
           };
 
-          const childrenBelow = !isLeafTop && !collapsedTop ? renderChildren(val, key, 1) : null;
+          const childrenBelow =
+            !isLeafTop && !collapsedTop ? renderChildren(val, key, 1) : null;
 
           return (
             <SortableRow
@@ -321,11 +537,37 @@ export default function Section({
         <h4 className="sec__header" onClick={() => setCollapsed((c) => !c)}>
           <span>{collapsed ? "▸" : "▾"}</span>
           <span>{title}</span>
-          <div className="sec__values"><ValueColumns /></div>
+          <div className="sec__values">
+            <ValueColumns />
+          </div>
           <span style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button className="add-btn" onClick={async (e) => { e.stopPropagation(); await addItem(); }}>+ Item</button>
-            <button className="add-btn" onClick={(e) => { e.stopPropagation(); collapseAll(); }}>Collapse All</button>
-            <button className="add-btn" onClick={(e) => { e.stopPropagation(); expandAll(); }}>Expand All</button>
+            <button
+              className="add-btn"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await addItem();
+              }}
+            >
+              + Item
+            </button>
+            <button
+              className="add-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                collapseAll();
+              }}
+            >
+              Collapse All
+            </button>
+            <button
+              className="add-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                expandAll();
+              }}
+            >
+              Expand All
+            </button>
           </span>
         </h4>
       )}

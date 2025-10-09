@@ -1,5 +1,5 @@
 // components/Income/IncomeStatement.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import toast from "react-hot-toast";
 
@@ -9,14 +9,17 @@ import {
 } from "../../services/firestoreService";
 
 import { migrateMixedNodes } from "../../utils/income/incomeMigrate.js";
-import { defaultStructure, newLeaf } from "../../utils/income/incomeDefaults.js";
+import {
+  defaultStructure,
+  newLeaf,
+} from "../../utils/income/incomeDefaults.js";
 import HeaderBar from "./HeaderBar.jsx";
 import Section from "./Section.jsx";
 
 import { useIncomeView } from "../../app/IncomeViewContext.jsx";
 import { SECTION_LAYOUT } from "../../utils/income/incomeLayout.js";
 
-import "../../styles/Income/income-panel.css"
+import "../../styles/Income/income-panel.css";
 
 /* ---------------- shared helpers ---------------- */
 const LEAF_KEYS = [
@@ -46,7 +49,9 @@ const coerceLeaf = (leaf = {}) => {
 };
 
 const isLeaf = (v) =>
-  v && typeof v === "object" && LEAF_KEYS.every((k) => typeof v[k] === "number");
+  v &&
+  typeof v === "object" &&
+  LEAF_KEYS.every((k) => typeof v[k] === "number");
 
 const normalizeTree = (node) => {
   if (!isPlainObject(node)) return node;
@@ -61,7 +66,9 @@ const normalizeTree = (node) => {
   }
 
   const keys = Object.keys(node);
-  const hasLeafKey = keys.some((k) => LEAF_KEYS.includes(k) || LEGACY_LEAF_KEYS.includes(k));
+  const hasLeafKey = keys.some(
+    (k) => LEAF_KEYS.includes(k) || LEGACY_LEAF_KEYS.includes(k)
+  );
   const hasChild = keys.some(
     (k) =>
       !LEAF_KEYS.includes(k) &&
@@ -109,9 +116,23 @@ const TAX_KEYS = [
   "Municipality-Level Property Taxes",
   "Other Taxes",
 ];
-const INS_KEYS = ["Property Insurance", "Casualty Insurance", "Flood Insurance", "Other Insurance"];
-const CAM_KEYS = ["Common-Area Utilities", "CAM", "Common-Area Routine Labor", "Other CAM"];
-const ADMIN_KEYS = ["Management", "Administrative & Legal", "Other Administrative Expenses"];
+const INS_KEYS = [
+  "Property Insurance",
+  "Casualty Insurance",
+  "Flood Insurance",
+  "Other Insurance",
+];
+const CAM_KEYS = [
+  "Common-Area Utilities",
+  "CAM",
+  "Common-Area Routine Labor",
+  "Other CAM",
+];
+const ADMIN_KEYS = [
+  "Management",
+  "Administrative & Legal",
+  "Other Administrative Expenses",
+];
 
 const COMPUTED_OPEX_KEYS = new Set([
   "Subtotal Property Taxes",
@@ -163,7 +184,35 @@ const buildOperatingExpensesView = (opex = {}) => {
 };
 /* ----------------------------------------------------------------------------- */
 
-export default function IncomeStatement({ rowData, propertyId, onSaveRowValue }) {
+/** Pull GBA (sqft) and Units from rowData, with resilient fallbacks */
+const extractMetricsFromRow = (rowData) => {
+  const num = (v) => (Number.isFinite(+v) ? +v : 0);
+
+  const gbaSqft = num(
+    rowData?.grossBuildingAreaSqFt ??
+      rowData?.grossBuildingArea ??
+      rowData?.gbaSqFt ??
+      rowData?.gba ??
+      rowData?.sqft ??
+      rowData?.squareFeet
+  );
+
+  const units = num(
+    rowData?.units ??
+      rowData?.unitCount ??
+      rowData?.numUnits ??
+      rowData?.resUnits ??
+      rowData?.Units
+  );
+
+  return { gbaSqft, units };
+};
+
+export default function IncomeStatement({
+  rowData,
+  propertyId,
+  onSaveRowValue,
+}) {
   const { user } = useAuth();
   const { groupedView } = useIncomeView();
   const [data, setData] = useState(defaultStructure);
@@ -174,7 +223,14 @@ export default function IncomeStatement({ rowData, propertyId, onSaveRowValue })
   const opexRef = useRef(null);
 
 
-  
+
+  // metrics for LeafEditor (GSR auto-calc)
+  const metrics = useMemo(
+    () => extractMetricsFromRow(rowData || {}),
+    [rowData]
+  );
+  const deriveGSR = useMemo(() => new Set(["Gross Scheduled Rent"]), []);
+  const emptySet = useMemo(() => new Set(), []);
 
   // lock inputs for computed rows (Subtotal..., Total Operating Expenses)
   useEffect(() => {
@@ -186,7 +242,8 @@ export default function IncomeStatement({ rowData, propertyId, onSaveRowValue })
 
     root.querySelectorAll(".line-item.section-row").forEach((rowEl) => {
       const labelEl =
-        rowEl.querySelector(".label-text") || rowEl.querySelector(".line-label");
+        rowEl.querySelector(".label-text") ||
+        rowEl.querySelector(".line-label");
       if (!labelEl) return;
 
       const label = (labelEl.textContent || "").trim();
@@ -219,7 +276,9 @@ export default function IncomeStatement({ rowData, propertyId, onSaveRowValue })
     if (!user || !propertyId) return;
     (async () => {
       const saved = await getIncomeStatement(user.uid, propertyId);
-      const cleaned = migrateMixedNodes(structuredClone(saved || defaultStructure));
+      const cleaned = migrateMixedNodes(
+        structuredClone(saved || defaultStructure)
+      );
       setData(normalizeTree(cleaned ?? defaultStructure));
       setLoaded(true);
     })();
@@ -325,10 +384,12 @@ export default function IncomeStatement({ rowData, propertyId, onSaveRowValue })
           <div key={key} ref={opexRef}>
             <Section
               title={title}
-              data={opexView}                 // derived view with computed rows
+              data={opexView} // derived view with computed rows
               onChange={handleSectionChange(key)}
-              enableSort                      // top-level drag (children move with parent)
-              lockKeys={LOCKED_OPEX}          // computed rows not draggable
+              enableSort // top-level drag (children move with parent)
+              lockKeys={LOCKED_OPEX} // computed rows not draggable
+              metrics={metrics} // safe to pass; not used by computed rows
+              deriveKeys={emptySet}
             />
           </div>
         ) : (
@@ -337,7 +398,10 @@ export default function IncomeStatement({ rowData, propertyId, onSaveRowValue })
             title={title}
             data={data[key]}
             onChange={handleSectionChange(key)}
-            enableSort                        // top-level drag for other sections too
+            enableSort
+            /* Pass GBA/Units down for reversible GSR math */
+            metrics={metrics}
+            deriveKeys={key === "Income" ? deriveGSR : emptySet}
           />
         )
       )}

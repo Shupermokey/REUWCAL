@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import { getBaselines } from "../../services/firestoreService";
 import CellDetailsPanel from "../../components/CellDetailsPanel";
@@ -33,6 +33,7 @@ function Row({
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
+  // --- rent math hooks (kept as-is) ---
   const RENT_KEYS = new Set(["grossRentalIncome", "psf", "punit", "rate"]);
   const isRentKey = (k) => RENT_KEYS.has(k);
   const toLastEditedKey = (k) => (k === "grossRentalIncome" ? "gross" : k); // maps UI key -> calc key
@@ -157,10 +158,10 @@ function Row({
         >
           <input
             type="text"
-            readOnly={readOnly} // 👈 lock typing
+            readOnly={readOnly}
             value={unwrapValue(editableRow[key]) || ""}
             onChange={(e) => {
-              if (readOnly) return; // ignore typing
+              if (readOnly) return;
               setLocal(key, {
                 ...(editableRow[key] || {}),
                 value: e.target.value,
@@ -171,6 +172,7 @@ function Row({
         </div>
       );
     }
+
     // ✅ unwrap one level if present; otherwise empty string
     const currentValue = unwrapValue(editableRow[key]) ?? "";
 
@@ -186,8 +188,10 @@ function Row({
           const base =
             typeof editableRow[key] === "object" ? editableRow[key] : {};
           const nextCell = { ...base, value: e.target.value };
+
           // 1) update local cell immediately
           setLocal(key, nextCell);
+
           // 2) if this change affects rent math, recompute the linked fields
           if (isRentKey(key) || key === "propertyGBA" || key === "units") {
             if (isRentKey(key)) {
@@ -214,9 +218,28 @@ function Row({
       const selected = baselines.find((b) => b.id === id);
       return selected?.name ?? id ?? "—";
     }
-
     return displayValue(raw, columnConfig[key]);
   };
+
+  // --- helper: unwrap a cell/object to a finite number ---
+  const asNumber = (cell) => {
+    const v = unwrapValue(cell);
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  // --- numeric data we pass to IncomeStatement for GSR auto-math ---
+  const rowDataForIS = useMemo(
+    () => ({
+      // names IncomeStatement extracts by default:
+      grossBuildingAreaSqFt: asNumber(editableRow.propertyGBA), // GBA
+      units: asNumber(editableRow.units),                        // Units
+
+      // optional: used by IncomeStatement for BRI example
+      bri: asNumber(editableRow.bri),
+    }),
+    [editableRow]
+  );
 
   return (
     <>
@@ -272,15 +295,6 @@ function Row({
                   <>
                     <button
                       onClick={() => {
-                        // const normalized = {};
-                        // columnOrder.forEach((key) => {
-                        //   const val = editableRow[key];
-                        //   normalized[key] =
-                        //     typeof val === "object"
-                        //       ? val
-                        //       : { value: val, details: {} };
-                        // });
-                        // setEditableRow(normalized);
                         setEditableRow(normalizeRow(row));
                         setIsEditing(true);
                       }}
@@ -348,7 +362,7 @@ function Row({
               }}
             >
               <IncomeStatement
-                rowData={editableRow}
+                rowData={rowDataForIS}   // <<< pass numeric GBA/Units/BRI
                 propertyId={row.id}
                 onSaveRowValue={(totalIncomeAnnual) => {
                   // keep existing object shape (value + details)
@@ -369,7 +383,7 @@ function Row({
                     incomeStatement: updatedCell,
                   }));
 
-                  // bubble to parent (your existing plumbed handler)
+                  // bubble to parent
                   handleCellChange(row.id, "incomeStatement", updatedCell);
                 }}
               />
