@@ -7,7 +7,7 @@ import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
 import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSidebar";
 import "../styles/ProfilePage.css";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 // import axios from "axios";
 
 export default function ProfilePage() {

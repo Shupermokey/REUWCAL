@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../app/AuthProvider';
+import { useAuth } from '../../app/providers/AuthProvider';
 import { useTier } from '../../hooks/useTier';
 import { meetsTier, TIERS } from '../../constants/tiers';
 

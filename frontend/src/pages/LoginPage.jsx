@@ -1,7 +1,7 @@
 // src/pages/LoginPage.jsx
 import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import Login from "../features/auth/Auth/Login";
 import Logo from "../features/auth/LoginPage/Logo";
 import LoginFooter from "../features/auth/LoginPage/LoginFooter";

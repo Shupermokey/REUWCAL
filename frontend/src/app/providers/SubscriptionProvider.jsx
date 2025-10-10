@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../services/firebaseConfig'; 
+import { db } from '../../services/firebaseConfig'; 
 import { useAuth } from './AuthProvider'; 
-import { resolveTierFromSubscriptions, TIERS } from '../constants/tiers';
+import { resolveTierFromSubscriptions, TIERS } from '../../constants/tiers';
 
 
 const Ctx = createContext({

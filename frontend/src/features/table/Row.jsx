@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { useAuth } from "../../app/AuthProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
 import { getBaselines } from "../../services/firestoreService";
 import CellDetailsPanel from "../../components/CellDetailsPanel";
 import columnConfig, { columnOrder, breakdownConfig } from "../../columnConfig";

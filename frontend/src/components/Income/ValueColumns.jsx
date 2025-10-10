@@ -1,5 +1,5 @@
 import React from "react";
-import { useIncomeView } from "../../app/IncomeViewContext.jsx";
+import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
 
 export default function ValueColumns() {
   const { displayMode } = useIncomeView();

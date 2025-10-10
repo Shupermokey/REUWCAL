@@ -1,8 +1,8 @@
 // src/components/Pricing/Pricing.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../app/AuthProvider";
-import { useSubscription } from "../../app/SubscriptionProvider"; // must exist from Step #2
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useSubscription } from "../../app/providers/SubscriptionProvider"; // must exist from Step #2
 import { openBillingPortal, PRICE_IDS, startCheckout } from "../../utils/stripeService";
 
 

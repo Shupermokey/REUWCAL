@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import toast from "react-hot-toast";
 import "../styles/PropertyIncomeStatement.css";
 import {
@@ -7,7 +7,7 @@ import {
   saveIncomeStatement,
 } from "../services/firestoreService";
 import jsPDF from "jspdf";
-import { useDialog } from "../app/DialogProvider";
+import { useDialog } from "../app/providers/DialogProvider";
 
 /** ========== Schema & helpers ========== */
 const LEAF_KEYS = [

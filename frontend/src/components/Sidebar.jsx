@@ -1,10 +1,10 @@
 import React from "react";
 import { slide as Menu } from "react-burger-menu";
-import { useApp } from "../app/AppProvider";
+import { useApp } from "../app/providers/AppProvider";
 import Logout from "../features/auth/Auth/Logout";
 import { useDrop } from "react-dnd";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 
 function Sidebar() {
   const { showFilePanel, setShowFilePanel } = useApp();

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ScenarioProvider } from "../app/ScenarioRowProvider"; 
-import { RowProvider } from "../app/RowProvider";
+import { ScenarioProvider } from "../app/providers/ScenarioRowProvider";
+// import { RowProvider } from "../app/providers/RowProvider";
 import Sidebar from "../components/Sidebar";
 import Table from "../features/table/Table";
-import { useApp } from "../app/AppProvider";
+import { useApp } from "../app/providers/AppProvider";
 import {
   addDoc,
   collection,
@@ -15,11 +15,10 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import { loadStripe } from "@stripe/stripe-js";
 
 import { db } from "../services/firebaseConfig";
-
 
 const stripePromise = loadStripe(
   "pk_test_51NbDDDEgiGJZMTseM8sReTmk3TwiQIQwZLOwEzVHXy0uZFt7Ikn3qIc2sbKts0tFEBN5d73GFG46qA7KMbYBj5OX00SUx5fV2y"
@@ -32,18 +31,6 @@ function Home() {
   const [selectedRow, setSelectedRow] = useState(null); // 🔴 NEW
   const [scenarioRows, setScenarioRows] = useState([]); // 🔴 NEW
   const [baselines, setBaselines] = useState([]); // 🔴 NEW
-
-  const baselineMap = {
-    baseRentGrowth: "Base Rent (MR) Growth Rate",
-    vacancyRate: "Vacancy Rate",
-    propertyTaxExpenses: "Property Tax Expenses",
-    insurance: "Property Insurance Expenses",
-    utilities: "Property Utility Expenses",
-    repairs: "Property Repair Expenses",
-    cam: "Property CAM Expenses",
-    management: "Property Management Expenses",
-    capex: "CAP Ex"
-  }; // 🔴 Map expense field names to Baseline rows
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -84,13 +71,14 @@ function Home() {
   useEffect(() => {
     if (!user) return;
     const fetchBaselines = async () => {
-      const snapshot = await getDocs(collection(db, "users", user.uid, "baselines"));
+      const snapshot = await getDocs(
+        collection(db, "users", user.uid, "baselines")
+      );
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setBaselines(data);
     };
     fetchBaselines();
   }, [user]);
-
 
   const handleRowSelect = (row) => {
     setSelectedRow(row);
@@ -99,30 +87,11 @@ function Home() {
 
   return (
     <>
-      <ScenarioProvider>
-        <RowProvider>
           <Sidebar />
           <div style={{ display: "flex", flexDirection: "column" }}>
-          {base === false && <Table onRowSelect={handleRowSelect} />} {/* 🔴 Pass down row select */}
-          {base !== false && <BaselineTable />}
-            {/* <SubscriptionUpgrade /> */}
-
-            {/* <div>
-            {selectedRow && (
-              <PerformaTable
-              baseRow={selectedRow}
-              baselines={baselines}
-              scenarioRows={scenarioRows}
-              setScenarioRows={setScenarioRows}
-              baselineMap={baselineMap} // 🔴 Provide mapping to Proforma
-              />
-            )}
-          </div> */}
+            {base === false && <Table onRowSelect={handleRowSelect} />}{" "}
+            {base !== false && <BaselineTable />}
           </div>
-          {/* 🔴 NEW: Render Proforma Table */}
-         
-        </RowProvider>
-      </ScenarioProvider>
     </>
   );
 }

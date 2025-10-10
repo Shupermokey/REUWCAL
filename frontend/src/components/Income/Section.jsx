@@ -3,10 +3,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import LeafEditor from "./LeafEditor.jsx";
 import BranchTotals from "./BranchTotals.jsx";
 import { newLeaf } from "../../utils/income/incomeDefaults.js";
-import { useIncomeView } from "../../app/IncomeViewContext.jsx";
-import { useDialog } from "../../app/DialogProvider";
+import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
+import { useDialog } from "../../app/providers/DialogProvider.jsx";
 import ValueColumns from "./ValueColumns.jsx";
-import SectionTotal from "./SectionTotal.jsx";
+import SectionTotal from "@components/Income/SectionTotal.jsx";
 
 import "../../styles/Section/base.css";
 import "../../styles/Section/row.css";
@@ -57,7 +57,7 @@ const parentPath = (full) =>
   full.includes(".") ? full.split(".").slice(0, -1).join(".") : "";
 const leafKey = (full) => full.split(".").pop();
 
-hjhgyuy
+
 /* ---------------- reusable sortable row (used for all levels) --------------- */
 function SortableRow({ id, disabled, mainRow, childrenBelow }) {
   const {

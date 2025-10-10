@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useIncomeView } from "../../app/IncomeViewContext.jsx";
+import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
 
 const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
 const isLeaf = (v) =>

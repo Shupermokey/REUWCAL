@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useTable } from "../../app/TableProvider";
+import { useTable } from "../../app/providers/TableProvider";
 import Row from "./Row";
-import { useAuth } from "../../app/AuthProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
 import FileExplorer from "../../components/Sidebar/FileSystem/FileExplorer";
 import PropertyFileSidebar from "../../components/Sidebar/PropertyFileSidebar";
 import { subscribeToBaselines } from "../../services/firestoreService";

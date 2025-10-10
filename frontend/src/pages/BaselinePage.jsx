@@ -4,7 +4,7 @@ import {
   deleteBaseline,
   subscribeToBaselines,
 } from "../services/firestoreService";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import Sidebar from "../components/Sidebar";
 import BaselineSection from "../features/baseline/BaselineAssumptions/BaselineSection";
 

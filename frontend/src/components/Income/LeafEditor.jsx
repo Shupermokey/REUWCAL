@@ -119,6 +119,8 @@ export default function LeafEditor({
     });
   }, [GBA, UNITS, deriveFromMetrics, fullPath, setAtPath]);
 
+  
+
   const v = (k) => (val?.[k] === "" || val?.[k] == null ? "" : val[k]);
 
   // prevent dnd-kit from stealing focus

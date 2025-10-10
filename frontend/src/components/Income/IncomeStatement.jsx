@@ -1,6 +1,6 @@
 // components/Income/IncomeStatement.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { useAuth } from "../../app/AuthProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
 import toast from "react-hot-toast";
 
 import {
@@ -16,7 +16,7 @@ import {
 import HeaderBar from "./HeaderBar.jsx";
 import Section from "./Section.jsx";
 
-import { useIncomeView } from "../../app/IncomeViewContext.jsx";
+import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
 import { SECTION_LAYOUT } from "../../utils/income/incomeLayout.js";
 
 import "../../styles/Income/income-panel.css";

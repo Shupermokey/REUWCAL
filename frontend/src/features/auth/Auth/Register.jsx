@@ -10,7 +10,7 @@ import { auth } from "../../../services/firebaseConfig";           // modular SD
 import { createUserProfile } from "../../../services/firestoreService";
 import { handleCheckout } from "../../../utils/stripeService";     // keeps your existing API
 import { handleSignInWithGoogle } from "../../../services/authService";
-import { useAuth } from "../../../app/AuthProvider";
+import { useAuth } from "../../../app/providers/AuthProvider";
 
 const Register = () => {
   const { setSubscription } = useAuth();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../../app/AuthProvider";
+import { useAuth } from "../../../app/providers/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import {
   isSignInWithEmailLink,
