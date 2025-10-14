@@ -17,23 +17,12 @@ import HeaderBar from "./HeaderBar.jsx";
 import Section from "./Section.jsx";
 
 import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
-import { SECTION_LAYOUT } from "../../utils/income/incomeLayout.js";
+import { SECTION_LAYOUT } from "../../utils/income/incomeSectionLayout.js";
 
 import "../../styles/Income/income-panel.css";
 
-/* ---------------- shared helpers ---------------- */
-const LEAF_KEYS = [
-  "grossAnnual",
-  "psfAnnual",
-  "punitAnnual",
-  "rateAnnual",
-  "grossMonthly",
-  "psfMonthly",
-  "punitMonthly",
-  "rateMonthly",
-];
 
-const LEGACY_LEAF_KEYS = ["pUnitAnnual", "pUnitMonthly"];
+k
 
 const isPlainObject = (v) =>
   v != null &&

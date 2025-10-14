@@ -1,16 +1,18 @@
-import {
-  getGrossBuildingArea,
-  saveGrossBuildingArea,
-} from "@/services/firestore/grossBuildingAreaService";
+import { getGrossBuildingArea, saveGrossBuildingArea } from "@/services/firestore/grossBuildingAreaService";
+import { PROPERTY_SECTIONS } from "@/constants";
 
-export async function loadGrossBuildingArea(uid, propertyId) {
-  return (await getGrossBuildingArea(uid, propertyId)) || {
-    totalSqFt: 0,
-    rentableSqFt: 0,
-    efficiencyRatio: 0,
-  };
-}
+export const fetchGrossBuildingArea = async (uid, propertyId) => {
+  return await getGrossBuildingArea(uid, propertyId);
+};
 
-export async function saveGrossBuildingAreaData(uid, propertyId, data) {
-  await saveGrossBuildingArea(uid, propertyId, data);
-}
+export const saveGrossBuildingAreaData = async (uid, propertyId, data) => {
+  return await saveGrossBuildingArea(uid, propertyId, data);
+};
+
+export const getGrossBuildingAreaShape = () => ({
+  section: PROPERTY_SECTIONS.GROSS_BUILDING_AREA,
+  gba: 0,
+  gla: 0,
+  nra: 0,
+  documents: [],
+});

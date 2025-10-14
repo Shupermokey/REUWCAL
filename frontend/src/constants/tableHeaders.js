@@ -1,0 +1,28 @@
+// src/constants/tableHeaders.js
+export const HEADER_KEYS = Object.freeze({
+  PROPERTY_ADDRESS: "Property Address",
+  PROPERTY_TAXES: "Property Taxes",
+  GROSS_SITE_AREA: "Gross Site Area",
+  GROSS_BUILDING_AREA: "Gross Building Area",
+  UNITS: "Units",
+  PURCHASE_PRICE: "Purchase Price",
+  INCOME_STATEMENT: "Income Statement",
+  FINANCING: "Financing",
+  CATEGORY: "Category",
+  FILES: "Files",
+  EDIT: "Edit",
+});
+
+export const DEFAULT_HEADERS = Object.freeze([
+  HEADER_KEYS.PROPERTY_ADDRESS,
+  HEADER_KEYS.PROPERTY_TAXES,
+  HEADER_KEYS.GROSS_SITE_AREA,
+  HEADER_KEYS.GROSS_BUILDING_AREA,
+  HEADER_KEYS.UNITS,
+  HEADER_KEYS.PURCHASE_PRICE,
+  HEADER_KEYS.INCOME_STATEMENT,
+  HEADER_KEYS.FINANCING,
+  HEADER_KEYS.CATEGORY,
+  HEADER_KEYS.FILES,
+  HEADER_KEYS.EDIT,
+]);

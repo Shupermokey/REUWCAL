@@ -1,13 +1,16 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
 
-const path = (uid, pid) => doc(db, "users", uid, "properties", pid, "incomeStatement", "current");
+const SECTION = PROPERTY_SECTIONS.INCOME_STATEMENT;
 
-export const getIncomeStatement = async (uid, pid) => {
-  const snap = await getDoc(path(uid, pid));
+export const getIncomeStatement = async (uid, propertyId) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
 };
 
-export const saveIncomeStatement = async (uid, pid, data) => {
-  await setDoc(path(uid, pid), data, { merge: true });
+export const saveIncomeStatement = async (uid, propertyId, data) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  await setDoc(ref, data, { merge: true });
 };

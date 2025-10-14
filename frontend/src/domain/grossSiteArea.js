@@ -1,15 +1,17 @@
-import {
-  getGrossSiteArea,
-  saveGrossSiteArea,
-} from "@/services/firestore/grossSiteAreaService";
+import { getGrossSiteArea, saveGrossSiteArea } from "@/services/firestore/grossSiteAreaService";
+import { PROPERTY_SECTIONS } from "@/constants";
 
-export async function loadGrossSiteArea(uid, propertyId) {
-  return (await getGrossSiteArea(uid, propertyId)) || {
-    siteSqFt: 0,
-    acres: 0,
-  };
-}
+export const fetchGrossSiteArea = async (uid, propertyId) => {
+  return await getGrossSiteArea(uid, propertyId);
+};
 
-export async function saveGrossSiteAreaData(uid, propertyId, data) {
-  await saveGrossSiteArea(uid, propertyId, data);
-}
+export const saveGrossSiteAreaData = async (uid, propertyId, data) => {
+  return await saveGrossSiteArea(uid, propertyId, data);
+};
+
+export const getGrossSiteAreaShape = () => ({
+  section: PROPERTY_SECTIONS.GROSS_SITE_AREA,
+  acres: 0,
+  squareFeet: 0,
+  documents: [],
+});

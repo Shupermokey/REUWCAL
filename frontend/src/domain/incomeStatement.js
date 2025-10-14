@@ -1,39 +1,17 @@
-import {
-  getIncomeStatement,
-  saveIncomeStatement,
-} from "@/services/firestore/incomeStatementService";
+import { getIncomeStatement, saveIncomeStatement } from "@/services/firestore/incomeStatementService";
+import { PROPERTY_SECTIONS } from "@/constants";
 
-/**
- * Load the income statement for a property.
- */
-export async function loadIncomeStatement(uid, propertyId) {
-  const data = await getIncomeStatement(uid, propertyId);
-  return (
-    data || {
-      Income: {},
-      Expenses: {},
-      Totals: {},
-    }
-  );
-}
+export const fetchIncomeStatement = async (uid, propertyId) => {
+  return await getIncomeStatement(uid, propertyId);
+};
 
-/**
- * Save or update the income statement.
- */
-export async function saveIncomeStatementData(uid, propertyId, updates) {
-  await saveIncomeStatement(uid, propertyId, updates);
-}
+export const saveIncomeStatementData = async (uid, propertyId, data) => {
+  return await saveIncomeStatement(uid, propertyId, data);
+};
 
-/**
- * Reset income statement to default structure.
- */
-export async function resetIncomeStatement(uid, propertyId) {
-  const defaults = {
-    Income: {},
-    Expenses: {},
-    Totals: {},
-    updatedAt: new Date().toISOString(),
-  };
-  await saveIncomeStatement(uid, propertyId, defaults);
-  return defaults;
-}
+export const getIncomeStatementShape = () => ({
+  section: PROPERTY_SECTIONS.INCOME_STATEMENT,
+  Income: {},
+  Expenses: {},
+  CashFlow: {},
+});

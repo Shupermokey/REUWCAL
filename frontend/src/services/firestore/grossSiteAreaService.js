@@ -1,20 +1,16 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
 
-const path = (uid, pid) =>
-  doc(db, "users", uid, "properties", pid, "grossSiteArea", "current");
+const SECTION = PROPERTY_SECTIONS.GROSS_SITE_AREA;
 
-/**
- * Get the gross site area document for a property.
- */
-export const getGrossSiteArea = async (uid, pid) => {
-  const snap = await getDoc(path(uid, pid));
+export const getGrossSiteArea = async (uid, propertyId) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
 };
 
-/**
- * Save or update gross site area data.
- */
-export const saveGrossSiteArea = async (uid, pid, data) => {
-  await setDoc(path(uid, pid), data, { merge: true });
+export const saveGrossSiteArea = async (uid, propertyId, data) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  await setDoc(ref, data, { merge: true });
 };

@@ -1,34 +1,26 @@
 import {
-  getRows,
-  addRow,
-  updateRow,
-  deleteRow,
-} from "@/services/firestore/rowsService";
+  getZoningCategories,
+  getZoningSubtypes,
+  saveZoningCategory,
+  addZoningCategory,
+  deleteZoningCategory,
+  addZoningSubtype,
+  saveZoningSubtype,
+  deleteZoningSubtype,
+  mergeDefaultZoningCategories,
+} from "@/services/firestore/zoningService";
 
-/**
- * Load all rows for a property.
- */
-export async function loadRows(uid, propertyId) {
-  return await getRows(uid, propertyId);
-}
+export const fetchZoningCategories = async (uid) => await getZoningCategories(uid);
+export const fetchZoningSubtypes = async (uid, label) => await getZoningSubtypes(uid, label);
 
-/**
- * Add a new row to property.
- */
-export async function createRow(uid, propertyId, data) {
-  return await addRow(uid, propertyId, data);
-}
+export const createZoningCategory = async (uid, data) => await addZoningCategory(uid, data);
+export const updateZoningCategory = async (uid, id, data) => await saveZoningCategory(uid, id, data);
+export const removeZoningCategory = async (uid, id) => await deleteZoningCategory(uid, id);
 
-/**
- * Update a specific row.
- */
-export async function saveRow(uid, propertyId, rowId, updates) {
-  await updateRow(uid, propertyId, rowId, updates);
-}
+export const createZoningSubtype = async (uid, label, data) => await addZoningSubtype(uid, label, data);
+export const updateZoningSubtype = async (uid, label, id, data) =>
+  await saveZoningSubtype(uid, label, id, data);
+export const removeZoningSubtype = async (uid, label, id) =>
+  await deleteZoningSubtype(uid, label, id);
 
-/**
- * Delete a row.
- */
-export async function removeRow(uid, propertyId, rowId) {
-  await deleteRow(uid, propertyId, rowId);
-}
+export const initializeDefaultZoning = async (uid) => await mergeDefaultZoningCategories(uid);

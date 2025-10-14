@@ -1,20 +1,16 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
 
-const path = (uid, pid) =>
-  doc(db, "users", uid, "properties", pid, "purchasePrice", "current");
+const SECTION = PROPERTY_SECTIONS.PURCHASE_PRICE;
 
-/**
- * Get the purchase price document for a property.
- */
-export const getPurchasePrice = async (uid, pid) => {
-  const snap = await getDoc(path(uid, pid));
+export const getPurchasePrice = async (uid, propertyId) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
 };
 
-/**
- * Save or update purchase price data.
- */
-export const savePurchasePrice = async (uid, pid, data) => {
-  await setDoc(path(uid, pid), data, { merge: true });
+export const savePurchasePrice = async (uid, propertyId, data) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  await setDoc(ref, data, { merge: true });
 };

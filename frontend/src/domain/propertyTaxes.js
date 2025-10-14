@@ -1,15 +1,17 @@
-import {
-  getPropertyTaxes,
-  savePropertyTaxes,
-} from "@/services/firestore/propertyTaxesService";
+import { getPropertyTaxes, savePropertyTaxes } from "@/services/firestore/propertyTaxesService";
+import { PROPERTY_SECTIONS } from "@/constants";
 
-export async function loadPropertyTaxes(uid, propertyId) {
-  return (await getPropertyTaxes(uid, propertyId)) || {
-    annualAmount: 0,
-    monthlyAmount: 0,
-  };
-}
+export const fetchPropertyTaxes = async (uid, propertyId) => {
+  return await getPropertyTaxes(uid, propertyId);
+};
 
-export async function savePropertyTaxesData(uid, propertyId, data) {
-  await savePropertyTaxes(uid, propertyId, data);
-}
+export const savePropertyTaxesData = async (uid, propertyId, data) => {
+  return await savePropertyTaxes(uid, propertyId, data);
+};
+
+export const getPropertyTaxesShape = () => ({
+  section: PROPERTY_SECTIONS.PROPERTY_TAXES,
+  pins: [],
+  totalAmount: 0,
+  breakdown: {},
+});

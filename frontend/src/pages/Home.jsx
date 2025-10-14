@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { ScenarioProvider } from "../app/providers/ScenarioRowProvider";
-// import { RowProvider } from "../app/providers/RowProvider";
 import Sidebar from "../components/Sidebar";
 import Table from "../features/table/Table";
 import { useApp } from "../app/providers/AppProvider";

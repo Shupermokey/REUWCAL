@@ -1,20 +1,16 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
 
-const path = (uid, pid) =>
-  doc(db, "users", uid, "properties", pid, "financing", "current");
+const SECTION = PROPERTY_SECTIONS.FINANCING;
 
-/**
- * Get the financing document for a property.
- */
-export const getFinancing = async (uid, pid) => {
-  const snap = await getDoc(path(uid, pid));
+export const getFinancing = async (uid, propertyId) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  const snap = await getDoc(ref);
   return snap.exists() ? snap.data() : null;
 };
 
-/**
- * Save or update financing data.
- */
-export const saveFinancing = async (uid, pid, data) => {
-  await setDoc(path(uid, pid), data, { merge: true });
+export const saveFinancing = async (uid, propertyId, data) => {
+  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
+  await setDoc(ref, data, { merge: true });
 };
