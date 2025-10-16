@@ -1,0 +1,36 @@
+/* ==========================================================
+   SECTION BASE — shared grid structure and typography
+   ========================================================== */
+.section-base {
+  display: grid;
+  grid-template-columns: 24px minmax(220px, 1.2fr) repeat(var(--value-cols, 3), minmax(120px, 1fr)) auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section-base:last-child {
+  border-bottom: none;
+}
+
+.section-base .label {
+  font-weight: 500;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.section-base .input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: right;
+}
+
+.section-base .input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}

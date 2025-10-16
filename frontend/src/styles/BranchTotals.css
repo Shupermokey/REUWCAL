@@ -1,9 +1,0 @@
-/* each total is a grid item inside .sec__values */
-.total-cell {
-  text-align: right;
-  padding: 8px 10px;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-variant-numeric: tabular-nums;
-}

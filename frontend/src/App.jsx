@@ -1,5 +1,10 @@
 // App.jsx
-import './App.css';
+// main.jsx or App.jsx
+import "@/styles/index.css";        // main entry that cascades globals + utils + base
+import "@/styles/components/Sidebar.css";
+import "@/styles/components/Footer.css";
+
+
 import {
   BrowserRouter as Router,
   Routes,

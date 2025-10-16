@@ -8,6 +8,12 @@ import LoginFooter from "../features/auth/LoginPage/LoginFooter";
 import Pricing from "../components/Pricing/Pricing";
 import { resumeCheckoutIfPending } from "../utils/stripeService"; 
 
+//CSS
+import "@/styles/components/LoginPage.css";
+import "@/styles/utils/forms.css";
+import "@/styles/utils/buttons.css";
+
+
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,4 +1,6 @@
 import React, { useMemo } from "react";
+import "@/styles/components/Income/BranchTotals.css";
+
 
 const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
 const LEAF_KEYS = [

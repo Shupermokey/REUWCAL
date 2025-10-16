@@ -1,0 +1,52 @@
+/* ==========================================================
+   BASELINE ASSUMPTIONS — baseline cards and layout
+   ========================================================== */
+.baseline-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+}
+
+.baseline-card {
+  flex: 1 1 220px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-4);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.baseline-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.baseline-card h3 {
+  font-size: 1rem;
+  margin-bottom: var(--sp-3);
+  font-weight: 600;
+}
+
+.baseline-card p {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  margin: 0;
+}
+
+.add-baseline-btn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-baseline-btn:hover {
+  background: var(--color-accent-hover);
+}

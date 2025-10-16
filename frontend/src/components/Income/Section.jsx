@@ -1,5 +1,5 @@
 // components/Income/Section.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import LeafEditor from "./LeafEditor.jsx";
 import BranchTotals from "./BranchTotals.jsx";
 import { newLeaf } from "../../utils/income/incomeDefaults.js";
@@ -8,9 +8,7 @@ import { useDialog } from "../../app/providers/DialogProvider.jsx";
 import ValueColumns from "./ValueColumns.jsx";
 import SectionTotal from "@components/Income/SectionTotal.jsx";
 
-import "../../styles/Section/base.css";
-import "../../styles/Section/row.css";
-import "../../styles/Section/responsive.css";
+import "@/styles/components/Income/Section.css";
 
 import {
   DndContext,
@@ -56,7 +54,6 @@ const isLeafNode = (v) =>
 const parentPath = (full) =>
   full.includes(".") ? full.split(".").slice(0, -1).join(".") : "";
 const leafKey = (full) => full.split(".").pop();
-
 
 /* ---------------- reusable sortable row (used for all levels) --------------- */
 function SortableRow({ id, disabled, mainRow, childrenBelow }) {
@@ -158,21 +155,25 @@ export default function Section({
     });
   }, [topLevelKeys]);
 
-  /* ---------------- mutations ---------------- */
-  const setAtPath = (path, updater) => {
-    const keys = path ? path.split(".") : [];
-    const updated = structuredClone(data);
-    let cur = updated;
-    for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]] ||= {};
-    if (keys.length) {
-      const k = keys.at(-1);
-      cur[k] = updater(cur[k]);
-    } else {
-      // setting at root (rare)
-      return onChange(updater(updated));
-    }
-    onChange(updated);
-  };
+  const setAtPath = useCallback(
+    (path, updater) => {
+      const keys = path ? path.split(".") : [];
+      const updated = structuredClone(data);
+      let cur = updated;
+      for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]] ||= {};
+
+      if (keys.length) {
+        const k = keys.at(-1);
+        const prevVal = cur[k];
+        const nextVal = updater(prevVal);
+
+        // ✅ Always update, even if same stringified content
+        cur[k] = nextVal;
+        onChange(updated);
+      }
+    },
+    [data, onChange]
+  );
 
   const addItem = async (path = "") => {
     const raw = await prompt({
@@ -338,7 +339,8 @@ export default function Section({
               setAtPath={setAtPath}
               displayMode={displayMode}
               metrics={metrics}
-              deriveFromMetrics={deriveKeys.has(label)} // e.g., new Set(["Gross Scheduled Rent"])
+              //deriveFromMetrics={deriveKeys.has(label)} // e.g., new Set(["Gross Scheduled Rent"])
+              deriveFromMetrics={true} // e.g., new Set(["Gross Scheduled Rent"])
             />
           </div>
           <div className="sec__actions">
@@ -533,43 +535,59 @@ export default function Section({
 
   return (
     <div className={`sec ${modeClass}`}>
+      {/* --- Header --- */}
       {hasHeader && (
-        <h4 className="sec__header" onClick={() => setCollapsed((c) => !c)}>
-          <span>{collapsed ? "▸" : "▾"}</span>
-          <span>{title}</span>
-          <div className="sec__values">
-            <ValueColumns />
+        <div className="sec__header">
+          <div className="sec__headerGrid">
+            <div className="sec__firstCell">
+              <button
+                className="sec__caret"
+                onClick={() => setCollapsed((c) => !c)}
+                title={collapsed ? "Expand" : "Collapse"}
+              >
+                {collapsed ? "▸" : "▾"}
+              </button>
+            </div>
+
+            <div className="sec__label">
+              <span className="sec__labelText">{title}</span>
+            </div>
+
+            <div className="sec__values">
+              <ValueColumns />
+            </div>
+
+            <div className="sec__actions sec__headerActions">
+              <button
+                className="add-btn"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await addItem();
+                }}
+              >
+                + Item
+              </button>
+              <button
+                className="add-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  collapseAll();
+                }}
+              >
+                Collapse All
+              </button>
+              <button
+                className="add-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  expandAll();
+                }}
+              >
+                Expand All
+              </button>
+            </div>
           </div>
-          <span style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button
-              className="add-btn"
-              onClick={async (e) => {
-                e.stopPropagation();
-                await addItem();
-              }}
-            >
-              + Item
-            </button>
-            <button
-              className="add-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                collapseAll();
-              }}
-            >
-              Collapse All
-            </button>
-            <button
-              className="add-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                expandAll();
-              }}
-            >
-              Expand All
-            </button>
-          </span>
-        </h4>
+        </div>
       )}
 
       {(!hasHeader || !collapsed) && (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import FileExplorer from "./FileSystem/FileExplorer";
-import '../../styles/Sidebar.css'
+// import '../../styles/Sidebar.css'
 
 const PropertyFileSidebar = ({ isOpen, onClose, propertyId }) => {
   if (!isOpen || !propertyId) return null;

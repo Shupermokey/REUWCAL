@@ -1,20 +1,33 @@
 import React from "react";
 import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
+import "@styles/components/Income/Section/ValueColumns/ValueColumns.css"
 
 export default function ValueColumns() {
   const { displayMode } = useIncomeView();
-  const headers = [ "Rate", "Gross", "PSF", "PUnit"];
-  
 
-  if (displayMode === "both") {
-    return (
+  const showMonthly = displayMode === "monthly" || displayMode === "both";
+  const showAnnual = displayMode === "annual" || displayMode === "both";
+
+ return (
+  <div className={`value-columns ${displayMode === "both" ? "mode-both" : ""}`}>
+    {displayMode !== "annual" && (
       <>
-        {headers.map((h) => <div key={`m-${h}`} className="col-header">{h} (Monthly)</div>)}
-        {headers.map((h) => <div key={`a-${h}`} className="col-header">{h} (Annual)</div>)}
+        <span>Rate (Monthly)</span>
+        <span>Gross (Monthly)</span>
+        <span>PSF (Monthly)</span>
+        <span>PUnit (Monthly)</span>
       </>
-    );
-  }
+    )}
 
-  const suffix = displayMode === "monthly" ? "(Monthly)" : "(Annual)";
-  return <>{headers.map((h) => <div key={h} className="col-header">{h} {suffix}</div>)}</>;
+    {displayMode !== "monthly" && (
+      <>
+        <span>Rate (Annual)</span>
+        <span>Gross (Annual)</span>
+        <span>PSF (Annual)</span>
+        <span>PUnit (Annual)</span>
+      </>
+    )}
+  </div>
+);
+
 }

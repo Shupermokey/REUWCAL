@@ -17,6 +17,9 @@ import columnConfig, { columnOrder } from "../../columnConfig";
 import { makeBlankRow } from "../../utils/rows/rowSchema";
 import { normalizeForSave } from "../../utils/rows/rowNormalize";
 
+// ✅ Scoped styles
+import "@/styles/components/Table/Table.css";
+
 function Table({ onRowSelect }) {
   const { rows, setRows, selectedRow, setSelectedRow } = useTable();
   const { user } = useAuth();
@@ -24,62 +27,61 @@ function Table({ onRowSelect }) {
   const [activeFolder, setActiveFolder] = useState(null);
   const [activeSidebar, setActiveSidebar] = useState(null);
   const [baselines, setBaselines] = useState([]);
-  const [savingNew, setSavingNew] = useState(false); //Removes flicker of 2 rows
+  const [savingNew, setSavingNew] = useState(false);
   const hasDraft = rows?.some((r) => r.id === "new");
 
-
-  // 🔹 Load Baselines
+  /* ---------------------------- Load Baselines ---------------------------- */
   useEffect(() => {
     if (!user) return;
-    const unsub = subscribeToBaselines(user.uid, (data) => {
-      setBaselines(data);
-    });
+    const unsub = subscribeToBaselines(user.uid, (data) => setBaselines(data));
     return () => unsub();
   }, [user]);
 
-  // 🔹 Load Properties
+  /* ---------------------------- Load Properties --------------------------- */
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeToProperties(user.uid, (data) => {
       setRows((prev) => {
         const draft = prev.find((r) => r.id === "new");
-        if (!draft) return data;
         return draft ? [...data, draft] : data;
       });
     });
     return () => unsubscribe();
   }, [user, setRows]);
 
+  /* ------------------------------ CRUD Actions ---------------------------- */
   const createBlankRow = () => makeBlankRow();
 
   const handleAddRow = () => {
-    if (rows.some((row) => row.id === "new")) return; //Prevents multiple 'new' rows being created
+    if (rows.some((row) => row.id === "new")) return;
     setRows((prev) => [...prev, createBlankRow()]);
     setSelectedRow("new");
   };
 
   const handleSaveRow = async (rowData) => {
     const isNew = rowData.id === "new";
-    console.debug("Saving rowData from Row:", rowData); // should show your typed values
     if (!user) return;
+
     try {
       setIsSaving(true);
       const sanitizedData = normalizeForSave(rowData);
-      if (rowData.id === "new") {
-        if (isNew) setSavingNew(true);
-        const { id, ...rowWithoutId } = sanitizedData;
-        const newId = await addProperty(user.uid, rowWithoutId);
+
+      if (isNew) {
+        setSavingNew(true);
+        const { id, ...dataWithoutId } = sanitizedData;
+        const newId = await addProperty(user.uid, dataWithoutId);
         await initializeFileSystem(user.uid, newId, columnOrder);
         setRows((prev) => prev.filter((r) => r.id !== "new"));
       } else {
         await updateProperty(user.uid, rowData.id, sanitizedData);
       }
+
       setSelectedRow(null);
     } catch (e) {
       console.error("Save failed", e);
     } finally {
       setIsSaving(false);
-      setIsSaving(false);
+      setSavingNew(false);
     }
   };
 
@@ -97,14 +99,15 @@ function Table({ onRowSelect }) {
     }
   };
 
+  /* ------------------------------- Render --------------------------------- */
   return (
     <div className="table">
-      {/* Table Headers */}
-      <div className="row table-header">
+      {/* Header */}
+      <div className="table__header">
         {columnOrder.map((key) => (
           <div
             key={key}
-            className="cell"
+            className="table__cell table__cell--header"
             style={{
               width: columnConfig[key].width,
               minWidth: columnConfig[key].width,
@@ -116,49 +119,52 @@ function Table({ onRowSelect }) {
         ))}
       </div>
 
-      {/* Table Rows */}
-      {rows.map((row) => (
-        <Row
-          key={row.id}
-          row={row}
-          baselines={baselines} // 🔹 Pass baselines down
-          handleCellChange={(id, field, value) => {
-            setRows((prevRows) =>
-              prevRows.map((row) =>
-                row.id === id ? { ...row, [field]: value } : row
-              )
-            );
-          }}
-          isSelected={row.id === selectedRow}
-          onSave={handleSaveRow}
-          onCancel={handleCancelRow}
-          onDelete={handleDeleteRow}
-          onSelect={() => {
-            setSelectedRow(row.id);
-            if (onRowSelect) onRowSelect(row);
-          }}
-          onOpenFiles={(propertyId) => {
-            setActiveSidebar(propertyId);
-          }}
-        />
-      ))}
+      {/* Rows */}
+      <div className="table__body">
+        {rows.length > 0 ? (
+          rows.map((row) => (
+            <Row
+              key={row.id}
+              row={row}
+              baselines={baselines}
+              handleCellChange={(id, field, value) =>
+                setRows((prevRows) =>
+                  prevRows.map((r) =>
+                    r.id === id ? { ...r, [field]: value } : r
+                  )
+                )
+              }
+              isSelected={row.id === selectedRow}
+              onSave={handleSaveRow}
+              onCancel={handleCancelRow}
+              onDelete={handleDeleteRow}
+              onSelect={() => {
+                setSelectedRow(row.id);
+                if (onRowSelect) onRowSelect(row);
+              }}
+              onOpenFiles={(propertyId) => setActiveSidebar(propertyId)}
+            />
+          ))
+        ) : (
+          <div className="table__empty">No properties available</div>
+        )}
+      </div>
 
+      {/* Footer actions */}
+      <div className="table__footer">
+        <button
+          onClick={handleAddRow}
+          disabled={isSaving || hasDraft}
+          title={hasDraft ? "Save or cancel the current row first" : ""}
+          className="table__add-btn"
+        >
+          + Add Row
+        </button>
+      </div>
 
-      {
-        
-        <div className="table-actions">
-          <button
-            onClick={handleAddRow}
-            disabled={isSaving || hasDraft}
-            title={hasDraft ? "Save or cancel the current row first" : ""}
-          >
-            + Add Row
-          </button>
-        </div>
-      }
-
+      {/* File System */}
       {activeFolder && (
-        <div className="file-explorer-sidebar">
+        <div className="table__file-explorer">
           <FileExplorer propertyId={activeFolder} folderPath={[]} />
         </div>
       )}

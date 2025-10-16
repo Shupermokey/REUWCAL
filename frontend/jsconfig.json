@@ -15,6 +15,7 @@
 
     /* ✅ Optional aliases for cleaner imports */
     "paths": {
+      "@/*": ["*"],
       "@app/*": ["app/*"],
       "@assets/*": ["assets/*"],
       "@components/*": ["components/*"],

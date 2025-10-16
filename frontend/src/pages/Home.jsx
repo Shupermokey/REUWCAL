@@ -15,8 +15,8 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "../app/providers/AuthProvider";
 import { loadStripe } from "@stripe/stripe-js";
-
 import { db } from "../services/firebaseConfig";
+import "@/styles/pages/Home.css"; // ✅ Scoped page styles
 
 const stripePromise = loadStripe(
   "pk_test_51NbDDDEgiGJZMTseM8sReTmk3TwiQIQwZLOwEzVHXy0uZFt7Ikn3qIc2sbKts0tFEBN5d73GFG46qA7KMbYBj5OX00SUx5fV2y"
@@ -26,34 +26,32 @@ function Home() {
   const { base } = useApp();
   const [products, setProducts] = useState([]);
   const { user } = useAuth();
-  const [selectedRow, setSelectedRow] = useState(null); // 🔴 NEW
-  const [scenarioRows, setScenarioRows] = useState([]); // 🔴 NEW
-  const [baselines, setBaselines] = useState([]); // 🔴 NEW
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [scenarioRows, setScenarioRows] = useState([]);
+  const [baselines, setBaselines] = useState([]);
 
+  // Fetch product list
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsCollection = collection(db, "products"); // ✅ Correct Firestore collection reference
+        const productsCollection = collection(db, "products");
         const q = query(productsCollection, where("active", "==", true));
-
         const snapshot = await getDocs(q);
         const productList = [];
 
         for (const productDoc of snapshot.docs) {
           const productData = productDoc.data();
           const productId = productDoc.id;
-
-          const priceRef = collection(db, "products", productId, "prices"); // ✅ Correct subcollection reference
+          const priceRef = collection(db, "products", productId, "prices");
           const priceSnapshot = await getDocs(priceRef);
           const prices = priceSnapshot.docs.map((priceDoc) => ({
             priceId: priceDoc.id,
             priceData: priceDoc.data(),
           }));
-
           productList.push({
             id: productId,
             ...productData,
-            prices, // ✅ Add price data
+            prices,
           });
         }
 
@@ -62,10 +60,10 @@ function Home() {
         console.error("❌ Error fetching products:", error.message);
       }
     };
-
     fetchProducts();
-  }, []); // ✅ Run only once on component mount
+  }, []);
 
+  // Fetch baselines
   useEffect(() => {
     if (!user) return;
     const fetchBaselines = async () => {
@@ -80,17 +78,30 @@ function Home() {
 
   const handleRowSelect = (row) => {
     setSelectedRow(row);
-    setScenarioRows([row]); // Start with a copy of the base row
+    setScenarioRows([row]);
   };
 
   return (
-    <>
-          <Sidebar />
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {base === false && <Table onRowSelect={handleRowSelect} />}{" "}
-            {base !== false && <BaselineTable />}
-          </div>
-    </>
+    <div className="home">
+      <aside className="home__sidebar">
+        <Sidebar />
+      </aside>
+
+      <main className="home__main">
+        <header className="home__header">
+          <h1>Property Dashboard</h1>
+        </header>
+
+        <section className="home__table-wrapper">
+          {base === false && <Table onRowSelect={handleRowSelect} />}
+          {base !== false && <BaselineTable />}
+        </section>
+
+        <footer className="home__add-row">
+          <button>+ Add Row</button>
+        </footer>
+      </main>
+    </div>
   );
 }
 

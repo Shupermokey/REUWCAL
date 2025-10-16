@@ -1,0 +1,63 @@
+/* ==========================================================
+   LOGIN PAGE — clean minimal auth form
+   ========================================================== */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.login-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-6);
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: var(--sp-5);
+  text-align: center;
+}
+
+.login-card .form-group {
+  margin-bottom: var(--sp-4);
+}
+
+.login-card button {
+  width: 100%;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.login-card button:hover {
+  background: var(--color-accent-hover);
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: var(--sp-4);
+  font-size: 0.9rem;
+  color: var(--color-text-weak);
+}
+
+.login-footer a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}

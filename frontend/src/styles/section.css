@@ -1,199 +1,84 @@
-/* Top-level row WRAPPER – never grid */
-.sec__row {
-  position: relative;
-  display: block;
-  margin: 6px 0;
-  touch-action: none;
+/* ==========================================================
+   SECTION — used by Income and Baseline Assumptions
+   ========================================================== */
+
+/* Top-level container */
+.sec {
+  width: 100%;
+  margin: var(--sp-5) 0;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Grid for the main line */
-.sec__rowGrid {
+/* Header */
+.sec__header {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(120px, 1fr)) auto;
+  align-items: center;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--color-border);
+  background: #f8fafc;
+}
+
+/* Rows */
+.sec__row {
   display: grid;
   align-items: center;
-  column-gap: 12px;
-  grid-template-columns:
-    24px
-    repeat(var(--value-cols, 4), minmax(120px, 1fr))
-    1fr
-    auto;
-  padding: 4px 6px;
-  min-height: 34px;
-  box-sizing: border-box;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(120px, 1fr)) auto;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
 }
 
-/* First cell (caret + handle) */
-.sec__firstCell {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 28px;
-}
-.sec__caret {
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 2px;
+.sec__row:hover {
+  background: #f9fafb;
 }
 
-.sec__header > span:last-child { justify-self: end; display: inline-flex; gap: 8px; }
-
-/* Drag handle inside first cell */
-.sec__drag {
-  width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  user-select: none;
-  border: none;
-  background: transparent;
-  opacity: .75;
-  padding: 0;
+.sec__row:last-child {
+  border-bottom: none;
 }
-.sec__drag:active { cursor: grabbing; }
-.sec__drag.is-disabled { cursor: default; opacity: .25; }
 
-/* Label/values/actions cells */
+/* Totals row */
+.sec__total {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(120px, 1fr)) auto;
+  background: #f1f5f9;
+  border-top: 1px solid var(--color-border);
+  font-weight: 700;
+  padding: 10px 14px;
+  color: var(--color-text);
+}
+
+/* Helper classes */
 .sec__label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  min-width: 0;
+  font-weight: 500;
+  color: var(--color-text);
 }
-.sec__indent { width: 0; }
-.sec__labelText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .sec__values {
-  display: grid;
-  grid-template-columns: repeat(var(--value-cols, 4), minmax(100px, 1fr));
-  gap: 8px;
-  min-width: 0;
+  display: contents;
 }
-
-/* Make the inputs inside LeafEditor/BranchTotals become the grid items */
-.sec__values .leaf-editor { display: contents; }
-.sec__values .branch-totals { display: contents; }
-
-/* (Optional) if LeafEditor or BranchTotals wrap inputs in .cell too */
-.sec__values .cell { display: contents; }
-
 
 .sec__actions {
-  display: inline-flex;
-  gap: 3px;
+  display: flex;
   justify-content: flex-end;
-}
-.sec__actions .danger-btn { color: #b40000; }
-
-/* Subtree under the main line */
-.sec__childSpanner { display: block; }
-
-/* Child rows are their own grids */
-.sec__childRow {
-  display: grid;
-  align-items: center;
-  column-gap: 12px;
-  grid-template-columns:
-    24px
-    minmax(220px, 1fr)
-    repeat(var(--value-cols, 4), minmax(120px, 1fr))
-    1fr
-    auto;
-  padding: 2px 6px;
-  box-sizing: border-box;
-}
-.sec__childRow .sec__label { padding-left: calc(8px + (var(--depth, 0) * 16px)); }
-
-/* Drag visuals */
-.sec__row.is-dragging .sec__rowGrid {
-  outline: 2px solid rgba(58, 167, 65, 0.4);
-  background: rgba(58, 167, 65, 0.06);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  gap: var(--sp-2);
 }
 
-
-/* === Adapter for the legacy totals row =================================== */
-/* Scope under .sec so we don't affect anything else */
-.sec .section-total.section-row {
-  /* make it a proper grid like the main rows */
-  display: grid !important;
-  align-items: center;
-  column-gap: 12px;
-  grid-template-columns:
-    24px
-    minmax(220px, 1fr)
-    repeat(var(--value-cols, 4), minmax(100px, 1fr))
-    auto;
-  padding: 4px 6px;
-  box-sizing: border-box;
+.sec__actions button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-text-dim);
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-/* first column spacer in totals row (same width as rows) */
-.sec .section-total .caret-spacer {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
+.sec__actions button:hover {
+  background: #f3f4f6;
 }
-
-/* label cell in totals row */
-.sec .section-total .line-label.total-label {
-  display: inline-flex;
-  align-items: center;
-  font-weight: 700;
-  min-height: 28px;
-  min-width: 0;
-}
-
-/* make the chips behave like value cells */
-.sec .section-total .total-chip {
-  justify-self: stretch;
-  text-align: right;
-  padding: 8px 10px;
-  background: #f1f5ff;
-  border: 1px solid #dbe3ff;
-  border-radius: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* keep any old "value-grid" inside totals harmless */
-.sec .section-total .value-grid { display: contents; }
-
-
-/* --- Circuit breakers so legacy selectors can't override rows inside .sec --- */
-
-/* Old code used `.section-row { display: contents }` etc.
-   Make sure anything named `section-row` under our .sec namespace behaves. */
-.sec .section-row { 
-  display: block !important;      /* our rows are wrappers, not grids */
-}
-
-/* Totals adapter (keeps chips aligned with value columns) */
-.sec .section-total.section-row {
-  display: grid !important;
-  align-items: center;
-  column-gap: 12px;
-  grid-template-columns:
-    24px
-    minmax(220px, 1fr)
-    repeat(var(--value-cols, 4), minmax(100px, 1fr))
-    auto;
-  padding: 4px 6px;
-  box-sizing: border-box;
-}
-.sec .section-total .caret-spacer { width: 24px; height: 24px; display: inline-block; }
-.sec .section-total .line-label.total-label { display: inline-flex; align-items: center; font-weight: 700; min-height: 28px; min-width: 0; }
-.sec .section-total .total-chip { justify-self: stretch; text-align: right; padding: 8px 10px; background: #f1f5ff; border: 1px solid #dbe3ff; border-radius: 12px; font-variant-numeric: tabular-nums; }
-.sec .section-total .value-grid { display: contents; }
-
-/* Ensure LeafEditor/BranchTotals spill their inputs into the grid columns */
-.sec__values .leaf-editor { display: contents; }
-.sec__values .branch-totals { display: contents; }
-/* If those components wrap inputs in .cell, this keeps alignment */
-.sec__values .cell { display: contents; }
-
-
-
-

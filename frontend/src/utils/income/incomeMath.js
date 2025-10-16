@@ -26,3 +26,13 @@ export function syncByView(leaf, view, key, n) {
   else { next[M[key]] = n; next[A[key]] = n * 12; }
   return next;
 }
+
+export const calcPSF = (gross, gba) => {
+  if (!gba || gba <= 0) return 0;
+  return parseFloat((gross / gba).toFixed(4));
+};
+
+export const calcPUnit = (gross, units) => {
+  if (!units || units <= 0) return 0;
+  return parseFloat((gross / units).toFixed(4));
+};

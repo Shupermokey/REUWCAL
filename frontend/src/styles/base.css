@@ -1,0 +1,184 @@
+/* ==========================================================
+   BASE LAYOUT – unified grid for header + rows + app shell
+   ========================================================== */
+
+:root {
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ==========================================================
+   SECTION BASE LAYOUT – unified grid for header + rows
+   ========================================================== */
+
+.sec {
+  width: 100%;
+  margin: 18px auto;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-family);
+}
+
+/* Header wrapper */
+.sec__header {
+  border-bottom: 2px solid var(--color-border);
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+}
+
+/* Shared grid for header and rows */
+.sec__headerGrid,
+.sec__rowGrid {
+  display: grid;
+  grid-template-columns:
+    minmax(200px, 1.5fr)
+    repeat(auto-fit, minmax(120px, 1fr))
+    auto;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Rows */
+.sec__row {
+  display: grid;
+  align-items: center;
+  grid-template-columns:
+    minmax(200px, 1.5fr)
+    repeat(auto-fit, minmax(120px, 1fr))
+    auto;
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 14px;
+  transition: background 0.15s ease;
+}
+
+.sec__row:hover {
+  background: #f9fafb;
+}
+
+/* Totals row */
+.sec__total {
+  display: grid;
+  grid-template-columns:
+    minmax(200px, 1.5fr)
+    repeat(auto-fit, minmax(120px, 1fr))
+    auto;
+  background: #f1f5f9;
+  border-top: 1px solid var(--color-border);
+  font-weight: 700;
+  padding: 10px 14px;
+  color: var(--color-text);
+}
+
+/* ==========================================================
+   APP SHELL LAYOUT – sidebar + main content
+   ========================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 0;
+  background: var(--color-bg);
+}
+
+.app-main {
+  flex: 1;
+  margin-left: 240px; /* matches sidebar width */
+  padding: var(--sp-5);
+  position: relative;
+  z-index: 10;
+  background: var(--color-bg);
+  overflow-x: auto;
+}
+
+/* ==========================================================
+   TABLE CONTAINERS – universal table / row handling
+   ========================================================== */
+
+.table-container {
+  position: relative;
+  z-index: 20;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 12px;
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: #f9fafb;
+}
+
+/* ==========================================================
+   GLOBAL ELEMENTS – modals, dropdowns, overlays
+   ========================================================== */
+
+.modal,
+.dropdown-menu,
+.file-sidebar {
+  position: relative;
+  z-index: 1000;
+}
+
+body,
+main,
+.app-main {
+  pointer-events: auto;
+}
+
+/* Disable clicks behind active overlay */
+body.overlay-active .app-main {
+  pointer-events: none;
+}
+
+/* ==========================================================
+   CARDS / PANELS / MISC
+   ========================================================== */
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-4);
+}
+
+.panel {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-5);
+}
+
+/* ==========================================================
+   SCROLLBAR STYLING
+   ========================================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}

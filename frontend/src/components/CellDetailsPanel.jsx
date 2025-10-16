@@ -9,7 +9,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import FileExplorer from "./Sidebar/FileSystem/FileExplorer";
-import "../styles/CellDetailsPanel.css";
+import "@/styles/components/CellDetailsPanel.css";
 import CustomBreakdownInputs from "./CustomBreakdownInputs";
 import { breakdownConfig } from "../columnConfig";
 import EmbeddedFolderExplorer from "./Sidebar/FileSystem/EmbeddedFolderExplorer";

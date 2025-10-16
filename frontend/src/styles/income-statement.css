@@ -1,300 +1,264 @@
-/* ================================
-   Income Statement Styles (Full)
-   ================================ */
+/* ==========================================================
+   INCOME STATEMENT — property income, expenses, and totals
+   ========================================================== */
 
-/* --- Panel shell --- */
+/* Wrapper */
 .income-statement-panel {
-  max-width: 1650px;
-  margin: 0 auto;
-}
-
-/* --- Section container --- */
-.statement-section {
-  margin: 18px 0 28px;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 2px 10px rgba(0,0,0,.04);
-  padding: 10px 12px 6px;
-  padding-right: 16px;
-}
-
-/* --- Core grid -------------------------------------------
-   caret | label | value columns (dynamic) | actions
------------------------------------------------------------ */
-.section-grid {
-  display: grid;
-  align-items: start;
-  column-gap: 12px;
-  grid-template-columns:
-    24px
-    minmax(220px, 1fr)
-    repeat(var(--value-cols), minmax(120px, 1fr))
-    auto;
-    overflow-x: auto;
-}
-
-/* Value-column counts per mode */
-.section-grid.mode-monthly { --value-cols: 4; }
-.section-grid.mode-annual  { --value-cols: 4; }
-/* BOTH mode = 8 columns (no wrapping, clean row) */
-.section-grid.mode-both {
-  --value-cols: 8;
-  grid-template-columns:
-    24px
-    minmax(200px, 1fr)           /* label can shrink a bit */
-    repeat(8, minmax(100px, 1fr))/* was 120px; 100px keeps inputs usable */
-    max-content;                 /* actions */
-}
-
-/* Rows contribute their cells directly to the outer grid */
-.section-row { display: contents; }
-
-.value-grid  { display: contents; }
-
-/* --- Section header (click to collapse) --- */
-.statement-section > h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0f172a;
-  margin: 0 0 6px;
-  padding: 8px 6px;
-  border-radius: 8px;
-  background: #f8fafc;
-  display: contents;
-}
-
-/* --- Caret / spacer --- */
-/* Caret column: button/spacer must be identical width */
-.caret-btn,
-.caret-spacer {
-  width: 24px;
-  height: 24px;
-  display: inline-block;   /* ensure it occupies the grid cell */
-}
-
-/* Label layout with fixed indent area */
-.line-label {
-  display: flex;
-  align-items: center;
-  position: relative;
-  min-height: 30px;        /* keeps inputs aligned when label wraps */
-  gap: 8px;
-}
-
-/* Indentation that never collapses when text wraps */
-.line-label .indent-spacer {
-  flex: 0 0 calc(var(--depth, 0) * 18px); /* depth × step */
-  height: 100%;
-}
-
-/* Optional: guide rail, but only for depth >= 1 */
-.line-label[data-depth="0"] .indent-spacer::before { display: none; }
-.line-label .indent-spacer::before {
-  content: "";
-  display: block;
-  width: 1px;
-  height: 70%;
-  margin: 0 auto;
-  background: #e5e7eb;
-  border-radius: 1px;
-}
-
-/* The actual label text may wrap, but won’t shift columns */
-.line-label .label-text {
-  min-width: 0;                  /* allow shrinking in the grid */
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  /* If you prefer a single line with ellipsis:
-     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  */
-}
-
-
-.section-grid .line-item:hover .line-label {
-  color: #0b5cff;
-}
-
-/* --- Column headers --- */
-.col-header {
-  font-weight: 600;
-  font-size: .92rem;
-  text-align: center;
-  color: #334155;
-  white-space: nowrap;
-  padding: 6px 8px;
-  background: #f8fafc;
-  border: 1px solid #eef2f7;
-  border-radius: 10px;
-}
-
-/* --- Inputs / totals --- */
-.leaf-editor input {
   width: 100%;
-  padding: 8px 10px;
-  text-align: right;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
-  font-variant-numeric: tabular-nums;
-  transition: border-color .15s, box-shadow .15s, transform .02s;
-  min-width: 0;
-}
-.leaf-editor input:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96,165,250,.2);
-}
-.leaf-editor input:active { transform: translateY(1px); }
-
-.branch-totals .total-cell {
-  padding: 8px 10px;
-  text-align: right;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-variant-numeric: tabular-nums;
+  max-width: 1200px;
+  margin: 0 auto var(--sp-7);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-6);
+  color: var(--color-text);
 }
 
-/* --- Row actions --- */
-.row-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-  align-self: start;
-  flex-wrap: wrap;
-}
-.row-actions .sub-btn,
-.row-actions .danger-btn,
-.add-btn {
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #0f172a;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: .85rem;
-  transition: background .15s, border-color .15s, transform .02s;
-}
-.row-actions .sub-btn:hover,
-.add-btn:hover {
-  background: #f5f8ff;
-  border-color: #bfd4ff;
-}
-.row-actions .danger-btn { color: #b91c1c; }
-.row-actions .danger-btn:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-.row-actions button:active,
-.add-btn:active { transform: translateY(1px); }
-
-/* Hide actions and lock inputs for computed rows in OPEX */
-
-.is-computed-row input.cell-input {
-  pointer-events: none;          /* prevent typing */
-  background: #f7f9fc;           /* subtle "read-only" look (optional) */
-  font-weight: 600;              /* optional emphasis */
-}
-
-/* optional, keeps spacing intact */
-.is-computed-row .row-actions { visibility: hidden; }
-.section-grid input.ro { background: #f7f9fc; font-weight: 600; }
-
-
-.section-grid input.ro { background: #f7f9fc; font-weight: 600; }
-/* --- Ensure leaf-editor feeds inputs into the grid --- */
-.section-grid .leaf-editor {
-  display: contents;
-}
-
-/* --- Section total row ------------------------------- */
-.section-total .total-label {
-  font-weight: 700;
-  color: #0b1324;
-}
-.section-total .total-label::before {
-  content: "";
-  position: relative;
-  display: block;
-  height: 1px;
-  background: #eef2f7;
-  margin-bottom: 8px;
-}
-.total-chip {
-  padding: 8px 10px;
-  text-align: right;
-  background: #f1f5ff;
-  border: 1px solid #dbe3ff;
-  border-radius: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* --- Hover flourishes --- */
-.section-grid .line-item:hover .row-actions .sub-btn {
-  border-color: #bfd4ff;
-  background: #f5f8ff;
-}
-
-/* --- Header bar layout --- */
+/* Header bar */
 .income-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--sp-5);
+  padding-bottom: var(--sp-3);
 }
-.income-header .title {
-  font-size: 1.1rem;
+
+.income-header h2 {
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #0f172a;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.income-header .actions {
   display: flex;
+  gap: var(--sp-3);
+}
+
+.income-header button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.income-header .btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.income-header .btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.income-header .btn-secondary {
+  background: #f3f4f6;
+  color: var(--color-text);
+}
+
+.income-header .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Section grid */
+.statement-section {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: var(--sp-5);
+  overflow: hidden;
+}
+
+/* Section title row */
+.section-header {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(120px, 1fr)) auto;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 10px 14px;
+}
+
+/* Line items */
+.line-item {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(120px, 1fr)) auto;
   align-items: center;
   gap: 8px;
-}
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
 }
 
-/* ViewToggle buttons */
-.view-toggle { display: inline-flex; gap: 8px; }
-.view-toggle button {
-  border: 1px solid #e5e7eb;
+.line-item:hover {
+  background: #f9fafb;
+}
+
+/* Label column */
+.line-item .label {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Numeric cells */
+.line-item input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  text-align: right;
+  font-size: 0.9rem;
   background: #fff;
-  color: #0f172a;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: .85rem;
-  transition: background .15s, border-color .15s, transform .02s;
+  color: var(--color-text);
 }
-.view-toggle button.active,
-.view-toggle button:hover {
-  background: #f5f8ff;
-  border-color: #bfd4ff;
-}
-.view-toggle button:active { transform: translateY(1px); }
 
-/* --- Responsive tweaks --- */
-@media (max-width: 1100px) {
-  .section-grid { overflow-x: auto; }
+.line-item input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
-@media (max-width: 900px) {
-  .section-grid {
-    grid-template-columns:
-      20px minmax(160px, 1fr)
-      repeat(var(--value-cols), minmax(100px, 1fr)) auto;
+
+/* Sub-item (nested row) */
+.sub-item {
+  background: #fafafa;
+  border-left: 3px solid var(--color-border);
+  margin-left: 20px;
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+}
+
+/* Totals row */
+.section-total {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(120px, 1fr)) auto;
+  align-items: center;
+  background: #f1f5f9;
+  border-top: 1px solid var(--color-border);
+  padding: 10px 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Add / delete sub-row buttons */
+.section-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+}
+
+.section-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--color-text-dim);
+  transition: color 0.2s ease;
+}
+
+.section-actions button:hover {
+  color: var(--color-accent);
+}
+
+/* Totals summary bar */
+.totals-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: var(--sp-4);
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+/* Export / save buttons */
+.totals-bar .actions {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.totals-bar button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.totals-bar .btn-export {
+  background: #f3f4f6;
+  color: var(--color-text);
+}
+
+.totals-bar .btn-export:hover {
+  background: #e5e7eb;
+}
+
+.totals-bar .btn-save {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.totals-bar .btn-save:hover {
+  background: #15803d;
+}
+
+/* Empty state */
+.income-empty {
+  text-align: center;
+  padding: 30px;
+  font-size: 0.95rem;
+  color: var(--color-text-weak);
+}
+
+/* Scrollbar */
+.income-statement-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.income-statement-panel::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 8px;
+}
+
+.income-statement-panel::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .section-header,
+  .line-item,
+  .section-total {
+    grid-template-columns: minmax(160px, 1.2fr) repeat(2, minmax(100px, 1fr)) auto;
+    font-size: 0.88rem;
+    padding: 8px 10px;
   }
-  .line-label { min-width: 160px; }
-}
-@media (max-width: 640px) {
-  .section-grid {
-    grid-template-columns:
-      18px minmax(140px, 1fr)
-      repeat(var(--value-cols), minmax(90px, 1fr)) auto;
+
+  .income-header h2 {
+    font-size: 1.05rem;
   }
-  .line-label { min-width: 140px; }
+
+  .totals-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
 }
-
-
-
-

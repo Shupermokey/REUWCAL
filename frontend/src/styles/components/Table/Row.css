@@ -1,0 +1,146 @@
+/* ==========================================================
+   ROW — individual property row styling
+   ========================================================== */
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 14px;
+  font-size: 0.93rem;
+  color: var(--color-text);
+  transition: background 0.15s ease;
+}
+
+.row:hover {
+  background: #f9fafb;
+}
+
+.row--selected {
+  background: var(--color-accent-muted);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* === Cells === */
+.row__cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row__cell--tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* === Inputs and Editable Cells === */
+.row__input,
+.row__editable input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.row__input:focus,
+.row__editable input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+.row__editable {
+  background: #fff;
+}
+
+.row__editable--invalid,
+.row__input--invalid {
+  border: 1px solid #e53935 !important;
+  background-color: #ffebee !important;
+}
+
+/* === Action Buttons === */
+.row__actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.row__btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 0.1s ease, color 0.2s ease;
+}
+
+.row__btn:hover {
+  transform: translateY(-1px);
+}
+
+.row__btn--save {
+  color: #10b981;
+}
+
+.row__btn--cancel {
+  color: #ef4444;
+}
+
+.row__btn--edit {
+  color: var(--color-accent);
+}
+
+.row__btn--delete {
+  color: #dc2626;
+}
+
+.row__btn--files {
+  color: var(--color-text);
+}
+
+/* === Value Display === */
+.row__value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === Details Panel (below row) === */
+.row__details {
+  display: flex;
+  width: 100%;
+  border-top: 1px solid var(--color-border);
+  background: #f9fafb;
+  padding: 14px;
+  gap: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    padding: 8px 10px;
+    font-size: 0.88rem;
+  }
+
+  .row__btn {
+    font-size: 0.85rem;
+  }
+}

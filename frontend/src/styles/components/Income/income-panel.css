@@ -1,0 +1,66 @@
+/* ==========================================================
+   INCOME PANEL — main container for IncomeStatement sections
+   ========================================================== */
+.income-panel {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-5);
+}
+
+.income-panel h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: var(--sp-4);
+}
+
+.section-wrapper {
+  margin-bottom: var(--sp-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.section-header {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(120px, 1fr)) auto;
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 14px;
+}
+
+.section-row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: center;
+  column-gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
+}
+
+.section-row:hover {
+  background: #f9fafb;
+}
+
+.section-row:last-child {
+  border-bottom: none;
+}
+
+.section-total {
+  background: #f1f5f9;
+  font-weight: 600;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-border);
+}

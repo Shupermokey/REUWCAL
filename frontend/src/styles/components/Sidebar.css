@@ -1,0 +1,112 @@
+/* ==========================================================
+   SIDEBAR — fixed navigation, safe z-index & layout isolation
+   ========================================================== */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--color-card);
+  border-right: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-4);
+
+  /* ✅ critical fixes */
+  z-index: 5; /* sits below main content now */
+  pointer-events: auto;
+}
+
+/* Sidebar header (logo, user, etc.) */
+.sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+}
+
+/* Nav links */
+.sidebar a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.sidebar a:hover {
+  background: #f3f4f6;
+  color: var(--color-accent);
+}
+
+/* Active state */
+.sidebar a.active {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Folder/file buttons */
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+.sidebar__item:hover {
+  background: #f9fafb;
+}
+
+/* Divider */
+.sidebar__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--sp-3) 0;
+}
+
+/* Collapsed state (if applicable) */
+.sidebar.hidden {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* Optional: overlay when sidebar opens on mobile */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 4; /* below sidebar itself */
+  display: none;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* App main layout fix */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 0;
+}
+
+.app-main {
+  flex: 1;
+  margin-left: 240px; /* same width as sidebar */
+  padding: var(--sp-5);
+  position: relative;
+  z-index: 10; /* ensures it sits above sidebar */
+  background: var(--color-bg);
+  overflow-x: auto;
+}

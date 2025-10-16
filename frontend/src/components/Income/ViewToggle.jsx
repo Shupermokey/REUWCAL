@@ -1,6 +1,8 @@
 // ViewToggle.jsx (ensure it sets 'active' class)
 import React from "react";
 import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
+import "@/styles/components/Income/ViewToggle.css";
+
 
 export default function ViewToggle() {
   const { displayMode, setDisplayMode } = useIncomeView();

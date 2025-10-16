@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import App from "./App.jsx";
+import "@/styles/index.css";
+
 import { AppProvider } from "./app/providers/AppProvider.jsx";
 import { TableProvider } from "./app/providers/TableProvider.jsx";
 import { AuthProvider } from "./app/providers/AuthProvider.jsx";

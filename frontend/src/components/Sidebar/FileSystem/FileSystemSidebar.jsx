@@ -1,5 +1,7 @@
 import FileExplorer from "./FileExplorer";
-import '../../../styles/FileSystemSidebar.css'
+import "@/styles/components/FileSystemSidebar.css";
+
+
 
 export default function FileSystemSidebar({ propertyId, isOpen, onClose }) {
     if (!isOpen) return null;

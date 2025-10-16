@@ -1,0 +1,48 @@
+/* ==========================================================
+   BRANCH TOTALS — subtotal line styling for grouped branches
+   ========================================================== */
+
+.total-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 6px;
+  border-top: 1px solid var(--color-border);
+  background: #f9fafb;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* Emphasis on totals */
+.total-cell:first-of-type {
+  border-left: none;
+}
+
+.total-cell:last-of-type {
+  border-right: none;
+}
+
+.total-cell strong {
+  font-weight: 600;
+}
+
+/* Hover feedback when exploring branches */
+.sec__row:hover .total-cell {
+  background: #f3f4f6;
+}
+
+/* Responsive handling */
+@media (max-width: 768px) {
+  .total-cell {
+    padding: 3px 4px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Optional subtle visual divider for clarity */
+.sec__row.has-children .total-cell {
+  border-top: 2px solid var(--color-border);
+  background: #f7fafc;
+  font-weight: 600;
+  color: #111827;
+}

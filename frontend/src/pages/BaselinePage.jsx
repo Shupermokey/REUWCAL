@@ -8,6 +8,11 @@ import { useAuth } from "../app/providers/AuthProvider";
 import Sidebar from "../components/Sidebar";
 import BaselineSection from "../features/baseline/BaselineAssumptions/BaselineSection";
 
+//CSS
+import "@/styles/components/Baseline.css";
+import "@/styles/section.css";  // aligns header/row grid structure
+
+
 const defaultRows = [
   { id: 0, name: "Base Rent (MR) Growth Rate", percentBRI: 100, $PSF: 100, growthRate: 0 },
   { id: 1, name: "Vacancy Rate", percentBRI: 0, $PSF: 0, growthRate: 0 },

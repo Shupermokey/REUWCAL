@@ -1,6 +1,8 @@
 import React from "react";
 import ViewToggle from "./ViewToggle.jsx"; // ⬅️ add this
 
+import "@/styles/components/Income/HeaderBar.css";
+
 export default function HeaderBar({ saving, error, lastSavedAt, onSave }) {
   return (
     <div className="income-header">

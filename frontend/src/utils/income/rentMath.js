@@ -22,5 +22,20 @@ export const RentFormulas = {
   psfFromRate: ({ rate }) => num(rate),
 };
 
+export function recalcMetrics(val, { GBA, UNITS }) {
+  if (!val || !GBA || !UNITS) return val;
+  const next = { ...val };
+  const g = next.grossMonthly ?? 0;
+  if (g) {
+    next.psfMonthly = Number((g / GBA).toFixed(4));
+    next.punitMonthly = Number((g / UNITS).toFixed(4));
+    next.grossAnnual = g * 12;
+    next.psfAnnual = next.psfMonthly * 12;
+    next.punitAnnual = next.punitMonthly * 12;
+  }
+  return next;
+}
+
+
 const num = (x) => (typeof x === "number" ? x : parseFloat(x ?? "") || 0);
 const safe = (d) => (d === 0 ? 1 : d);

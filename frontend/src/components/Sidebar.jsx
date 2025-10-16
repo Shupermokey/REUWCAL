@@ -6,6 +6,10 @@ import { useDrop } from "react-dnd";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../app/providers/AuthProvider";
 
+//CSS
+import "@/styles/components/Sidebar.css";
+
+
 function Sidebar() {
   const { showFilePanel, setShowFilePanel } = useApp();
   const { user, subscription, tier } = useAuth();
