@@ -1,64 +1,61 @@
 /* ==========================================================
-   VIEW TOGGLE — Monthly / Annual / Both
+   VIEWTOGGLE.CSS — Minimal toggle buttons for view modes
    ========================================================== */
 
 .view-toggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  background: #f3f4f6;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  overflow: hidden;
-  box-shadow: var(--shadow-xs);
+  justify-content: flex-start;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 3px 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* Buttons */
 .view-toggle button {
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--color-text);
+  all: unset;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #374151;
+  padding: 4px 10px;
+  background: transparent;
+  transition: all 0.2s ease;
 }
 
 .view-toggle button:hover {
-  background: #e5e7eb;
+  background: #f3f4f6;
 }
 
-/* Active state */
+/* Active state (blue highlight) */
 .view-toggle button.active {
-  background: var(--color-accent);
-  color: #fff;
-  font-weight: 600;
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
 }
 
-/* Rounded ends */
-.view-toggle button:first-child {
-  border-radius: 999px 0 0 999px;
-}
-.view-toggle button:last-child {
-  border-radius: 0 999px 999px 0;
+/* Smooth focus for keyboard users */
+.view-toggle button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
 }
 
-/* Focus & accessibility */
-.view-toggle button:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--color-accent);
+/* Fit nicely in the HeaderBar */
+.income-header .view-toggle {
+  margin-right: 12px;
 }
 
-/* Disabled / inactive visual (not used, but safe fallback) */
-.view-toggle button:disabled {
-  color: #9ca3af;
-  cursor: not-allowed;
-  background: #f9fafb;
-}
-
-/* Responsive layout */
 @media (max-width: 768px) {
+  .view-toggle {
+    gap: 4px;
+    padding: 3px;
+  }
   .view-toggle button {
-    padding: 5px 8px;
-    font-size: 0.8rem;
+    padding: 3px 8px;
+    font-size: 0.75rem;
   }
 }

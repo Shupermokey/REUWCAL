@@ -10,7 +10,6 @@ import BaselineSection from "../features/baseline/BaselineAssumptions/BaselineSe
 
 //CSS
 import "@/styles/components/Baseline.css";
-import "@/styles/section.css";  // aligns header/row grid structure
 
 
 const defaultRows = [

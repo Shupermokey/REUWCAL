@@ -1,0 +1,44 @@
+/* ==========================================================
+   VALUECOLUMNS.CSS — Aligned with Section Grid
+   ========================================================== */
+
+.value-columns {
+  display: contents; /* ✅ Makes <span> inherit grid columns from parent */
+}
+
+.value-columns span {
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.85rem;
+  padding-right: 4px;
+  letter-spacing: -0.1px;
+}
+
+/* ==========================================================
+   Display Mode Variants
+   ========================================================== */
+
+.value-columns.mode-both span {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+/* Slightly lighter gray for secondary column group */
+.mode-both span:nth-child(n + 5) {
+  color: #6b7280;
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media (max-width: 900px) {
+  .value-columns span {
+    font-size: 0.75rem;
+    padding-right: 2px;
+  }
+}

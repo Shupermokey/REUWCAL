@@ -9,15 +9,13 @@
 
 /* Theme and base app shell */
 @import "./theme.css";
-@import "./base.css";
+
 
 /* Common utilities */
 @import "./utils/buttons.css";
 @import "./utils/forms.css";
 @import "./utils/modals.css";
 
-/* Optional: other shared elements */
-@import "./section.css";
 
 /* Global font / scrollbar / links */
 body {

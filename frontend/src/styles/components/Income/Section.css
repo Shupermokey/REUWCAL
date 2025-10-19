@@ -1,290 +1,373 @@
 /* ==========================================================
-   SECTION – Dynamic Financial Breakdown
-   Updated: Fluid grid, no scroll, no overlap
+   SECTION.CSS — Unified Grid for Monthly / Annual / Both
+   v8.0 — Final Polished Layout
    ========================================================== */
 
-/* Root wrapper */
 .sec {
-  background: var(--color-card, #fff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-  margin-bottom: 22px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-top: 16px;
   font-family: "Segoe UI", system-ui, sans-serif;
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* Header */
+/* ==========================================================
+   Grid Templates (auto-adjust to mode)
+   ========================================================== */
+
+:root {
+  --col-drag: 32px;
+  --col-label: 1fr;
+  --col-value: 120px;
+  --col-actions: 160px;
+}
+
+/* Monthly: 4 numeric columns */
+.sec.mode-monthly .sec__headerGrid,
+.sec.mode-monthly .sec__rowGrid,
+.sec.mode-monthly .sec__subRowGrid,
+.sec.mode-monthly .sec__totalRow {
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(4, var(--col-value))
+    var(--col-actions);
+}
+
+/* Annual: 4 numeric columns */
+.sec.mode-annual .sec__headerGrid,
+.sec.mode-annual .sec__rowGrid,
+.sec.mode-annual .sec__subRowGrid,
+.sec.mode-annual .sec__totalRow {
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(4, var(--col-value))
+    var(--col-actions);
+}
+
+/* Both: 8 numeric columns (4 Monthly + 4 Annual) */
+.sec.mode-both .sec__headerGrid,
+.sec.mode-both .sec__rowGrid,
+.sec.mode-both .sec__subRowGrid,
+.sec.mode-both .sec__totalRow {
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(8, var(--col-value))
+    var(--col-actions);
+}
+
+/* ==========================================================
+   Header
+   ========================================================== */
+
 .sec__header {
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.sec__headerGrid {
+  display: grid;
+  align-items: center;
+  column-gap: 10px;
+  padding: 6px 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sec__headerGrid .value-columns {
+  display: contents;
+}
+
+.sec__headerGrid .value-columns span {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: right;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.85rem;
+  padding-right: 4px;
 }
 
 /* ==========================================================
-   GRID LAYOUT (responsive, adaptive)
+   Rows
    ========================================================== */
 
-.sec__headerGrid,
-.sec__rowGrid {
+.sec__rowGrid,
+.sec__subRowGrid,
+.sec__totalRow {
   display: grid;
   align-items: center;
-  gap: 10px;
+  column-gap: 10px;
   width: 100%;
-  grid-template-columns:
-    28px
-    minmax(180px, 1.5fr)
-    minmax(540px, 6fr)
-    minmax(140px, auto);
+  box-sizing: border-box;
 }
 
-@media (min-width: 1400px) {
-  .sec__headerGrid,
-  .sec__rowGrid {
-    grid-template-columns:
-      28px
-      minmax(220px, 1.8fr)
-      minmax(650px, 6.5fr)
-      minmax(180px, auto);
-  }
+.sec__rowGrid {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f3f4f6;
 }
 
-@media (max-width: 1100px) {
-  .sec__headerGrid,
-  .sec__rowGrid {
-    grid-template-columns:
-      28px
-      minmax(160px, 1.3fr)
-      minmax(420px, 5fr)
-      minmax(120px, auto);
-  }
+.sec__rowGrid:hover {
+  background: #f8fafc;
+}
+
+/* Sub-row indentation */
+.sec__subRowGrid {
+  padding: 4px 10px 4px 38px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fcfcfd;
+}
+
+.sec__subRowGrid:hover {
+  background: #f9fafc;
 }
 
 .sec__firstCell {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
 }
 
 .sec__label {
-  display: flex;
-  align-items: center;
-}
-
-.sec__indent {
-  width: calc(var(--depth, 0) * 16px);
-}
-
-.sec__labelText {
-  font-size: 0.95rem;
+  font-weight: 500;
   color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ==========================================================
-   VALUES AREA (inputs + totals)
-   ========================================================== */
-
-/* mode-specific grid layout */
-.sec__values.mode-monthly,
-.sec__values.mode-annual {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(80px, 1fr));
-  gap: 6px;
-  justify-content: stretch;
+.sec__values {
+  display: contents;
 }
 
-.sec__values.mode-both {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(70px, 1fr));
-  gap: 6px;
-  justify-content: stretch;
+/* Inputs */
+.leaf-editor {
+  display: contents;
 }
 
-/* inputs */
-.sec__values input {
+.leaf-editor input {
   width: 100%;
+  padding: 6px 8px;
   text-align: right;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  padding: 4px 6px;
-  font-size: 0.9rem;
   background: #fff;
-  transition: border 0.15s ease, background 0.15s ease;
-}
-
-.sec__values input:focus {
-  border-color: #2563eb;
-  background: #f0f8ff;
-  outline: none;
-}
-
-/* total cells */
-.total-cell {
-  text-align: right;
-  background: #f3f4f6;
-  border-radius: 6px;
-  padding: 4px 6px;
-  font-weight: 600;
+  font-size: 0.85rem;
   color: #111827;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
 }
 
-/* ==========================================================
-   ROW STYLING
-   ========================================================== */
-
-.sec__row {
-  border-bottom: 1px solid #f0f0f0;
-  background: #fff;
-  transition: background 0.2s ease;
-}
-
-.sec__row:hover {
+.leaf-editor input:hover {
+  border-color: #9ca3af;
   background: #f9fafb;
 }
 
-.sec__row.is-dragging {
-  background: #e0ecff;
-  box-shadow: inset 0 0 0 2px #2563eb;
-  opacity: 0.95;
+.leaf-editor input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background: #fff;
 }
 
-/* collapse connector */
-.sec__childSpanner {
-  margin-left: 24px;
-  border-left: 2px dashed #e5e7eb;
-  padding-left: 10px;
+.leaf-editor input[readonly] {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 /* ==========================================================
-   BUTTONS
+   Buttons
    ========================================================== */
 
-.add-btn,
+.sec__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .sub-btn,
-.danger-btn {
-  font-size: 0.85rem;
+.danger-btn,
+.add-btn {
   border: none;
   border-radius: 6px;
-  padding: 5px 10px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.add-btn {
-  background: #2563eb;
-  color: #fff;
-}
-
-.add-btn:hover {
-  background: #1d4ed8;
+  transition: background 0.2s ease;
 }
 
 .sub-btn {
-  background: #2563eb;
-  color: #fff;
+  background: #f3f4f6;
+  color: #374151;
 }
-
 .sub-btn:hover {
-  background: #1d4ed8;
+  background: #e5e7eb;
 }
 
 .danger-btn {
   background: #ef4444;
   color: #fff;
 }
-
 .danger-btn:hover {
   background: #dc2626;
 }
 
-/* collapse + drag icons */
-.sec__drag {
-  background: transparent;
-  border: none;
-  color: #aaa;
-  font-size: 0.8rem;
-  cursor: grab;
-  user-select: none;
+.add-btn {
+  background: #2563eb;
+  color: #fff;
 }
-
-.sec__caret {
-  background: transparent;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.sec__caret:hover {
-  color: #2563eb;
+.add-btn:hover {
+  background: #1d4ed8;
 }
 
 /* ==========================================================
-   TOTAL ROW
+   Carets / Drag
+   ========================================================== */
+
+.sec__drag {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1rem;
+  cursor: grab;
+}
+.sec__drag:active {
+  cursor: grabbing;
+}
+
+.sec__caret {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+/* ==========================================================
+   TOTAL ROW — aligned + visually distinct
    ========================================================== */
 
 .sec__totalRow {
+  display: grid;
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(4, var(--col-value))
+    var(--col-actions);
+  align-items: center;
   background: #f9fafb;
-  font-weight: 600;
   border-top: 2px solid #e5e7eb;
+  font-weight: 600;
+  color: #111827;
   padding: 10px 12px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: inset 0 1px 0 #e5e7eb;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+.sec.mode-both .sec__totalRow {
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(8, var(--col-value))
+    var(--col-actions);
 }
 
 .sec__totalRow .sec__labelText {
-  color: #111827;
+  font-size: 0.9rem;
+  color: #1f2937;
   font-weight: 600;
 }
 
 .sec__totalRow .total-cell {
-  background: #f3f4f6;
+  background: #ffffff;
   border-radius: 6px;
+  border: 1px solid #e5e7eb;
   text-align: right;
+  padding: 6px 8px;
   font-weight: 600;
-  padding: 4px 6px;
+  color: #111827;
+  font-size: 0.9rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.total-cell.negative {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+
+.sec__totalRow .total-cell:first-child {
+  border-left: 2px solid #2563eb;
+}
+
+/* Optional highlight for grand total */
+.sec__totalRow .total-cell:last-child {
+  color: #1e3a8a;
+  font-weight: 700;
 }
 
 /* ==========================================================
-   PANEL CONTAINER
+   Consistent indentation + subtle separators
    ========================================================== */
 
-.income-statement-panel {
-  overflow-y: auto;
-  max-height: calc(100vh - 220px);
-  scrollbar-width: thin;
-  scrollbar-color: #d1d5db #f8fafc;
+.sec__labelText {
+  font-weight: 500;
+  color: #111827;
 }
 
-.income-statement-panel::-webkit-scrollbar {
-  width: 8px;
+.sec__subRowGrid .sec__labelText {
+  font-weight: 400;
+  color: #374151;
 }
 
-.income-statement-panel::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 10px;
+.sec__rowGrid + .sec__rowGrid {
+  border-top: 1px solid #f3f4f6;
 }
 
 /* ==========================================================
-   RESPONSIVE (small screens)
+   Responsive
    ========================================================== */
 
-@media (max-width: 950px) {
-  .sec__headerGrid,
-  .sec__rowGrid {
+@media (max-width: 900px) {
+  .sec.mode-monthly .sec__headerGrid,
+  .sec.mode-monthly .sec__rowGrid,
+  .sec.mode-monthly .sec__totalRow {
     grid-template-columns:
       24px
-      minmax(140px, 1.3fr)
-      minmax(340px, 3fr)
-      minmax(100px, auto);
+      1fr
+      repeat(2, var(--col-value))
+      var(--col-actions);
   }
 
-  .sec__values.mode-monthly,
-  .sec__values.mode-annual {
-    grid-template-columns: repeat(4, minmax(60px, 1fr));
+  .sec.mode-both .sec__headerGrid,
+  .sec.mode-both .sec__rowGrid,
+  .sec.mode-both .sec__totalRow {
+    grid-template-columns:
+      24px
+      1fr
+      repeat(4, var(--col-value))
+      var(--col-actions);
   }
+}
 
-  .sec__values.mode-both {
-    grid-template-columns: repeat(8, minmax(55px, 1fr));
-  }
+
+/* Locked or pinned rows */
+.sec__row.is-locked {
+  background: #fafcff;
+}
+
+.sec__row.is-locked .sec__labelText {
+  font-weight: 600;
+  color: #1e3a8a;
 }

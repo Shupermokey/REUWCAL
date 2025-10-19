@@ -30,7 +30,6 @@ import HeaderBar from "./HeaderBar.jsx";
 import Section from "./Section.jsx";
 
 // 🎨 Styles
-import "@/styles/components/Income/income-statement-panel.css";
 import "@/styles/components/Income/IncomeStatement.css";
 
 

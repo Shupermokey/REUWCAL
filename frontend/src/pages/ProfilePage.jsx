@@ -10,7 +10,7 @@ import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSideba
 import { useAuth } from "../app/providers/AuthProvider";
 
 //CSS
-import "@/styles/ProfilePage.css";
+import "@/styles/pages/ProfilePage.css";
 import "@/styles/utils/buttons.css";
 
 

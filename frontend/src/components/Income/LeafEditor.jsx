@@ -3,7 +3,7 @@ import { useIncomeFieldMath } from "@/hooks/useIncomeFieldMath";
 import React, { useEffect } from "react";
 
 //CSS
-import "@styles/components/Income/Section/LeafEditor/LeafEditor.css";
+import "@styles/components/Income/LeafEditor.css";
 
 
 const isNum = (v) => v !== "" && v != null && Number.isFinite(+v);

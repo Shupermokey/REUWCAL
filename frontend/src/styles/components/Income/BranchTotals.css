@@ -1,48 +1,79 @@
 /* ==========================================================
-   BRANCH TOTALS — subtotal line styling for grouped branches
+   BRANCHTOTALS.CSS — Subtotal and parent-row styling
+   v3.0 — clean visual hierarchy with subtle highlights
    ========================================================== */
 
-.total-cell {
+.branch-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  gap: 6px;
+  width: 100%;
+  align-items: center;
+}
+
+/* ----------------------------------------------------------
+   Default totals cell
+   ---------------------------------------------------------- */
+.branch-totals span {
   text-align: right;
-  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.85rem;
   padding: 4px 6px;
-  border-top: 1px solid var(--color-border);
-  background: #f9fafb;
-  font-size: 0.9rem;
-  color: var(--color-text);
-  white-space: nowrap;
 }
 
-/* Emphasis on totals */
-.total-cell:first-of-type {
-  border-left: none;
-}
-
-.total-cell:last-of-type {
-  border-right: none;
-}
-
-.total-cell strong {
-  font-weight: 600;
-}
-
-/* Hover feedback when exploring branches */
-.sec__row:hover .total-cell {
-  background: #f3f4f6;
-}
-
-/* Responsive handling */
-@media (max-width: 768px) {
-  .total-cell {
-    padding: 3px 4px;
-    font-size: 0.85rem;
-  }
-}
-
-/* Optional subtle visual divider for clarity */
-.sec__row.has-children .total-cell {
-  border-top: 2px solid var(--color-border);
-  background: #f7fafc;
+/* ----------------------------------------------------------
+   Parent-level totals (like Effective Gross Income)
+   ---------------------------------------------------------- */
+.branch-totals--parent span {
   font-weight: 600;
   color: #111827;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 4px;
+}
+
+/* ----------------------------------------------------------
+   Total rows at section end
+   ---------------------------------------------------------- */
+.sec__totalRow {
+  background: #f9fafb;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-top: 2px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 32px minmax(220px, 1fr) repeat(4, 120px);
+  align-items: center;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+.sec__totalRow span {
+  text-align: right;
+}
+
+/* ----------------------------------------------------------
+   Subtle hover feedback (optional)
+   ---------------------------------------------------------- */
+.branch-totals:hover span {
+  background: #f3f4f6;
+  transition: background 0.15s ease;
+}
+
+/* ----------------------------------------------------------
+   Responsive tweaks
+   ---------------------------------------------------------- */
+@media (max-width: 768px) {
+  .branch-totals {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+
+  .branch-totals span {
+    font-size: 0.8rem;
+  }
+
+  .sec__totalRow {
+    grid-template-columns: 28px 1fr 100px 100px 100px;
+  }
 }

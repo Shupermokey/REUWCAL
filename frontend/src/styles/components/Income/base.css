@@ -1,0 +1,50 @@
+/* ==========================================================
+   BASE.CSS — shared foundation for Income components
+   Light minimal aesthetic
+   ========================================================== */
+
+:root {
+  --inc-font: "Segoe UI", system-ui, sans-serif;
+  --inc-radius: 10px;
+  --inc-bg: #ffffff;
+  --inc-border: #e5e7eb;
+  --inc-border-light: #f3f4f6;
+  --inc-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --inc-accent: #2563eb;
+  --inc-accent-light: #eff6ff;
+  --inc-danger: #ef4444;
+  --inc-text: #111827;
+  --inc-text-weak: #6b7280;
+  --inc-gap: 10px;
+}
+
+.income-section {
+  background: var(--inc-bg);
+  border: 1px solid var(--inc-border);
+  border-radius: var(--inc-radius);
+  box-shadow: var(--inc-shadow);
+  padding: 12px 14px;
+  margin: 18px 0;
+  font-family: var(--inc-font);
+}
+
+button {
+  font-family: var(--inc-font);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+input {
+  font-family: var(--inc-font);
+  border: 1px solid var(--inc-border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  background: #fff;
+  transition: border 0.2s ease;
+}
+
+input:focus {
+  border-color: var(--inc-accent);
+  outline: none;
+}

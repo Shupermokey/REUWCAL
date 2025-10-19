@@ -1,34 +1,40 @@
 /* ==========================================================
-   INCOME HEADER BAR
-   Appears above the Income Statement sections
+   HEADERBAR.CSS — Top bar for Income Statement
+   Minimal + aligned with ViewToggle & Save button
    ========================================================== */
 
 .income-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: var(--color-bg-subtle);
-  border-bottom: 1px solid var(--color-border);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   padding: 10px 14px;
-  box-shadow: var(--shadow-xs);
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   font-family: "Segoe UI", system-ui, sans-serif;
-  position: sticky;
-  top: 0;
-  z-index: 5;
 }
 
-/* Title section */
+/* ----------------------------------------------------------
+   Title area (📊 Income Statement)
+   ---------------------------------------------------------- */
 .income-header .title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-text);
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
 }
 
-/* Action section */
+.income-header .title span[role="img"] {
+  font-size: 1.1rem;
+}
+
+/* ----------------------------------------------------------
+   Right side — toggle + save
+   ---------------------------------------------------------- */
 .header-actions {
   display: flex;
   align-items: center;
@@ -37,58 +43,47 @@
 
 /* Save button */
 .btn-save {
-  background: var(--color-accent);
-  color: #fff;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.85rem;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   padding: 6px 12px;
-  font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.btn-save:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
+.btn-save:hover {
+  background: #1d4ed8;
+}
+
+.btn-save:active {
+  transform: scale(0.97);
 }
 
 .btn-save:disabled {
-  background: #d1d5db;
+  background: #93c5fd;
   cursor: not-allowed;
 }
 
-/* Save button loading state */
-.btn-save:disabled::after {
-  content: "…";
-  animation: dots 1.2s steps(3, end) infinite;
-  margin-left: 3px;
-}
-
-@keyframes dots {
-  0%, 20% {
-    content: "";
-  }
-  40% {
-    content: ".";
-  }
-  60% {
-    content: "..";
-  }
-  80%, 100% {
-    content: "...";
-  }
-}
-
-/* Responsive tweaks */
+/* ----------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------- */
 @media (max-width: 768px) {
   .income-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 10px;
   }
 
   .header-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .btn-save {
+    padding: 5px 10px;
+    font-size: 0.8rem;
   }
 }

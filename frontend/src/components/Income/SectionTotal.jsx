@@ -5,6 +5,7 @@ import { useIncomeView } from "@/app/providers/IncomeViewProvider.jsx";
 export default function SectionTotal({ data, title }) {
   const { displayMode } = useIncomeView();
 
+  // Compute section totals
   const totals = useMemo(() => {
     const t = {
       grossAnnual: 0,
@@ -34,32 +35,47 @@ export default function SectionTotal({ data, title }) {
     return t;
   }, [data]);
 
-  const fmt = (n) =>
-    Number.isFinite(n)
-      ? n.toLocaleString(undefined, { maximumFractionDigits: 2 })
-      : "";
+  // Format numbers with commas and parentheses for negatives
+  const fmt = (n) => {
+    if (!Number.isFinite(n)) return "";
+    const abs = Math.abs(n);
+    const formatted = abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return n < 0 ? `(${formatted})` : formatted;
+  };
 
   const showAnnual = displayMode === "annual" || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
 
   const renderValues = () => {
     const cells = [];
+
+    const renderCell = (key, value) => (
+      <div
+        key={key}
+        className={`total-cell ${value < 0 ? "negative" : ""}`}
+      >
+        {fmt(value)}
+      </div>
+    );
+
     if (showMonthly) {
       cells.push(
-        <div key="rateMonthly" className="total-cell">{fmt(totals.rateMonthly)}</div>,
-        <div key="grossMonthly" className="total-cell">{fmt(totals.grossMonthly)}</div>,
-        <div key="psfMonthly" className="total-cell">{fmt(totals.psfMonthly)}</div>,
-        <div key="punitMonthly" className="total-cell">{fmt(totals.punitMonthly)}</div>
+        renderCell("rateMonthly", totals.rateMonthly),
+        renderCell("grossMonthly", totals.grossMonthly),
+        renderCell("psfMonthly", totals.psfMonthly),
+        renderCell("punitMonthly", totals.punitMonthly)
       );
     }
+
     if (showAnnual) {
       cells.push(
-        <div key="rateAnnual" className="total-cell">{fmt(totals.rateAnnual)}</div>,
-        <div key="grossAnnual" className="total-cell">{fmt(totals.grossAnnual)}</div>,
-        <div key="psfAnnual" className="total-cell">{fmt(totals.psfAnnual)}</div>,
-        <div key="punitAnnual" className="total-cell">{fmt(totals.punitAnnual)}</div>
+        renderCell("rateAnnual", totals.rateAnnual),
+        renderCell("grossAnnual", totals.grossAnnual),
+        renderCell("psfAnnual", totals.psfAnnual),
+        renderCell("punitAnnual", totals.punitAnnual)
       );
     }
+
     return cells;
   };
 

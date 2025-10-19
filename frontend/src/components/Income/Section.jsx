@@ -2,9 +2,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import LeafEditor from "./LeafEditor.jsx";
 import BranchTotals from "./BranchTotals.jsx";
-import { newLeaf } from "../../utils/income/incomeDefaults.js";
-import { useIncomeView } from "../../app/providers/IncomeViewProvider.jsx";
-import { useDialog } from "../../app/providers/DialogProvider.jsx";
+import { newLeaf } from "@/utils/income/incomeDefaults.js";
+import { useIncomeView } from "@/app/providers/IncomeViewProvider.jsx";
+import { useDialog } from "@/app/providers/DialogProvider.jsx";
 import ValueColumns from "./ValueColumns.jsx";
 import SectionTotal from "@components/Income/SectionTotal.jsx";
 
@@ -26,7 +26,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
-/* ---------------- helpers ---------------- */
+/* -------------------------------------------------------------------------- */
+/* ⚙️ Helpers                                                                 */
+/* -------------------------------------------------------------------------- */
 const LEAF_KEYS = [
   "grossAnnual",
   "psfAnnual",
@@ -55,7 +57,11 @@ const parentPath = (full) =>
   full.includes(".") ? full.split(".").slice(0, -1).join(".") : "";
 const leafKey = (full) => full.split(".").pop();
 
-/* ---------------- reusable sortable row (used for all levels) --------------- */
+const getRowClass = (depth) => (depth > 0 ? "sec__subRowGrid" : "sec__rowGrid");
+
+/* -------------------------------------------------------------------------- */
+/* 🔄 Sortable Row                                                            */
+/* -------------------------------------------------------------------------- */
 function SortableRow({ id, disabled, mainRow, childrenBelow }) {
   const {
     attributes,
@@ -77,7 +83,6 @@ function SortableRow({ id, disabled, mainRow, childrenBelow }) {
     >
       <div className="sec__rowGrid">
         <span className="sec__firstCell">
-          {/* drag dots */}
           <button
             type="button"
             className={`sec__drag ${disabled ? "is-disabled" : ""}`}
@@ -87,7 +92,6 @@ function SortableRow({ id, disabled, mainRow, childrenBelow }) {
           >
             ⋮⋮
           </button>
-          {/* caret / any leading adornment */}
           {mainRow.leading}
         </span>
 
@@ -96,29 +100,29 @@ function SortableRow({ id, disabled, mainRow, childrenBelow }) {
           <span className="sec__labelText">{mainRow.label}</span>
         </span>
 
-        {/* value tracks are "contents" so they occupy the grid tracks directly */}
         <div className="sec__values">{mainRow.values}</div>
 
         <div className="sec__actions">{mainRow.actions}</div>
       </div>
 
-      {childrenBelow ? (
-        <div className="sec__childSpanner">{childrenBelow}</div>
-      ) : null}
+      {/* Children render directly below; no extra wrapper */}
+      {childrenBelow}
     </div>
   );
 }
 
-/* ---------------- component ---------------- */
+/* -------------------------------------------------------------------------- */
+/* 🧩 Section Component                                                       */
+/* -------------------------------------------------------------------------- */
 export default function Section({
   title,
   data = {},
   onChange,
   showTotal = true,
-  enableSort = false, // kept for compatibility (top-level only)
+  enableSort = false,
   lockKeys = new Set(),
   metrics = { gbaSqft: 0, units: 0 },
-  deriveKeys = new Set(["Gross Scheduled Rent"]), // NEW: which labels auto-calc
+  deriveKeys = new Set(["Gross Scheduled Rent"]),
 }) {
   const { displayMode } = useIncomeView();
   const { prompt, confirm } = useDialog();
@@ -127,7 +131,6 @@ export default function Section({
   const [collapsedPaths, setCollapsedPaths] = useState(() => new Set());
 
   const sensors = useSensors(
-    // small drag threshold & guard against accidental drags
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
@@ -138,7 +141,9 @@ export default function Section({
       ? "mode-monthly"
       : "mode-annual";
 
-  /* -------- top-level ordering state (visual only) -------- */
+  /* ---------------------------------------------------------------------- */
+  /* 🗂️ Ordering / state management                                         */
+  /* ---------------------------------------------------------------------- */
   const topLevelKeys = useMemo(
     () =>
       Object.keys(data || {}).filter(
@@ -161,13 +166,9 @@ export default function Section({
       const updated = structuredClone(data);
       let cur = updated;
       for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]] ||= {};
-
       if (keys.length) {
         const k = keys.at(-1);
-        const prevVal = cur[k];
-        const nextVal = updater(prevVal);
-
-        // ✅ Always update, even if same stringified content
+        const nextVal = updater(cur[k]);
         cur[k] = nextVal;
         onChange(updated);
       }
@@ -175,6 +176,9 @@ export default function Section({
     [data, onChange]
   );
 
+  /* ---------------------------------------------------------------------- */
+  /* ➕ Add / Delete / Promote                                              */
+  /* ---------------------------------------------------------------------- */
   const addItem = async (path = "") => {
     const raw = await prompt({
       title: "New line item",
@@ -238,6 +242,9 @@ export default function Section({
     onChange(updated);
   };
 
+  /* ---------------------------------------------------------------------- */
+  /* 🔽 Collapsing logic                                                    */
+  /* ---------------------------------------------------------------------- */
   const isCollapsed = (path) => collapsedPaths.has(path);
   const togglePath = (path) =>
     setCollapsedPaths((prev) => {
@@ -263,14 +270,15 @@ export default function Section({
   };
   const expandAll = () => setCollapsedPaths(new Set());
 
-  /* ---------------- drag/reorder ---------------- */
+  /* ---------------------------------------------------------------------- */
+  /* 🧱 Drag and Drop                                                      */
+  /* ---------------------------------------------------------------------- */
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return;
     const aParent = parentPath(active.id);
     const bParent = parentPath(over.id);
-    if (aParent !== bParent) return; // only within same parent
+    if (aParent !== bParent) return;
 
-    // top-level reorder
     if (aParent === "") {
       setOrder((prev) => {
         const from = prev.indexOf(active.id);
@@ -281,7 +289,6 @@ export default function Section({
       return;
     }
 
-    // nested reorder (mutate object property order)
     setAtPath(aParent, (prev) => {
       if (!isPO(prev)) return prev;
       const keys = Object.keys(prev).filter(
@@ -296,7 +303,9 @@ export default function Section({
     });
   };
 
-  /* ---------------- child renderers (each child is sortable) ---------------- */
+  /* ---------------------------------------------------------------------- */
+  /* 🌿 Child Renderers                                                    */
+  /* ---------------------------------------------------------------------- */
   const ChildLeaf = ({ full, depth, label, val }) => {
     const {
       attributes,
@@ -313,25 +322,17 @@ export default function Section({
         className={`sec__row ${isDragging ? "is-dragging" : ""}`}
         style={{ transform: CSS.Transform.toString(transform), transition }}
       >
-        <div className="sec__rowGrid" data-depth={depth}>
+        <div className={getRowClass(depth)} data-depth={depth}>
           <span className="sec__firstCell">
-            <button
-              className="sec__drag"
-              {...attributes}
-              {...listeners}
-              aria-label="Drag row"
-            >
+            <button className="sec__drag" {...attributes} {...listeners}>
               ⋮⋮
             </button>
           </span>
-          <span
-            className="sec__label"
-            data-depth={depth}
-            style={{ "--depth": depth }}
-          >
-            <span className="sec__indent" />
+
+          <span className="sec__label" data-depth={depth}>
             <span className="sec__labelText">{label}</span>
           </span>
+
           <div className="sec__values">
             <LeafEditor
               fullPath={full}
@@ -339,10 +340,10 @@ export default function Section({
               setAtPath={setAtPath}
               displayMode={displayMode}
               metrics={metrics}
-              //deriveFromMetrics={deriveKeys.has(label)} // e.g., new Set(["Gross Scheduled Rent"])
-              deriveFromMetrics={true} // e.g., new Set(["Gross Scheduled Rent"])
+              deriveFromMetrics={true}
             />
           </div>
+
           <div className="sec__actions">
             <button
               className="sub-btn"
@@ -381,31 +382,24 @@ export default function Section({
         }`}
         style={{ transform: CSS.Transform.toString(transform), transition }}
       >
-        <div className="sec__rowGrid" data-depth={depth}>
+        <div className={getRowClass(depth)} data-depth={depth}>
           <span className="sec__firstCell">
-            <button
-              className="sec__drag"
-              {...attributes}
-              {...listeners}
-              aria-label="Drag row"
-            >
+            <button className="sec__drag" {...attributes} {...listeners}>
               ⋮⋮
             </button>
             <button className="sec__caret" onClick={() => togglePath(full)}>
               {collapsed ? "▸" : "▾"}
             </button>
           </span>
-          <span
-            className="sec__label"
-            data-depth={depth}
-            style={{ "--depth": depth }}
-          >
-            <span className="sec__indent" />
+
+          <span className="sec__label" data-depth={depth}>
             <span className="sec__labelText">{label}</span>
           </span>
+
           <div className="sec__values">
             <BranchTotals value={val} displayMode={displayMode} />
           </div>
+
           <div className="sec__actions">
             <button
               className="sub-btn"
@@ -460,7 +454,9 @@ export default function Section({
     );
   };
 
-  /* ------------- top-level render (sortable; children INSIDE each item) ------ */
+  /* ---------------------------------------------------------------------- */
+  /* 🧱 Top-level Render                                                   */
+  /* ---------------------------------------------------------------------- */
   const renderTopLevel = () => (
     <DndContext
       sensors={sensors}
@@ -533,9 +529,11 @@ export default function Section({
 
   const hasHeader = !!title;
 
+  /* ---------------------------------------------------------------------- */
+  /* 🖼️ Render                                                             */
+  /* ---------------------------------------------------------------------- */
   return (
     <div className={`sec ${modeClass}`}>
-      {/* --- Header --- */}
       {hasHeader && (
         <div className="sec__header">
           <div className="sec__headerGrid">
