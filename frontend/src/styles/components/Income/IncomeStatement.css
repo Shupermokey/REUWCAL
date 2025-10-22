@@ -3,17 +3,23 @@
    Harmonized with HeaderBar + Section layout
    ========================================================== */
 
+.income-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 1800px;
+}
+.header-bar {
+  flex: 0 0 auto;            /* fixed height */
+}
+
 .income-statement-panel {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  flex: 1 1 auto;            /* fill remaining space */
+  overflow-y: auto;          /* scroll vertically */
+  overflow-x: auto;          /* scroll horizontally when needed */
+  padding: 0 8px 48px 0;     /* bottom space for last rows */
+  scroll-behavior: smooth;
+  box-sizing: border-box;
   width: 100%;
-  max-width: 1600px;
-  margin: 20px auto;
-  overflow: hidden;
-  font-family: "Segoe UI", system-ui, sans-serif;
 }
 
 /* Layout inside */
@@ -23,10 +29,11 @@
 
 /* Scroll behavior when long */
 .income-statement-panel::-webkit-scrollbar {
-  width: 10px;
+  height: 10px;
+  width: 8px;
 }
 .income-statement-panel::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #c5c5c5;
   border-radius: 6px;
 }
 .income-statement-panel::-webkit-scrollbar-thumb:hover {

@@ -25,7 +25,9 @@
       "@pages/*": ["pages/*"],
       "@services/*": ["services/*"],
       "@styles/*": ["styles/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@routes/*": ["routes/*"],
+      "@features/*": ["features/*"]
     }
   },
   /* ✅ Index everything under src */

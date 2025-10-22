@@ -27,7 +27,7 @@ import {
 
 // 🧱 Components
 import HeaderBar from "./HeaderBar.jsx";
-import Section from "./Section.jsx";
+import Section from "./Section/Section.jsx";
 
 // 🎨 Styles
 import "@/styles/components/Income/IncomeStatement.css";
@@ -129,7 +129,8 @@ const onSave = async () => {
 
   /* --------------------------------- Render --------------------------------- */
   return (
-    <div className="income-statement-panel">
+    <div className="income-wrapper">
+      <div className="income-statement-panel">
       <HeaderBar
         saving={saving}
         error={error}
@@ -162,6 +163,7 @@ const onSave = async () => {
           />
         )
       )}
+    </div>
     </div>
   );
 }

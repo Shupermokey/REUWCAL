@@ -119,6 +119,8 @@
   padding: 14px;
   gap: 20px;
   animation: fadeIn 0.25s ease;
+  justify-content: center;
+  align-items: center;
 }
 
 @keyframes fadeIn {

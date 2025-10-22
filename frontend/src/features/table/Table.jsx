@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTable } from "../../app/providers/TableProvider";
-import Row from "./Row";
+import Row from "./Row/Row";
 import { useAuth } from "../../app/providers/AuthProvider";
 import FileExplorer from "../../components/Sidebar/FileSystem/FileExplorer";
 import PropertyFileSidebar from "../../components/Sidebar/PropertyFileSidebar";
 import { subscribeToBaselines } from "../../services/firestoreService";
-
 import {
   addProperty,
   updateProperty,
@@ -21,14 +20,16 @@ import { normalizeForSave } from "../../utils/rows/rowNormalize";
 import "@/styles/components/Table/Table.css";
 
 function Table({ onRowSelect }) {
-  const { rows, setRows, selectedRow, setSelectedRow } = useTable();
   const { user } = useAuth();
+  const { rows, setRows, selectedRow, setSelectedRow } = useTable();
   const [isSaving, setIsSaving] = useState(false);
   const [activeFolder, setActiveFolder] = useState(null);
   const [activeSidebar, setActiveSidebar] = useState(null);
   const [baselines, setBaselines] = useState([]);
   const [savingNew, setSavingNew] = useState(false);
-  const hasDraft = rows?.some((r) => r.id === "new");
+
+  // ✅ Memoize to prevent recalculation on every render
+  const hasDraft = useMemo(() => rows?.some((r) => r.id === "new"), [rows]);
 
   /* ---------------------------- Load Baselines ---------------------------- */
   useEffect(() => {
@@ -52,52 +53,76 @@ function Table({ onRowSelect }) {
   /* ------------------------------ CRUD Actions ---------------------------- */
   const createBlankRow = () => makeBlankRow();
 
-  const handleAddRow = () => {
+  const handleAddRow = useCallback(() => {
     if (rows.some((row) => row.id === "new")) return;
     setRows((prev) => [...prev, createBlankRow()]);
     setSelectedRow("new");
-  };
+  }, [rows, setRows, setSelectedRow]);
 
-  const handleSaveRow = async (rowData) => {
-    const isNew = rowData.id === "new";
-    if (!user) return;
+  const handleSaveRow = useCallback(
+    async (rowData) => {
+      const isNew = rowData.id === "new";
+      if (!user) return;
 
-    try {
-      setIsSaving(true);
-      const sanitizedData = normalizeForSave(rowData);
+      try {
+        setIsSaving(true);
+        const sanitizedData = normalizeForSave(rowData);
 
-      if (isNew) {
-        setSavingNew(true);
-        const { id, ...dataWithoutId } = sanitizedData;
-        const newId = await addProperty(user.uid, dataWithoutId);
-        await initializeFileSystem(user.uid, newId, columnOrder);
-        setRows((prev) => prev.filter((r) => r.id !== "new"));
-      } else {
-        await updateProperty(user.uid, rowData.id, sanitizedData);
+        if (isNew) {
+          setSavingNew(true);
+          const { id, ...dataWithoutId } = sanitizedData;
+          const newId = await addProperty(user.uid, dataWithoutId);
+          await initializeFileSystem(user.uid, newId, columnOrder);
+          setRows((prev) => prev.filter((r) => r.id !== "new"));
+        } else {
+          await updateProperty(user.uid, rowData.id, sanitizedData);
+        }
+
+        setSelectedRow(null);
+      } catch (e) {
+        console.error("Save failed", e);
+      } finally {
+        setIsSaving(false);
+        setSavingNew(false);
       }
+    },
+    [user, setRows, setSelectedRow]
+  );
 
-      setSelectedRow(null);
-    } catch (e) {
-      console.error("Save failed", e);
-    } finally {
-      setIsSaving(false);
-      setSavingNew(false);
-    }
-  };
-
-  const handleCancelRow = () => {
+  const handleCancelRow = useCallback(() => {
     setRows((prev) => prev.filter((row) => row.id !== "new"));
     setIsSaving(false);
-  };
+  }, [setRows]);
 
-  const handleDeleteRow = async (id) => {
-    if (id === "new") {
-      setRows((prev) => prev.filter((row) => row.id !== "new"));
-    } else {
-      await deleteProperty(user.uid, id);
-      setRows((prev) => prev.filter((row) => row.id !== id));
-    }
-  };
+  const handleDeleteRow = useCallback(
+    async (id) => {
+      if (id === "new") {
+        setRows((prev) => prev.filter((row) => row.id !== "new"));
+      } else {
+        await deleteProperty(user.uid, id);
+        setRows((prev) => prev.filter((row) => row.id !== id));
+      }
+    },
+    [user, setRows]
+  );
+
+  /* ------------------------------ Cell Actions ---------------------------- */
+  const handleCellChange = useCallback(
+    (id, field, value) => {
+      setRows((prevRows) =>
+        prevRows.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+      );
+    },
+    [setRows]
+  );
+
+  const handleSelectRow = useCallback(
+    (row) => {
+      setSelectedRow(row.id);
+      if (onRowSelect) onRowSelect(row);
+    },
+    [setSelectedRow, onRowSelect]
+  );
 
   /* ------------------------------- Render --------------------------------- */
   return (
@@ -127,26 +152,20 @@ function Table({ onRowSelect }) {
               key={row.id}
               row={row}
               baselines={baselines}
-              handleCellChange={(id, field, value) =>
-                setRows((prevRows) =>
-                  prevRows.map((r) =>
-                    r.id === id ? { ...r, [field]: value } : r
-                  )
-                )
-              }
+              handleCellChange={handleCellChange}
               isSelected={row.id === selectedRow}
               onSave={handleSaveRow}
               onCancel={handleCancelRow}
               onDelete={handleDeleteRow}
-              onSelect={() => {
-                setSelectedRow(row.id);
-                if (onRowSelect) onRowSelect(row);
-              }}
-              onOpenFiles={(propertyId) => setActiveSidebar(propertyId)}
+              onSelect={() => handleSelectRow(row)}
+              onOpenFiles={setActiveSidebar}
             />
           ))
         ) : (
-          <div className="table__empty">No properties available</div>
+          <div className="table__empty">
+            No properties yet.
+            <button onClick={handleAddRow}>Add your first one</button>
+          </div>
         )}
       </div>
 
@@ -179,3 +198,4 @@ function Table({ onRowSelect }) {
 }
 
 export default Table;
+

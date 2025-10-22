@@ -1,8 +1,7 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useTier } from '../../hooks/useTier';
-import { meetsTier, TIERS } from '../../constants/tiers';
-
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useTier } from "../../hooks/useTier";
+import { meetsTier, TIERS } from "../../constants/tiers";
 
 export default function ProtectedRoute({ minTier = TIERS.Free }) {
   const { user, loading: authLoading } = useAuth();
@@ -20,8 +19,27 @@ export default function ProtectedRoute({ minTier = TIERS.Free }) {
 
   if (!meetsTier(tier, minTier)) {
     // Logged in but not enough privileges → take to Pricing (upsell)
-    return <Navigate to="/pricing" replace state={{ from: location, need: minTier }} />;
+    return (
+      <Navigate
+        to="/pricing"
+        replace
+        state={{ from: location, need: minTier }}
+      />
+    );
   }
+  // // Logged in but email not verified → take to Verify Email
+  // if (user && !user.emailVerified) {
+  //   return <Navigate to="/verify-email" replace />;
+  // }
+
+  //Sometimes if your tier hasn’t loaded or mismatched, tier could be undefined.
+  // if (tier == null && !tierLoading) {
+  // return <Navigate to="/unauthorized" replace />;
+  // }
+
+
+
+
 
   return <Outlet />;
 }

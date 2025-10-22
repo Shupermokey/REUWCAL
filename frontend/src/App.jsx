@@ -1,61 +1,45 @@
 // App.jsx
-// main.jsx or App.jsx
-import "@/styles/index.css";        // main entry that cascades globals + utils + base
-import "@/styles/components/Sidebar.css";
-import "@/styles/components/Footer.css";
-
-
+import React, { Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-} from 'react-router-dom';
-
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import VerifyEmail from './pages/VerifyEmail';
-import Home from './pages/Home';
-import DashboardPage from './pages/DashboardPage';
-import PricingPage from './pages/PricingPage';
-import ProfilePage from './pages/ProfilePage';
-import BaselinePage from './pages/BaselinePage';
-import Unauthorized from './pages/Unauthorized';
-import DeveloperTools from './pages/DeveloperTools';
-
-import ProtectedRoute from './components/ProtectedRoutes/ProtectedRoute';
-import { TIERS } from './constants/tiers'; // ⬅️ new
+} from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoutes/ProtectedRoute";
+import { routesConfig } from "@/routes/routesConfig.jsx";
+import "@/styles/index.css"; // still fine here if preferred
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} /> {/* alias, matches ProtectedRoute default */}
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/pricing" element={<PricingPage />} /> {/* keep PUBLIC to avoid redirect loops */}
+      <Suspense fallback={<div className="loading">Loading...</div>}>
+        <Routes>
+          {/* Map public routes */}
+          {routesConfig
+            .filter((r) => r.isPublic)
+            .map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
 
-        {/* Auth-required (no special tier) */}
-        <Route element={<ProtectedRoute minTier={TIERS.Free} />}>
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/baseline" element={<BaselinePage />} />
-        </Route>
+          {/* Map protected route groups */}
+          {routesConfig
+            .filter((r) => !r.isPublic && r.children)
+            .map(({ element: minTier, children }) => (
+              <Route
+                key={minTier}
+                element={<ProtectedRoute minTier={minTier} />}
+              >
+                {children.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))}
+              </Route>
+            ))}
 
-        {/* Higher-tier routes */}
-        <Route element={<ProtectedRoute minTier={TIERS.Developer} />}>
-          <Route path="/developer-tools" element={<DeveloperTools />} />
-        </Route>
-
-        {/* Optional static page */}
-        <Route path="/unauthorized" element={<Unauthorized />} />
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }
