@@ -60,9 +60,7 @@ export default function ChildBranch({
         if (from < 0 || to < 0) return prevData;
 
         if (
-          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(
-            fromKey
-          ) ||
+          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(fromKey) ||
           [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(toKey)
         )
           return prevData;

@@ -10,8 +10,7 @@ export default function ChildLeaf({
   handleSetAtPath,
   handlePromote,
   handleDelete,
-  fullData,
-  onImmediateChange, // 👈 new
+  fullData, // new
 }) {
   return (
     <>
@@ -23,8 +22,7 @@ export default function ChildLeaf({
           displayMode={displayMode}
           metrics={metrics}
           deriveFromMetrics
-          fullData={fullData}
-          onImmediateChange={onImmediateChange} // 👈 added
+          fullData={fullData} // passes whole Income object
         />
       </div>
 

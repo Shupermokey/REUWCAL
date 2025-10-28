@@ -1,29 +1,43 @@
-// src/domain/incomeSection/itemActions.js
 import { newLeaf } from "@utils/income/incomeDefaults.js";
 import { isLeafNode, isPO } from "./structureHelpers.js";
 
-/** Generic path setter that updates any nested field */
+/* -------------------------------------------------------------------------- */
+/* 🔒 Safe setAtPath – prevents recursive Income nesting                      */
+/* -------------------------------------------------------------------------- */
 export const setAtPath = ({ path, data, onChange, updater }) => {
-  const keys = path ? path.split(".") : [];
+  if (!path || !onChange || typeof updater !== "function") return;
 
-  // Root update
-  if (keys.length === 0) {
-    const next = updater(structuredClone(data));
-    onChange(next ?? structuredClone(data));
+  // 🚫 Guard against runaway or self-referencing writes
+  if (path === "Income" || path.startsWith("Income.Income")) {
+    console.warn("[setAtPath] Ignored unsafe recursive Income path:", path);
     return;
   }
 
-  // Nested update
-  const updated = structuredClone(data);
+  const keys = path.split(".");
+  const updated = structuredClone(data || {});
   let cur = updated;
-  for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]] ||= {};
-  const k = keys.at(-1);
-  const nextVal = updater(cur[k]);
-  cur[k] = nextVal;
+
+  // Build path safely
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (typeof cur[key] !== "object" || cur[key] == null) cur[key] = {};
+    cur = cur[key];
+  }
+
+  const last = keys.at(-1);
+  const prevVal = cur[last];
+  const nextVal = updater(prevVal);
+
+  // Avoid useless re-renders
+  if (JSON.stringify(prevVal) === JSON.stringify(nextVal)) return;
+
+  cur[last] = nextVal;
   onChange(updated);
 };
 
-/** Add a new leaf or branch at the specified path */
+/* -------------------------------------------------------------------------- */
+/* ➕ Add new item                                                            */
+/* -------------------------------------------------------------------------- */
 export const addItem = async ({ path = "", title, data, onChange, prompt }) => {
   const raw = await prompt({
     title: "New line item",
@@ -50,7 +64,9 @@ export const addItem = async ({ path = "", title, data, onChange, prompt }) => {
   onChange(updated);
 };
 
-/** Promote a leaf to an object containing subitems */
+/* -------------------------------------------------------------------------- */
+/* ⏫ Promote to branch                                                       */
+/* -------------------------------------------------------------------------- */
 export const promoteToObject = async ({ path, data, onChange, prompt }) => {
   const raw = await prompt({
     title: "Add a sub-item",
@@ -83,7 +99,9 @@ export const promoteToObject = async ({ path, data, onChange, prompt }) => {
   onChange(updated);
 };
 
-/** Delete any node at a given path */
+/* -------------------------------------------------------------------------- */
+/* ❌ Delete                                                                 */
+/* -------------------------------------------------------------------------- */
 export const deleteAtPath = async ({ path, data, onChange, confirm }) => {
   const ok = await confirm({
     title: "Delete this item?",

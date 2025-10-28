@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { normalizeRow, unwrapValue, displayValue } from "../../../utils/rows/rowHelpers";
+import {
+  normalizeRow,
+  unwrapValue,
+  displayValue,
+} from "../../../utils/rows/rowHelpers";
 import { validateFields } from "../../../utils/rows/rowValidation";
 import { useRowCalcs } from "../../../hooks/useRowCalcs";
 import CellDetailsPanel from "../../../components/CellDetailsPanel";
@@ -37,7 +41,7 @@ function Row({
     []
   );
   const isRentKey = useCallback((k) => RENT_KEYS.has(k), [RENT_KEYS]);
-  
+
   const toLastEditedKey = useCallback(
     (k) => (k === "grossRentalIncome" ? "gross" : k),
     []
@@ -61,7 +65,9 @@ function Row({
       };
 
       setEditableRow((prev) => ({ ...prev, ...updates }));
-      Object.entries(updates).forEach(([k, v]) => handleCellChange(row.id, k, v));
+      Object.entries(updates).forEach(([k, v]) =>
+        handleCellChange(row.id, k, v)
+      );
     },
     [baselines, handleCellChange, row.id]
   );
@@ -78,7 +84,8 @@ function Row({
       } else if (column === "propertyGSA") {
         updatedValue = parseFloat(details["Square Feet"]) || 0;
       } else if (column === "propertyGBA") {
-        updatedValue = parseFloat(details["Gross Building Area (GBA/GLA)"]) || 0;
+        updatedValue =
+          parseFloat(details["Gross Building Area (GBA/GLA)"]) || 0;
       } else if (column === "purchasePrice") {
         const numericFields = [
           "Contract Price",
@@ -93,14 +100,20 @@ function Row({
           const parsed = typeof val === "number" ? val : parseFloat(val);
           return !isNaN(parsed) ? sum + parsed : sum;
         }, 0);
-        const customTotal = (updatedData.customInputs || []).reduce((sum, input) => {
-          const num = parseFloat(input.value);
-          return !isNaN(num) ? sum + num : sum;
-        }, 0);
+        const customTotal = (updatedData.customInputs || []).reduce(
+          (sum, input) => {
+            const num = parseFloat(input.value);
+            return !isNaN(num) ? sum + num : sum;
+          },
+          0
+        );
         updatedValue = defaultTotal + customTotal;
       } else {
         const inputs = updatedData?.customInputsByColumn?.[column] || [];
-        updatedValue = inputs.reduce((sum, node) => sum + getNodeTotal(node), 0);
+        updatedValue = inputs.reduce(
+          (sum, node) => sum + getNodeTotal(node),
+          0
+        );
       }
 
       const updatedCell = { ...updatedData, value: updatedValue };
@@ -131,18 +144,25 @@ function Row({
         }
       }
     },
-    [editableRow, isRentKey, recompute, setLastEdited, setLocal, toLastEditedKey]
+    [
+      editableRow,
+      isRentKey,
+      recompute,
+      setLastEdited,
+      setLocal,
+      toLastEditedKey,
+    ]
   );
 
   /* ---------------------------- Render helpers ---------------------------- */
   const renderEditableCell = useCallback(
-    (key) => {
-      const config = columnConfig[key];
+    (columnName) => {
+      const config = columnConfig[columnName];
       const inputType = config?.input;
-      const isInvalid = invalidFields.includes(key);
+      const isInvalid = invalidFields.includes(columnName);
 
-      if (key === "Category") {
-        const catValue = unwrapValue(editableRow[key]) ?? "";
+      if (columnName === "Category") {
+        const catValue = unwrapValue(editableRow[columnName]) ?? "";
         return (
           <select
             className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
@@ -164,24 +184,27 @@ function Row({
         const readOnly = !!config.readOnly;
         return (
           <div
-            className={`row__editable ${isInvalid ? "row__editable--invalid" : ""}`}
+            className={`row__editable ${
+              isInvalid ? "row__editable--invalid" : ""
+            }`}
             onDoubleClick={() => {
-              setActiveColumn(key);
+              setActiveColumn(columnName);
               setShowDetails(true);
             }}
           >
             <input
               type="text"
               readOnly={readOnly}
-              value={unwrapValue(editableRow[key]) || ""}
-              onChange={(e) => handleInputChange(key, e)}
+              value={unwrapValue(editableRow[columnName]) || ""}
+              onChange={(e) => handleInputChange(columnName, e)}
               onClick={(e) => e.stopPropagation()}
             />
           </div>
         );
       }
 
-      const currentValue = unwrapValue(editableRow[key]) ?? "";
+      const currentValue = unwrapValue(editableRow[columnName]) ?? "";
+
       return (
         <input
           className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
@@ -196,14 +219,14 @@ function Row({
   );
 
   const renderDisplayValue = useCallback(
-    (key) => {
-      const raw = editableRow[key];
-      if (key === "Category") {
+    (columnName) => {
+      const raw = editableRow[columnName];
+      if (columnName === "Category") {
         const id = unwrapValue(raw);
         const selected = baselines.find((b) => b.id === id);
         return selected?.name ?? id ?? "—";
       }
-      return displayValue(raw, columnConfig[key]);
+      return displayValue(raw, columnConfig[columnName]);
     },
     [editableRow, baselines]
   );
@@ -219,14 +242,17 @@ function Row({
     () => ({
       grossBuildingAreaSqFt: asNumber(editableRow.propertyGBA),
       units: asNumber(editableRow.units),
-      bri: asNumber(editableRow.bri),
     }),
     [editableRow, asNumber]
   );
 
   /* ------------------------------- Save/Cancel ------------------------------- */
   const handleSaveClick = useCallback(() => {
-    const { ok, invalids } = validateFields(editableRow, columnOrder, columnConfig);
+    const { ok, invalids } = validateFields(
+      editableRow,
+      columnOrder,
+      columnConfig
+    );
     setInvalidFields(invalids);
     if (!ok) {
       alert("Please fix highlighted fields.");
@@ -250,25 +276,36 @@ function Row({
   /* ------------------------------- Render ------------------------------- */
   return (
     <>
-      <div className={`row ${isSelected ? "row--selected" : ""}`} onClick={onSelect}>
-        {columnOrder.map((key) => (
+      <div
+        className={`row ${isSelected ? "row--selected" : ""}`}
+        onClick={onSelect}
+      >
+        {columnOrder.map((columnName) => (
           <div
-            key={key}
-            className={`row__cell ${key === "EditingTools" ? "row__cell--tools" : ""}`}
+            key={columnName}
+            className={`row__cell ${
+              columnName === "EditingTools" ? "row__cell--tools" : ""
+            }`}
             style={{
-              width: columnConfig[key]?.width,
-              minWidth: columnConfig[key]?.width,
-              maxWidth: columnConfig[key]?.width,
+              width: columnConfig[columnName]?.width,
+              minWidth: columnConfig[columnName]?.width,
+              maxWidth: columnConfig[columnName]?.width,
             }}
           >
-            {key === "EditingTools" ? (
+            {columnName === "EditingTools" ? (
               <div className="row__actions">
                 {isEditing ? (
                   <>
-                    <button className="row__btn row__btn--save" onClick={handleSaveClick}>
+                    <button
+                      className="row__btn row__btn--save"
+                      onClick={handleSaveClick}
+                    >
                       ✔
                     </button>
-                    <button className="row__btn row__btn--cancel" onClick={handleCancelClick}>
+                    <button
+                      className="row__btn row__btn--cancel"
+                      onClick={handleCancelClick}
+                    >
                       ✖
                     </button>
                   </>
@@ -299,9 +336,11 @@ function Row({
                 )}
               </div>
             ) : isEditing ? (
-              renderEditableCell(key)
+              renderEditableCell(columnName)
             ) : (
-              <span className="row__value">{renderDisplayValue(key)}</span>
+              <span className="row__value">
+                {renderDisplayValue(columnName)}
+              </span>
             )}
           </div>
         ))}
@@ -309,31 +348,6 @@ function Row({
 
       {showDetails && activeColumn && (
         <div className="row__details">
-          <CellDetailsPanel
-            columnKey={activeColumn}
-            data={{
-              ...editableRow[activeColumn],
-              details: {
-                ...(editableRow[activeColumn]?.details || {}),
-                ...Object.fromEntries(
-                  Object.entries(editableRow).flatMap(([key, val]) => {
-                    if (key === activeColumn) return [];
-                    const label = columnConfig[key]?.label || key;
-                    const value =
-                      typeof val === "object" && val?.value !== undefined
-                        ? val.value
-                        : val;
-                    return [[label, value]];
-                  })
-                ),
-              },
-            }}
-            propertyId={row.id}
-            userId={user?.uid}
-            onUpdate={handleUpdateFromPanel}
-            onClose={() => setShowDetails(false)}
-          />
-
           {activeColumn === "incomeStatement" && (
             <IncomeStatement
               rowData={rowDataForIS}
@@ -356,7 +370,9 @@ function Row({
                 handleCellChange(row.id, "incomeStatement", updatedCell);
               }}
               onSaveRowToFirestore={async (propertyId) => {
-                const { saveRowData } = await import("@services/firestore/rowsService.js");
+                const { saveRowData } = await import(
+                  "@services/firestore/rowsService.js"
+                );
                 const flatData = Object.fromEntries(
                   Object.entries(editableRow).map(([key, val]) =>
                     val && typeof val === "object" && "value" in val
@@ -365,7 +381,10 @@ function Row({
                   )
                 );
                 await saveRowData(user.uid, propertyId, flatData);
-                console.log("✅ Persisted normalized row to Firestore", flatData);
+                console.log(
+                  "✅ Persisted normalized row to Firestore",
+                  flatData
+                );
               }}
             />
           )}

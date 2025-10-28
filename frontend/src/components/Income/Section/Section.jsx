@@ -135,7 +135,7 @@ export default function Section({
             handleDelete={handleDelete}
             handlePromote={handlePromote}
             handleSetAtPath={handleSetAtPath}
-            fullData={data.Income}
+            fullData={data}
             onImmediateChange={handleImmediateChange} // 👈 added
           />
           {showTotal && <SectionTotal data={data} title={title} />}

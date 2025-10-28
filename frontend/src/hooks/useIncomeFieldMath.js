@@ -12,11 +12,12 @@ const makeRoundN =
   (p = 2) =>
   (n) =>
     isNum(n)
-      ? p === 0
-        ? +n
-        : Math.round(n * Math.pow(10, p)) / Math.pow(10, p)
+      ? Math.round(n * Math.pow(10, p)) / Math.pow(10, p)
       : n;
 
+/* -------------------------------------------------------------------------- */
+/* 🧮 useIncomeFieldMath – safe numeric, sign, and derived logic              */
+/* -------------------------------------------------------------------------- */
 export function useIncomeFieldMath({
   setAtPath,
   fullPath,
@@ -29,8 +30,9 @@ export function useIncomeFieldMath({
   const UNITS = Number(metrics?.units) || 0;
   const roundN = makeRoundN(precision);
   const prevMetricsRef = useRef({ GBA, UNITS });
+  const suppressRef = useRef(false); // prevent recursive writes
 
-  // ───────── auto-recalc when GBA / Units change
+  /* -------------------- Auto-recalc on metric change -------------------- */
   useEffect(() => {
     if (!deriveFromMetrics) return;
     const prev = prevMetricsRef.current;
@@ -40,123 +42,93 @@ export function useIncomeFieldMath({
     }
   }, [GBA, UNITS, deriveFromMetrics]);
 
-  const flipNegative = (o) => {
-    for (const k in o) if (typeof o[k] === "number" && o[k] > 0) o[k] = -o[k];
-  };
-  const flipPositive = (o) => {
-    for (const k in o)
-      if (typeof o[k] === "number" && o[k] < 0) o[k] = Math.abs(o[k]);
-  };
+  /* -------------------- Core handler -------------------- */
+  const handleChange = useCallback(
+    (field, raw) => {
+      if (suppressRef.current) return;
 
-const handleChange = useCallback(
-  (field, raw) => {
-    const n = raw === "" ? "" : Number(raw);
-    console.groupCollapsed(
-      `%c[handleChange] %c${fullPath} → ${field}=${n}`,
-      "color: #999",
-      "color: dodgerblue; font-weight:600;"
-    );
+      const n = raw === "" ? "" : Number(raw);
 
-    setAtPath(fullPath, (prev = {}) => {
-      const next = { ...prev, [field]: n };
+      setAtPath(fullPath, (prev = {}) => {
+        const next = { ...prev, [field]: n };
 
-      console.log("Prev:", prev);
-      console.log("Next (before sign logic):", next);
-
-      // ---------- 🔹 Robust sign enforcement ----------
-      const enforceLiveSign = () => {
+        // --- Sign enforcement
         const pathParts = fullPath.split(".");
-        if (pathParts[0] !== "Income") return;
-        const incomeKeys = Object.keys(fullData || {});
-        const currentKey = pathParts[1];
+        if (pathParts[0] === "Income" && fullData?.Income) {
+          const incomeKeys = Object.keys(fullData.Income);
+          const currentKey = pathParts[1];
+          const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
+          const nriIndex = incomeKeys.indexOf(FIXED_DIVIDER_INCOME_KEY);
+          const curIndex = incomeKeys.indexOf(currentKey);
+          const isBetween = curIndex > gsrIndex && curIndex < nriIndex;
+          const isBelow = curIndex > nriIndex;
+
+          if (isBetween) {
+            for (const k in next)
+              if (typeof next[k] === "number" && next[k] > 0)
+                next[k] = -next[k];
+          } else if (isBelow) {
+            for (const k in next)
+              if (typeof next[k] === "number" && next[k] < 0)
+                next[k] = Math.abs(next[k]);
+          }
+        }
+
+        // --- Monthly↔Annual mirror
+        if (field.endsWith("Monthly")) {
+          if (field === "rateMonthly" && isNum(n))
+            next.rateAnnual = roundN(toAnnual(n));
+          if (isNum(next.grossMonthly))
+            next.grossAnnual = roundN(toAnnual(next.grossMonthly));
+        } else if (field.endsWith("Annual")) {
+          if (isNum(next.grossAnnual))
+            next.grossMonthly = roundN(toMonthly(next.grossAnnual));
+        }
+
+        return next;
+      });
+
+      // --- Auto-update Net Rental Income
+      if (fullPath.startsWith("Income.") && fullData?.Income) {
+        const incomeKeys = Object.keys(fullData.Income);
         const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
         const nriIndex = incomeKeys.indexOf(FIXED_DIVIDER_INCOME_KEY);
-        const curIndex = incomeKeys.indexOf(currentKey);
+        if (gsrIndex >= 0 && nriIndex >= 0) {
+          const rowsAboveNRI = incomeKeys.slice(gsrIndex, nriIndex);
+          const totals = {
+            grossAnnual: 0,
+            grossMonthly: 0,
+            psfAnnual: 0,
+            psfMonthly: 0,
+            punitAnnual: 0,
+            punitMonthly: 0,
+            rateAnnual: 0,
+            rateMonthly: 0,
+          };
 
-        const isBetween =
-          gsrIndex >= 0 && nriIndex >= 0 && curIndex > gsrIndex && curIndex < nriIndex;
-        const isBelow = nriIndex >= 0 && curIndex > nriIndex;
+          for (const key of rowsAboveNRI) {
+            const node = fullData.Income[key];
+            if (!node) continue;
+            for (const f in totals)
+              if (typeof node[f] === "number") totals[f] += node[f];
+          }
 
-        console.log("  Context:", {
-          currentKey,
-          curIndex,
-          gsrIndex,
-          nriIndex,
-          isBetween,
-          isBelow,
-        });
-
-        if (isBetween) {
-          for (const k in next)
-            if (typeof next[k] === "number" && next[k] > 0) next[k] = -next[k];
-          console.log("  ➤ flipped NEGATIVE", next);
-        } else if (isBelow) {
-          for (const k in next)
-            if (typeof next[k] === "number" && next[k] < 0)
-              next[k] = Math.abs(next[k]);
-          console.log("  ➤ flipped POSITIVE", next);
-        } else {
-          console.log("  ➤ No sign flip applied");
-        }
-      };
-
-      enforceLiveSign();
-
-      // ---------- 🔹 Normal math mirroring ----------
-      const G = GBA,
-        U = UNITS;
-      if (field.endsWith("Monthly")) {
-        if (deriveFromMetrics && (G > 0 || U > 0)) {
-          if (field === "grossMonthly") {
-            const g = n;
-            if (isNum(g) && G > 0) next.psfMonthly = roundN(g / G);
-            if (isNum(g) && U > 0) next.punitMonthly = roundN(g / U);
-          } else if (field === "psfMonthly" && G > 0)
-            next.grossMonthly = roundN(n * G);
-          else if (field === "punitMonthly" && U > 0)
-            next.grossMonthly = roundN(n * U);
-        }
-        if (field === "rateMonthly" && isNum(n))
-          next.rateAnnual = roundN(toAnnual(n));
-        if (isNum(next.grossMonthly))
-          next.grossAnnual = roundN(toAnnual(next.grossMonthly));
-        if (isNum(next.psfMonthly))
-          next.psfAnnual = roundN(toAnnual(next.psfMonthly));
-        if (isNum(next.punitMonthly))
-          next.punitAnnual = roundN(toAnnual(next.punitMonthly));
-      } else if (field.endsWith("Annual")) {
-        if (deriveFromMetrics && (G > 0 || U > 0)) {
-          if (field === "grossAnnual") {
-            const g = n;
-            next.psfAnnual = isNum(g) && G > 0 ? roundN(g / G) : "";
-            next.punitAnnual = isNum(g) && U > 0 ? roundN(g / U) : "";
-          } else if (field === "psfAnnual" && G > 0)
-            next.grossAnnual = roundN(n * G);
-          else if (field === "punitAnnual" && U > 0)
-            next.grossAnnual = roundN(n * U);
+          // ✅ update exactly once and never re-nest
+          suppressRef.current = true;
+          setAtPath("Income.Net Rental Income", () => structuredClone(totals));
+          suppressRef.current = false;
         }
       }
+    },
+    [fullPath, setAtPath, fullData, GBA, UNITS, roundN]
+  );
 
-      console.log("Next (after math):", next);
-      console.groupEnd();
-      return next;
-    });
-  },
-  [fullPath, setAtPath, GBA, UNITS, deriveFromMetrics, roundN, fullData]
-);
-
-
-
-
+  /* -------------------- Blur sync -------------------- */
   const handleBlur = useCallback(() => {
     setAtPath(fullPath, (p = {}) => {
       const n = { ...p };
       if (isNum(n.grossAnnual))
         n.grossMonthly = roundN(toMonthly(n.grossAnnual));
-      if (isNum(n.psfAnnual)) n.psfMonthly = roundN(toMonthly(n.psfAnnual));
-      if (isNum(n.punitAnnual))
-        n.punitMonthly = roundN(toMonthly(n.punitAnnual));
-      if (isNum(n.rateAnnual)) n.rateMonthly = roundN(toMonthly(n.rateAnnual));
       return n;
     });
   }, [fullPath, setAtPath, roundN]);

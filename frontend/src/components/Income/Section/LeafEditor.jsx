@@ -3,6 +3,9 @@ import { useIncomeFieldMath } from "@/hooks/useIncomeFieldMath";
 import React, { useEffect, useState, useCallback } from "react";
 import "@styles/components/Income/LeafEditor.css";
 
+const isNum = (v) => v !== "" && v != null && Number.isFinite(+v);
+
+// Format numeric → "(1,234)" style
 const formatDisplay = (num) => {
   if (num === "" || num == null || isNaN(num)) return "";
   const abs = Math.abs(Number(num)).toLocaleString(undefined, {
@@ -11,6 +14,7 @@ const formatDisplay = (num) => {
   return num < 0 ? `(${abs})` : abs;
 };
 
+// Parse "(1,234)" → -1234
 const parseDisplay = (text) => {
   if (typeof text === "number") return text;
   if (!text) return 0;
@@ -37,7 +41,7 @@ export default function LeafEditor({
   });
 
   const [local, setLocal] = useState(val || {});
-  const [drafts, setDrafts] = useState({}); // 🆕 track per field
+  const [draft, setDraft] = useState(""); // 🆕 live typing text
 
   useEffect(() => setLocal(val || {}), [val]);
 
@@ -72,16 +76,17 @@ export default function LeafEditor({
     [getSignContext]
   );
 
+  /** Prevent drag handles stealing focus */
   const guard = {
     onPointerDownCapture: (e) => e.stopPropagation(),
     onMouseDownCapture: (e) => e.stopPropagation(),
     onKeyDownCapture: (e) => e.stopPropagation(),
   };
 
-  /** Handle typing per-field */
+  /** Handle input typing */
   const handleInputChange = (field) => (e) => {
     const raw = e.target.value;
-    setDrafts((prev) => ({ ...prev, [field]: raw }));
+    setDraft(raw); // store the live text the user sees
 
     const enforced = enforceSign(raw);
     setLocal((prev) => ({ ...prev, [field]: enforced }));
@@ -89,19 +94,16 @@ export default function LeafEditor({
   };
 
   const handleInputBlur = (field) => () => {
-    setDrafts((prev) => {
-      const copy = { ...prev };
-      delete copy[field];
-      return copy;
-    });
+    setDraft(""); // reset to show formatted number
     handleBlur();
   };
 
   const renderField = (field) => {
     const valNum = local?.[field];
     const formatted = formatDisplay(valNum);
-    const displayValue =
-      drafts[field] !== undefined ? drafts[field] : formatted;
+
+    // When typing, show raw draft; when not, show formatted
+    const displayValue = draft !== "" ? draft : formatted;
     const isNegative = Number(valNum) < 0;
 
     return (

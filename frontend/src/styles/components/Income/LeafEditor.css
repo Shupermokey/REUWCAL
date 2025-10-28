@@ -54,6 +54,28 @@
   font-weight: 500;
 }
 
+/* -------------------------------------------------------------------------- */
+/* 🧊 Read-only computed row (Net Rental Income etc.)                          */
+/* -------------------------------------------------------------------------- */
+.leaf-readonly {
+  display: inline-block;
+  min-width: 70px;
+  text-align: right;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: default;
+  border: 1px solid #e0e0e0;
+}
+
+.leaf-editor.readonly-mode .leaf-input {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+
 
 
 /* ----------------------------------------------------------
