@@ -1,3 +1,4 @@
+// components/Income/Section/Section.jsx
 import React, { useState, useCallback } from "react";
 import {
   DndContext,
@@ -37,6 +38,7 @@ export default function Section({
   lockKeys = new Set(),
   metrics = { gbaSqft: 0, units: 0 },
   deriveKeys = new Set(["Gross Scheduled Rent"]),
+  fullPrefix = "",
 }) {
   const { displayMode } = useIncomeView();
   const { prompt, confirm } = useDialog();
@@ -71,6 +73,11 @@ export default function Section({
 
   const handleCollapseAll = () => collapseAll(data, setCollapsedPaths);
   const handleExpandAll = () => expandAll(setCollapsedPaths);
+
+  // ✅ new: live refresh trigger passed to all leaves
+  const handleImmediateChange = useCallback(() => {
+    onChange(structuredClone(data));
+  }, [data, onChange]);
 
   const hasHeader = !!title;
 
@@ -116,7 +123,7 @@ export default function Section({
       {(!hasHeader || !collapsed) && (
         <>
           <ChildBranch
-            full=""
+            full={fullPrefix || ""}
             depth={0}
             val={data}
             collapsedPaths={collapsedPaths}
@@ -128,6 +135,8 @@ export default function Section({
             handleDelete={handleDelete}
             handlePromote={handlePromote}
             handleSetAtPath={handleSetAtPath}
+            fullData={data.Income}
+            onImmediateChange={handleImmediateChange} // 👈 added
           />
           {showTotal && <SectionTotal data={data} title={title} />}
         </>

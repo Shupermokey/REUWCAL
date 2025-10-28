@@ -5,7 +5,6 @@ import { useIncomeView } from "@/app/providers/IncomeViewProvider.jsx";
 export default function SectionTotal({ data, title }) {
   const { displayMode } = useIncomeView();
 
-  // Compute section totals
   const totals = useMemo(() => {
     const t = {
       grossAnnual: 0,
@@ -35,7 +34,6 @@ export default function SectionTotal({ data, title }) {
     return t;
   }, [data]);
 
-  // Format numbers with commas and parentheses for negatives
   const fmt = (n) => {
     if (!Number.isFinite(n)) return "";
     const abs = Math.abs(n);
@@ -46,18 +44,17 @@ export default function SectionTotal({ data, title }) {
   const showAnnual = displayMode === "annual" || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
 
+  const renderCell = (key, value) => (
+    <div
+      key={key}
+      className={`total-cell ${value < 0 ? "negative" : ""}`}
+    >
+      {fmt(value)}
+    </div>
+  );
+
   const renderValues = () => {
     const cells = [];
-
-    const renderCell = (key, value) => (
-      <div
-        key={key}
-        className={`total-cell ${value < 0 ? "negative" : ""}`}
-      >
-        {fmt(value)}
-      </div>
-    );
-
     if (showMonthly) {
       cells.push(
         renderCell("rateMonthly", totals.rateMonthly),
@@ -66,7 +63,6 @@ export default function SectionTotal({ data, title }) {
         renderCell("punitMonthly", totals.punitMonthly)
       );
     }
-
     if (showAnnual) {
       cells.push(
         renderCell("rateAnnual", totals.rateAnnual),
@@ -75,7 +71,6 @@ export default function SectionTotal({ data, title }) {
         renderCell("punitAnnual", totals.punitAnnual)
       );
     }
-
     return cells;
   };
 

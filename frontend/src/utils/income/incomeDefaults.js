@@ -14,7 +14,6 @@ export const defaultStructure = {
     "Net Rental Income": newLeaf(), //TODO: Should this be a leaf?
     "Recoverable Income": newLeaf(),
     "Other Income": newLeaf(),
-    "Effective Gross Income": newLeaf(),
   },
   OperatingExpenses: {
     "County-Level Property Taxes": newLeaf(),

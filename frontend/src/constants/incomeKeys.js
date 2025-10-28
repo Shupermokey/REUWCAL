@@ -1,6 +1,6 @@
-// src/constants/incomeKeys.js
-
-/** Fundamental numeric leaf fields for income statement */
+// ---------------------------------------------------------------------------
+// Core leaf fields
+// ---------------------------------------------------------------------------
 export const LEAF_KEYS = [
   "grossAnnual",
   "psfAnnual",
@@ -12,7 +12,9 @@ export const LEAF_KEYS = [
   "rateMonthly",
 ];
 
-/** Operating Expense subcategories */
+// ---------------------------------------------------------------------------
+// Opex groupings
+// ---------------------------------------------------------------------------
 export const TAX_KEYS = [
   "County-Level Property Taxes",
   "Municipality-Level Property Taxes",
@@ -36,11 +38,33 @@ export const ADMIN_KEYS = [
   "Other Administrative Expenses",
 ];
 
-/** Computed subtotal/total row names (read-only lines) */
+// ---------------------------------------------------------------------------
+// Read-only subtotal / total rows
+// ---------------------------------------------------------------------------
 export const COMPUTED_OPEX_KEYS = new Set([
   "Subtotal Property Taxes",
   "Subtotal Insurance",
   "Subtotal CAM",
   "Subtotal Administrative & Other",
   "Total Operating Expenses",
+]);
+
+// ---------------------------------------------------------------------------
+// Income section anchors & order
+// ---------------------------------------------------------------------------
+export const INCOME_ORDER = [
+  "Gross Scheduled Rent",
+  "Less - Free Rent and/or Allowances",
+  "Less - Other Adjustments",
+  "Net Rental Income",
+  "Recoverable Income",
+  "BRI",
+  "Other Income",
+];
+
+export const FIXED_FIRST_INCOME_KEY = "Gross Scheduled Rent";
+export const FIXED_DIVIDER_INCOME_KEY = "Net Rental Income";
+export const LOCKED_INCOME_KEYS = new Set([
+  FIXED_FIRST_INCOME_KEY,
+  FIXED_DIVIDER_INCOME_KEY,
 ]);

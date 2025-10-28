@@ -31,9 +31,8 @@ import Section from "./Section/Section.jsx";
 
 // 🎨 Styles
 import "@/styles/components/Income/IncomeStatement.css";
-
-
-
+import { FIXED_DIVIDER_INCOME_KEY, FIXED_FIRST_INCOME_KEY } from "@/constants/incomeKeys.js";
+import { INCOME_ORDER } from "@/constants/incomeKeys.js";
 
 /* -------------------------------------------------------------------------- */
 /* 💰 IncomeStatement Component                                               */
@@ -62,12 +61,32 @@ export default function IncomeStatement({
   const LOCKED_OPEX = useMemo(() => getLockedOpexKeys(), []);
 
   /* ------------------------------ Load Data --------------------------------- */
+
   useEffect(() => {
     if (!user || !propertyId) return;
     (async () => {
       try {
         const saved = await getIncomeStatement(user.uid, propertyId);
-        setData(saved || defaultStructure);
+        if (saved) {
+          // --- enforce deterministic order ---
+          const orderedIncome = {};
+          const incomeKeys = Object.keys(saved.Income || {});
+
+          // first, use predefined order
+          INCOME_ORDER.forEach((k) => {
+            if (incomeKeys.includes(k)) orderedIncome[k] = saved.Income[k];
+          });
+
+          // then append any user-added keys (preserve their values)
+          incomeKeys
+            .filter((k) => !INCOME_ORDER.includes(k))
+            .forEach((k) => (orderedIncome[k] = saved.Income[k]));
+
+          const normalized = { ...saved, Income: orderedIncome };
+          setData(normalized);
+        } else {
+          setData(defaultStructure);
+        }
         setLoaded(true);
       } catch (e) {
         console.error("Error loading income statement:", e);
@@ -90,28 +109,82 @@ export default function IncomeStatement({
     });
   }, [loaded, rowData?.bri]);
 
-  /* -------------------------------- Save ------------------------------------ */
-const onSave = async () => {
-  if (!user || !propertyId) return;
+  useEffect(() => {
+    setData((prev) => {
+      const inc = prev?.Income || {};
+      if (!inc[FIXED_FIRST_INCOME_KEY]) return prev;
 
-  try {
-    setSaving(true);
-    setError(null);
+      const reordered = {
+        [FIXED_FIRST_INCOME_KEY]: inc[FIXED_FIRST_INCOME_KEY],
+        ...Object.fromEntries(
+          Object.entries(inc).filter(([k]) => k !== FIXED_FIRST_INCOME_KEY)
+        ),
+      };
+      return { ...prev, Income: reordered };
+    });
+  }, [loaded]);
 
-    const totalIncome = await saveIncomeStatement(user.uid, propertyId, data);
+  // Normalize Income section before persisting
+  function normalizeIncomeData(rawIncome) {
+    if (!rawIncome) return {};
+    const ordered = {};
 
-    // Update row cell immediately (so it matches Firestore)
-    onSaveRowValue?.(totalIncome);
+    // enforce canonical order first
+    INCOME_ORDER.forEach((k) => {
+      if (rawIncome[k]) ordered[k] = structuredClone(rawIncome[k]);
+    });
 
-    toast.success("✅ Saved Income Statement");
-  } catch (err) {
-    console.error("Save failed:", err);
-    toast.error("❌ Save failed");
-  } finally {
-    setSaving(false);
+    // include any user-added keys (in current insertion order)
+    Object.keys(rawIncome)
+      .filter((k) => !INCOME_ORDER.includes(k))
+      .forEach((k) => (ordered[k] = structuredClone(rawIncome[k])));
+
+    // enforce signs
+    const gsrIndex = INCOME_ORDER.indexOf(FIXED_FIRST_INCOME_KEY);
+    const nriIndex = INCOME_ORDER.indexOf(FIXED_DIVIDER_INCOME_KEY);
+    Object.entries(ordered).forEach(([k, v]) => {
+      const idx = INCOME_ORDER.indexOf(k);
+      if (idx > gsrIndex && idx < nriIndex) {
+        for (const key in v)
+          if (typeof v[key] === "number" && v[key] > 0) v[key] = -v[key];
+      }
+      if (idx > nriIndex) {
+        for (const key in v)
+          if (typeof v[key] === "number" && v[key] < 0)
+            v[key] = Math.abs(v[key]);
+      }
+    });
+
+    return ordered;
   }
-};
 
+  /* -------------------------------- Save ------------------------------------ */
+  const onSave = async () => {
+    if (!user || !propertyId) return;
+    try {
+      setSaving(true);
+      setError(null);
+
+      // 🔹 Normalize first
+      const normalized = {
+        ...data,
+        Income: normalizeIncomeData(data?.Income || {}),
+      };
+
+      const totalIncome = await saveIncomeStatement(
+        user.uid,
+        propertyId,
+        normalized
+      );
+      onSaveRowValue?.(totalIncome);
+      toast.success("✅ Saved Income Statement");
+    } catch (err) {
+      console.error("Save failed:", err);
+      toast.error("❌ Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /* ---------------------------- Handle Section Change ----------------------- */
   const handleSectionChange = (sectionKey) => (updatedSection) => {
@@ -131,39 +204,40 @@ const onSave = async () => {
   return (
     <div className="income-wrapper">
       <div className="income-statement-panel">
-      <HeaderBar
-        saving={saving}
-        error={error}
-        lastSavedAt={lastSavedAt}
-        onSave={onSave}
-      />
+        <HeaderBar
+          saving={saving}
+          error={error}
+          lastSavedAt={lastSavedAt}
+          onSave={onSave}
+        />
 
-      {SECTION_LAYOUT.map(({ key, title }) =>
-        key === "OperatingExpenses" ? (
-          <div key={key} ref={opexRef}>
+        {SECTION_LAYOUT.map(({ key, title }) =>
+          key === "OperatingExpenses" ? (
+            <div key={key} ref={opexRef}>
+              <Section
+                title={title}
+                data={opexView}
+                onChange={handleSectionChange(key)}
+                enableSort
+                lockKeys={LOCKED_OPEX}
+                metrics={metrics}
+                deriveKeys={emptySet}
+              />
+            </div>
+          ) : (
             <Section
+              key={key}
               title={title}
-              data={opexView}
+              data={data[key]}
               onChange={handleSectionChange(key)}
               enableSort
-              lockKeys={LOCKED_OPEX}
               metrics={metrics}
-              deriveKeys={emptySet}
+              deriveKeys={key === "Income" ? deriveGSR : emptySet}
+              fullPrefix={key}
             />
-          </div>
-        ) : (
-          <Section
-            key={key}
-            title={title}
-            data={data[key]}
-            onChange={handleSectionChange(key)}
-            enableSort
-            metrics={metrics}
-            deriveKeys={key === "Income" ? deriveGSR : emptySet}
-          />
-        )
-      )}
-    </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

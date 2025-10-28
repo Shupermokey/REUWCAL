@@ -1,19 +1,20 @@
-// ✅ components/Income/Section/ChildLeaf.jsx
-import React from "react";
-import LeafEditor from "./LeafEditor.jsx";
+import { LOCKED_INCOME_KEYS } from "@/constants/incomeKeys.js";
+import LeafEditor from "./LeafEditor";
 
 export default function ChildLeaf({
   full,
+  label,
   val,
   displayMode,
   metrics,
   handleSetAtPath,
   handlePromote,
   handleDelete,
+  fullData,
+  onImmediateChange, // 👈 new
 }) {
   return (
     <>
-      {/* ✅ only inputs + actions, NOT a full .sec__rowGrid */}
       <div className="sec__values">
         <LeafEditor
           fullPath={full}
@@ -21,17 +22,23 @@ export default function ChildLeaf({
           setAtPath={handleSetAtPath}
           displayMode={displayMode}
           metrics={metrics}
-          deriveFromMetrics={true}
+          deriveFromMetrics
+          fullData={fullData}
+          onImmediateChange={onImmediateChange} // 👈 added
         />
       </div>
 
       <div className="sec__actions">
-        <button className="sub-btn" onClick={() => handlePromote(full)}>
-          + Sub
-        </button>
-        <button className="danger-btn" onClick={() => handleDelete(full)}>
-          Delete
-        </button>
+        {!LOCKED_INCOME_KEYS.has(label) && (
+          <>
+            <button className="sub-btn" onClick={() => handlePromote(full)}>
+              + Sub
+            </button>
+            <button className="danger-btn" onClick={() => handleDelete(full)}>
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </>
   );
