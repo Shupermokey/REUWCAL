@@ -2,8 +2,6 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTable } from "../../app/providers/TableProvider";
 import Row from "./Row/Row";
 import { useAuth } from "../../app/providers/AuthProvider";
-import FileExplorer from "../../components/Sidebar/FileSystem/FileExplorer";
-import PropertyFileSidebar from "../../components/Sidebar/PropertyFileSidebar";
 import { subscribeToBaselines } from "../../services/firestoreService";
 import {
   addProperty,
@@ -12,7 +10,7 @@ import {
   initializeFileSystem,
   subscribeToProperties,
 } from "../../services/firestoreService";
-import columnConfig, { columnOrder } from "../../columnConfig";
+import columnConfig, { columnOrder } from "../../constants/columnConfig";
 import { makeBlankRow } from "../../utils/rows/rowSchema";
 import { normalizeForSave } from "../../utils/rows/rowNormalize";
 
@@ -188,14 +186,8 @@ function Table({ onRowSelect }) {
         </div>
       )}
 
-      <PropertyFileSidebar
-        isOpen={!!activeSidebar}
-        propertyId={activeSidebar}
-        onClose={() => setActiveSidebar(null)}
-      />
     </div>
   );
 }
 
 export default Table;
-

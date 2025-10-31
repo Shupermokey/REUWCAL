@@ -1,5 +1,5 @@
 // utils/rowSchema.js
-import columnConfig, { columnOrder } from "../../columnConfig";
+import columnConfig, { columnOrder } from "../../constants/columnConfig";
 
 // Optional: encode defaults per column; fallback to type-based defaults
 //Iterate through column order and determine default value for each key. 0, "", or undefined

@@ -5,3 +5,6 @@ export * from "./tableHeaders";
 export * from "./tiers";
 export * from "./ui";
 export * from "./types";
+export * from "./incomeKeys";
+export * from "./columnConfig";
+

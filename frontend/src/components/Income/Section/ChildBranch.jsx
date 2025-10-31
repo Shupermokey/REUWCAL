@@ -41,6 +41,8 @@ export default function ChildBranch({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
+  // The localKeys are: Gross Scheduled Rent, Vacancy/Collections Loss, Less - Free Rent and/or Allowances, Less - Other Adjustments, Net Rental Income, Recoverable Income, Other Income
+  // and so on for other sections: Income, Operating Expenses, Capital Expenses
   const localKeys = Object.keys(val || {});
 
   const onLocalDragEnd = (event) => {
@@ -60,7 +62,9 @@ export default function ChildBranch({
         if (from < 0 || to < 0) return prevData;
 
         if (
-          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(fromKey) ||
+          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(
+            fromKey
+          ) ||
           [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(toKey)
         )
           return prevData;
@@ -112,7 +116,8 @@ export default function ChildBranch({
             <SortableRow
               key={fullPath}
               id={key}
-              mainRow={{
+              mainRow={
+                {
                 leading: !isLeaf ? (
                   <button
                     className="sec__caret"
@@ -126,7 +131,7 @@ export default function ChildBranch({
                   <ChildLeaf
                     full={fullPath}
                     label={key}
-                    val={node}
+                    val={node} //grossAnnual:0, psfAnnual:0, punitAnnual:0, rateAnnual:0, grossMonthly:0, psfMonthly:0, punitMonthly:0, rateMonthly:0
                     displayMode={displayMode}
                     metrics={metrics}
                     handleSetAtPath={handleSetAtPath}
@@ -135,10 +140,9 @@ export default function ChildBranch({
                     fullData={fullData}
                     onImmediateChange={onImmediateChange} // 👈 NEW
                   />
-                ) : (
-                  <BranchTotals value={node} displayMode={displayMode} />
-                ),
-              }}
+                ) : (<BranchTotals value={node} displayMode={displayMode} />),
+              }
+            }
               childrenBelow={
                 !isLeaf &&
                 !isCollapsed && (

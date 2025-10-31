@@ -77,7 +77,7 @@ export default function SectionTotal({ data, title }) {
   return (
     <div className="sec__totalRow">
       <div className="sec__rowGrid">
-        <div className="sec__firstCell" />
+        <div className="sec__firstCell" value={title}/>
         <div className="sec__label">
           <span className="sec__labelText">
             Total {title ?? "Section"}

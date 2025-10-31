@@ -40,7 +40,7 @@ export function useIncomeFieldMath({
       prevMetricsRef.current = { GBA, UNITS };
       setAtPath(fullPath, (p = {}) => recalcMetrics(p, { GBA, UNITS }));
     }
-  }, [GBA, UNITS, deriveFromMetrics]);
+  }, [GBA, UNITS, deriveFromMetrics, fullPath, setAtPath]);
 
   /* -------------------- Core handler -------------------- */
   const handleChange = useCallback(
@@ -49,10 +49,12 @@ export function useIncomeFieldMath({
 
       const n = raw === "" ? "" : Number(raw);
 
+      // ✅ Main value change
       setAtPath(fullPath, (prev = {}) => {
-        const next = { ...prev, [field]: n };
+        const next = structuredClone(prev);
+        next[field] = n;
 
-        // --- Sign enforcement
+        // --- Sign enforcement for Income section
         const pathParts = fullPath.split(".");
         if (pathParts[0] === "Income" && fullData?.Income) {
           const incomeKeys = Object.keys(fullData.Income);
@@ -74,7 +76,7 @@ export function useIncomeFieldMath({
           }
         }
 
-        // --- Monthly↔Annual mirror
+        // --- Monthly↔Annual mirroring
         if (field.endsWith("Monthly")) {
           if (field === "rateMonthly" && isNum(n))
             next.rateAnnual = roundN(toAnnual(n));
@@ -88,11 +90,12 @@ export function useIncomeFieldMath({
         return next;
       });
 
-      // --- Auto-update Net Rental Income
+      // ✅ Auto-update Net Rental Income totals
       if (fullPath.startsWith("Income.") && fullData?.Income) {
         const incomeKeys = Object.keys(fullData.Income);
         const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
         const nriIndex = incomeKeys.indexOf(FIXED_DIVIDER_INCOME_KEY);
+
         if (gsrIndex >= 0 && nriIndex >= 0) {
           const rowsAboveNRI = incomeKeys.slice(gsrIndex, nriIndex);
           const totals = {
@@ -113,7 +116,7 @@ export function useIncomeFieldMath({
               if (typeof node[f] === "number") totals[f] += node[f];
           }
 
-          // ✅ update exactly once and never re-nest
+          // Prevent feedback loops
           suppressRef.current = true;
           setAtPath("Income.Net Rental Income", () => structuredClone(totals));
           suppressRef.current = false;

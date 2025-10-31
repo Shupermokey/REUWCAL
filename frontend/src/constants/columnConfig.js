@@ -40,13 +40,12 @@ const columnConfig = {
     type: "number",
     input: "custom",
     width: 150,
-    readOnly: true,
+    //readOnly: true,
   },
     financing: {
     label: "Financing",
-    type: "string",
-    input: "dropdown",
-    optionsFrom: "baselines",
+    type: "number",
+    input: "custom",
     width: 150,
   },
   Category: {
@@ -77,19 +76,6 @@ export const columnOrder = [
   "Category",
   "EditingTools",
 ];
-
-export const columnWidths = {
-  propertyAddress: 200,
-  propertyTaxes: 150,
-  propertyGSA: 150,
-  propertyGBA: 150,
-  units: 150,
-  purchasePrice: 150,
-  incomeStatement: 150,
-  financing: 150,
-  Category: 150,
-  EditingTools: 200, // wider to fit all buttons
-};
 
 export const breakdownConfig = {
   propertyAddress: [
@@ -130,7 +116,6 @@ export const breakdownConfig = {
     { label: "Property Reports", type: "folder" },
     { label: "Corporate Governance", type: "folder" },
   ],
-
   propertyTaxes: [
     { label: "Tax PIN", type: "text" },
     { label: "Tax Amount", type: "number", required: true },
@@ -140,7 +125,6 @@ export const breakdownConfig = {
     { label: "Tax Bill", type: "folder" },
     { label: "Potential Tax Bills", type: "folder" },
   ],
-
   propertyGSA: [
     {
       label: "Acres",
@@ -152,7 +136,6 @@ export const breakdownConfig = {
     },
     { label: "Property Survey", type: "folder" },
   ],
-
   propertyGBA: [
     {
       label: "Gross Building Area (GBA)",
@@ -170,7 +153,6 @@ export const breakdownConfig = {
     { label: "Floor Plans", type: "folder" },
     { label: "Other", type: "folder" },
   ],
-
   purchasePrice: [
     { label: "Contract Price", type: "number" },
     { label: "Transaction", type: "number" },
@@ -187,7 +169,7 @@ export const breakdownConfig = {
     { label: "Capital Reserve", type: "number" },
     { label: "Other (Purchase Price)", type: "number" },
   ],
-    incomeStatement: [
+  incomeStatement: [
     { label: "Temp", type: "number" },
   ],
   marketRate: [

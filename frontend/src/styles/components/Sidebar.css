@@ -6,7 +6,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 240px;
+  width:300px;
   height: 100vh;
   background: var(--color-card);
   border-right: 1px solid var(--color-border);
@@ -15,22 +15,32 @@
   flex-direction: column;
   gap: var(--sp-4);
   padding: var(--sp-5) var(--sp-4);
-
-  /* ✅ critical fixes */
-  z-index: 5; /* sits below main content now */
+  z-index: 5;
   pointer-events: auto;
 }
 
 /* Sidebar header (logo, user, etc.) */
-.sidebar__header {
+.sidebar__header span {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--sp-5);
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.sidebar-show{
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-hidden{
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
 
 /* Nav links */
-.sidebar a {
+.sidebar button {
   color: var(--color-text);
   text-decoration: none;
   font-weight: 500;
@@ -40,38 +50,16 @@
   transition: all 0.2s ease;
 }
 
-.sidebar a:hover {
-  background: #f3f4f6;
+.sidebar button:hover {
+  background: #c6c5e0;
   color: var(--color-accent);
 }
 
 /* Active state */
-.sidebar a.active {
+.sidebar button.active {
   background: var(--color-accent-muted);
   color: var(--color-accent);
   font-weight: 600;
-}
-
-/* Folder/file buttons */
-.sidebar__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s ease;
-}
-
-.sidebar__item:hover {
-  background: #f9fafb;
-}
-
-/* Divider */
-.sidebar__divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--sp-3) 0;
 }
 
 /* Collapsed state (if applicable) */
@@ -80,33 +68,5 @@
   transition: transform 0.3s ease;
 }
 
-/* Optional: overlay when sidebar opens on mobile */
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 4; /* below sidebar itself */
-  display: none;
-}
 
-.sidebar-overlay.active {
-  display: block;
-}
 
-/* App main layout fix */
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-  position: relative;
-  z-index: 0;
-}
-
-.app-main {
-  flex: 1;
-  margin-left: 240px; /* same width as sidebar */
-  padding: var(--sp-5);
-  position: relative;
-  z-index: 10; /* ensures it sits above sidebar */
-  background: var(--color-bg);
-  overflow-x: auto;
-}

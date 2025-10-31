@@ -1,17 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useAuth } from "../../../app/providers/AuthProvider";
-import {
-  normalizeRow,
-  unwrapValue,
-  displayValue,
-} from "../../../utils/rows/rowHelpers";
-import { validateFields } from "../../../utils/rows/rowValidation";
-import { useRowCalcs } from "../../../hooks/useRowCalcs";
-import CellDetailsPanel from "../../../components/CellDetailsPanel";
-import PropertyIncomeStatement from "../../../components/PropertyIncomeStatement";
-import IncomeStatement from "../../../components/Income/IncomeStatement";
-import columnConfig, { columnOrder } from "../../../columnConfig";
-import { getNodeTotal } from "../../../components/CustomBreakdownInputs";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { normalizeRow, unwrapValue, displayValue } from "@/utils/rows/rowHelpers";
+import { validateFields } from "@/utils/rows/rowValidation";
+import { useRowCalcs } from "@/hooks/useRowCalcs";
+import IncomeStatement from "@/components/Income/IncomeStatement";
+import columnConfig, { columnOrder } from "@/constants/columnConfig";
 
 // ✅ Scoped CSS
 import "@/styles/components/Table/Row.css";
@@ -41,7 +34,6 @@ function Row({
     []
   );
   const isRentKey = useCallback((k) => RENT_KEYS.has(k), [RENT_KEYS]);
-
   const toLastEditedKey = useCallback(
     (k) => (k === "grossRentalIncome" ? "gross" : k),
     []
@@ -65,63 +57,9 @@ function Row({
       };
 
       setEditableRow((prev) => ({ ...prev, ...updates }));
-      Object.entries(updates).forEach(([k, v]) =>
-        handleCellChange(row.id, k, v)
-      );
+      Object.entries(updates).forEach(([k, v]) => handleCellChange(row.id, k, v));
     },
     [baselines, handleCellChange, row.id]
-  );
-
-  /* --------------------------- CellDetailsPanel logic --------------------------- */
-  const handleUpdateFromPanel = useCallback(
-    (updatedData) => {
-      const details = updatedData.details || {};
-      const column = activeColumn;
-      let updatedValue = 0;
-
-      if (column === "propertyAddress") {
-        updatedValue = details["Property Address"] || "";
-      } else if (column === "propertyGSA") {
-        updatedValue = parseFloat(details["Square Feet"]) || 0;
-      } else if (column === "propertyGBA") {
-        updatedValue =
-          parseFloat(details["Gross Building Area (GBA/GLA)"]) || 0;
-      } else if (column === "purchasePrice") {
-        const numericFields = [
-          "Contract Price",
-          "Transaction",
-          "Due Diligence",
-          "Other",
-          "Capital To Stabilize",
-          "Capital Reserve",
-        ];
-        const defaultTotal = numericFields.reduce((sum, key) => {
-          const val = details[key];
-          const parsed = typeof val === "number" ? val : parseFloat(val);
-          return !isNaN(parsed) ? sum + parsed : sum;
-        }, 0);
-        const customTotal = (updatedData.customInputs || []).reduce(
-          (sum, input) => {
-            const num = parseFloat(input.value);
-            return !isNaN(num) ? sum + num : sum;
-          },
-          0
-        );
-        updatedValue = defaultTotal + customTotal;
-      } else {
-        const inputs = updatedData?.customInputsByColumn?.[column] || [];
-        updatedValue = inputs.reduce(
-          (sum, node) => sum + getNodeTotal(node),
-          0
-        );
-      }
-
-      const updatedCell = { ...updatedData, value: updatedValue };
-      setEditableRow((prev) => ({ ...prev, [column]: updatedCell }));
-      handleCellChange(row.id, column, updatedCell);
-      setShowDetails(false);
-    },
-    [activeColumn, handleCellChange, row.id]
   );
 
   /* ---------------------------- Input handling ---------------------------- */
@@ -144,25 +82,18 @@ function Row({
         }
       }
     },
-    [
-      editableRow,
-      isRentKey,
-      recompute,
-      setLastEdited,
-      setLocal,
-      toLastEditedKey,
-    ]
+    [editableRow, isRentKey, recompute, setLastEdited, setLocal, toLastEditedKey]
   );
 
   /* ---------------------------- Render helpers ---------------------------- */
   const renderEditableCell = useCallback(
-    (columnName) => {
-      const config = columnConfig[columnName];
+    (key) => {
+      const config = columnConfig[key];
       const inputType = config?.input;
-      const isInvalid = invalidFields.includes(columnName);
+      const isInvalid = invalidFields.includes(key);
 
-      if (columnName === "Category") {
-        const catValue = unwrapValue(editableRow[columnName]) ?? "";
+      if (key === "Category") {
+        const catValue = unwrapValue(editableRow[key]) ?? "";
         return (
           <select
             className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
@@ -184,27 +115,24 @@ function Row({
         const readOnly = !!config.readOnly;
         return (
           <div
-            className={`row__editable ${
-              isInvalid ? "row__editable--invalid" : ""
-            }`}
+            className={`row__editable ${isInvalid ? "row__editable--invalid" : ""}`}
             onDoubleClick={() => {
-              setActiveColumn(columnName);
+              setActiveColumn(key);
               setShowDetails(true);
             }}
           >
             <input
               type="text"
               readOnly={readOnly}
-              value={unwrapValue(editableRow[columnName]) || ""}
-              onChange={(e) => handleInputChange(columnName, e)}
+              value={unwrapValue(editableRow[key]) || ""}
+              onChange={(e) => handleInputChange(key, e)}
               onClick={(e) => e.stopPropagation()}
             />
           </div>
         );
       }
 
-      const currentValue = unwrapValue(editableRow[columnName]) ?? "";
-
+      const currentValue = unwrapValue(editableRow[key]) ?? "";
       return (
         <input
           className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
@@ -219,14 +147,14 @@ function Row({
   );
 
   const renderDisplayValue = useCallback(
-    (columnName) => {
-      const raw = editableRow[columnName];
-      if (columnName === "Category") {
+    (key) => {
+      const raw = editableRow[key];
+      if (key === "Category") {
         const id = unwrapValue(raw);
         const selected = baselines.find((b) => b.id === id);
         return selected?.name ?? id ?? "—";
       }
-      return displayValue(raw, columnConfig[columnName]);
+      return displayValue(raw, columnConfig[key]);
     },
     [editableRow, baselines]
   );
@@ -248,11 +176,7 @@ function Row({
 
   /* ------------------------------- Save/Cancel ------------------------------- */
   const handleSaveClick = useCallback(() => {
-    const { ok, invalids } = validateFields(
-      editableRow,
-      columnOrder,
-      columnConfig
-    );
+    const { ok, invalids } = validateFields(editableRow, columnOrder, columnConfig);
     setInvalidFields(invalids);
     if (!ok) {
       alert("Please fix highlighted fields.");
@@ -276,36 +200,25 @@ function Row({
   /* ------------------------------- Render ------------------------------- */
   return (
     <>
-      <div
-        className={`row ${isSelected ? "row--selected" : ""}`}
-        onClick={onSelect}
-      >
-        {columnOrder.map((columnName) => (
+      <div className={`row ${isSelected ? "row--selected" : ""}`} onClick={onSelect}>
+        {columnOrder.map((key) => (
           <div
-            key={columnName}
-            className={`row__cell ${
-              columnName === "EditingTools" ? "row__cell--tools" : ""
-            }`}
+            key={key}
+            className={`row__cell ${key === "EditingTools" ? "row__cell--tools" : ""}`}
             style={{
-              width: columnConfig[columnName]?.width,
-              minWidth: columnConfig[columnName]?.width,
-              maxWidth: columnConfig[columnName]?.width,
+              width: columnConfig[key]?.width,
+              minWidth: columnConfig[key]?.width,
+              maxWidth: columnConfig[key]?.width,
             }}
           >
-            {columnName === "EditingTools" ? (
+            {key === "EditingTools" ? (
               <div className="row__actions">
                 {isEditing ? (
                   <>
-                    <button
-                      className="row__btn row__btn--save"
-                      onClick={handleSaveClick}
-                    >
+                    <button className="row__btn row__btn--save" onClick={handleSaveClick}>
                       ✔
                     </button>
-                    <button
-                      className="row__btn row__btn--cancel"
-                      onClick={handleCancelClick}
-                    >
+                    <button className="row__btn row__btn--cancel" onClick={handleCancelClick}>
                       ✖
                     </button>
                   </>
@@ -335,59 +248,22 @@ function Row({
                   </>
                 )}
               </div>
-            ) : isEditing ? (
-              renderEditableCell(columnName)
-            ) : (
-              <span className="row__value">
-                {renderDisplayValue(columnName)}
-              </span>
+            ) :
+             isEditing ?
+              (
+              renderEditableCell(key)
+            ) : 
+            (
+              <span className="row__value">{renderDisplayValue(key)}</span>
             )}
+
           </div>
         ))}
       </div>
 
-      {showDetails && activeColumn && (
+      {showDetails && activeColumn === "incomeStatement" && (
         <div className="row__details">
-          {activeColumn === "incomeStatement" && (
-            <IncomeStatement
-              rowData={rowDataForIS}
-              propertyId={row.id}
-              onSaveRowValue={(totalIncomeAnnual) => {
-                const prev = editableRow.incomeStatement || {};
-                const updatedCell = {
-                  ...prev,
-                  value: totalIncomeAnnual,
-                  details: {
-                    ...(prev.details || {}),
-                    source: "IncomeStatement",
-                    lastSyncedAt: new Date().toISOString(),
-                  },
-                };
-                setEditableRow((prevRow) => ({
-                  ...prevRow,
-                  incomeStatement: updatedCell,
-                }));
-                handleCellChange(row.id, "incomeStatement", updatedCell);
-              }}
-              onSaveRowToFirestore={async (propertyId) => {
-                const { saveRowData } = await import(
-                  "@services/firestore/rowsService.js"
-                );
-                const flatData = Object.fromEntries(
-                  Object.entries(editableRow).map(([key, val]) =>
-                    val && typeof val === "object" && "value" in val
-                      ? [key, val.value]
-                      : [key, val]
-                  )
-                );
-                await saveRowData(user.uid, propertyId, flatData);
-                console.log(
-                  "✅ Persisted normalized row to Firestore",
-                  flatData
-                );
-              }}
-            />
-          )}
+          <IncomeStatement propertyId={row.id} rowData={rowDataForIS} />
         </div>
       )}
     </>

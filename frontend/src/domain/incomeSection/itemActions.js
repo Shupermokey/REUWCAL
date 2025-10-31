@@ -7,9 +7,15 @@ import { isLeafNode, isPO } from "./structureHelpers.js";
 export const setAtPath = ({ path, data, onChange, updater }) => {
   if (!path || !onChange || typeof updater !== "function") return;
 
-  // 🚫 Guard against runaway or self-referencing writes
-  if (path === "Income" || path.startsWith("Income.Income")) {
-    console.warn("[setAtPath] Ignored unsafe recursive Income path:", path);
+  // 🧹 Normalize duplicate section prefixes
+  path = path.replace(
+    /^((Income|OperatingExpenses|CapitalExpenses))\.\1\./,
+    "$1."
+  );
+
+  // 🚫 Guard against recursive or root-level rewrites
+  if (path === "Income.Income" || path === "Income") {
+    console.warn("itemActions.js [setAtPath] Ignored unsafe recursive path:", path);
     return;
   }
 
@@ -17,23 +23,32 @@ export const setAtPath = ({ path, data, onChange, updater }) => {
   const updated = structuredClone(data || {});
   let cur = updated;
 
-  // Build path safely
+  // 🧱 Guard: avoid re-wrapping section roots
+  const rootKey = keys[0];
+  if (["Income", "OperatingExpenses", "CapitalExpenses"].includes(rootKey) && updated[rootKey]) {
+    cur = updated[rootKey];
+    keys.shift(); // drop redundant root key for traversal
+    console.log("itemActions.js [setAtPath] Adjusted root path to avoid nesting:", keys.join("."));
+  }
+
+  // Traverse into nested structure
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
     if (typeof cur[key] !== "object" || cur[key] == null) cur[key] = {};
     cur = cur[key];
   }
+  console.log("itemActions.js [setAtPath] Final target key:", keys.at(-1));
 
   const last = keys.at(-1);
   const prevVal = cur[last];
   const nextVal = updater(prevVal);
 
-  // Avoid useless re-renders
   if (JSON.stringify(prevVal) === JSON.stringify(nextVal)) return;
-
   cur[last] = nextVal;
+
   onChange(updated);
 };
+
 
 /* -------------------------------------------------------------------------- */
 /* ➕ Add new item                                                            */

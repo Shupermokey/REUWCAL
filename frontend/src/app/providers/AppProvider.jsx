@@ -5,15 +5,15 @@ const AppContext = createContext();
 
 
 export const AppProvider = ({ children }) => {
-  const [base, setBase] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [showFilePanel, setShowFilePanel] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   return (
     <AppContext.Provider
       value={{
-        base,
-        setBase,
+        showSidebar,
+        setShowSidebar,
         selectedPropertyId,
         setSelectedPropertyId,
         showFilePanel,

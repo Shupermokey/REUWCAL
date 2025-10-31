@@ -1,10 +1,10 @@
-// components/Income/IncomeStatement.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 
 // 🔐 Providers
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useIncomeView } from "@/app/providers/IncomeViewProvider.jsx";
+import { useTable } from "@/app/providers/TableProvider.jsx";
 
 // 📊 Domain Logic
 import {
@@ -18,6 +18,11 @@ import {
 // 🧩 Utils & Constants
 import { SECTION_LAYOUT } from "@/utils/income/incomeSectionLayout.js";
 import { newLeaf, defaultStructure } from "@/utils/income/incomeDefaults.js";
+import {
+  FIXED_DIVIDER_INCOME_KEY,
+  FIXED_FIRST_INCOME_KEY,
+  INCOME_ORDER,
+} from "@/constants/incomeKeys.js";
 
 // 🔥 Firestore Service
 import {
@@ -31,21 +36,15 @@ import Section from "./Section/Section.jsx";
 
 // 🎨 Styles
 import "@/styles/components/Income/IncomeStatement.css";
-import { FIXED_DIVIDER_INCOME_KEY, FIXED_FIRST_INCOME_KEY } from "@/constants/incomeKeys.js";
-import { INCOME_ORDER } from "@/constants/incomeKeys.js";
 
 /* -------------------------------------------------------------------------- */
 /* 💰 IncomeStatement Component                                               */
 /* -------------------------------------------------------------------------- */
 
-export default function IncomeStatement({
-  rowData,
-  propertyId,
-  onSaveRowValue,
-  onSaveRowToFirestore,
-}) {
+export default function IncomeStatement({ rowData, propertyId }) {
   const { user } = useAuth();
   const { groupedView } = useIncomeView();
+  const { updateRowCell, saveRowToFirestore } = useTable();
 
   const [data, setData] = useState(defaultStructure);
   const [saving, setSaving] = useState(false);
@@ -54,30 +53,27 @@ export default function IncomeStatement({
   const [loaded, setLoaded] = useState(false);
   const opexRef = useRef(null);
 
-  // Derived helpers
+  /* ----------------------------- Derived helpers ---------------------------- */
   const metrics = useMemo(() => extractMetricsFromRow(rowData), [rowData]);
-  const deriveGSR = useMemo(() => new Set(["Gross Scheduled Rent"]), []);
-  const emptySet = useMemo(() => new Set(), []);
-  const LOCKED_OPEX = useMemo(() => getLockedOpexKeys(), []);
 
   /* ------------------------------ Load Data --------------------------------- */
-
   useEffect(() => {
     if (!user || !propertyId) return;
     (async () => {
       try {
         const saved = await getIncomeStatement(user.uid, propertyId);
+
         if (saved) {
           // --- enforce deterministic order ---
           const orderedIncome = {};
           const incomeKeys = Object.keys(saved.Income || {});
 
-          // first, use predefined order
+          // predefined order first
           INCOME_ORDER.forEach((k) => {
             if (incomeKeys.includes(k)) orderedIncome[k] = saved.Income[k];
           });
 
-          // then append any user-added keys (preserve their values)
+          // then any user-added keys
           incomeKeys
             .filter((k) => !INCOME_ORDER.includes(k))
             .forEach((k) => (orderedIncome[k] = saved.Income[k]));
@@ -95,20 +91,7 @@ export default function IncomeStatement({
     })();
   }, [user, propertyId]);
 
-  /* ---------------------- Optional Row → Income Injection -------------------- */
-  useEffect(() => {
-    if (!loaded || !rowData) return;
-    const bri = rowData.bri ?? 0;
-    setData((prev) => {
-      const current = prev?.Income?.BRI?.grossAnnual ?? 0;
-      if (current === bri) return prev; // no change → skip re-render
-      const next = structuredClone(prev);
-      if (!next.Income.BRI) next.Income.BRI = newLeaf();
-      next.Income.BRI.grossAnnual = bri;
-      return next;
-    });
-  }, [loaded, rowData?.bri]);
-
+  /* --------------------- Keep GSR always first in order ---------------------- */
   useEffect(() => {
     setData((prev) => {
       const inc = prev?.Income || {};
@@ -124,24 +107,25 @@ export default function IncomeStatement({
     });
   }, [loaded]);
 
-  // Normalize Income section before persisting
+  /* -------------------- Normalize Income section before save ----------------- */
   function normalizeIncomeData(rawIncome) {
     if (!rawIncome) return {};
     const ordered = {};
 
-    // enforce canonical order first
+    // enforce canonical order
     INCOME_ORDER.forEach((k) => {
       if (rawIncome[k]) ordered[k] = structuredClone(rawIncome[k]);
     });
 
-    // include any user-added keys (in current insertion order)
+    // append user-added keys
     Object.keys(rawIncome)
       .filter((k) => !INCOME_ORDER.includes(k))
       .forEach((k) => (ordered[k] = structuredClone(rawIncome[k])));
 
-    // enforce signs
+    // enforce sign rules
     const gsrIndex = INCOME_ORDER.indexOf(FIXED_FIRST_INCOME_KEY);
     const nriIndex = INCOME_ORDER.indexOf(FIXED_DIVIDER_INCOME_KEY);
+
     Object.entries(ordered).forEach(([k, v]) => {
       const idx = INCOME_ORDER.indexOf(k);
       if (idx > gsrIndex && idx < nriIndex) {
@@ -165,24 +149,48 @@ export default function IncomeStatement({
       setSaving(true);
       setError(null);
 
-      // 🔹 Normalize first
+      // Normalize data before saving
       const normalized = {
         ...data,
         Income: normalizeIncomeData(data?.Income || {}),
       };
 
+      // Save to Firestore and compute total
       const totalIncome = await saveIncomeStatement(
         user.uid,
         propertyId,
         normalized
       );
-      onSaveRowValue?.(totalIncome);
+
+      // 🔹 Update the parent table's IncomeStatement cell
+      const updatedCell = {
+        value: totalIncome,
+        details: {
+          source: "IncomeStatement",
+          lastSyncedAt: new Date().toISOString(),
+        },
+      };
+      updateRowCell(propertyId, "incomeStatement", updatedCell);
+
       toast.success("✅ Saved Income Statement");
+      setLastSavedAt(new Date());
     } catch (err) {
       console.error("Save failed:", err);
+      setError(err);
       toast.error("❌ Save failed");
     } finally {
       setSaving(false);
+    }
+  };
+
+  /* ------------------------ Manual Save to Firestore ------------------------ */
+  const handleSaveToFirestore = async () => {
+    try {
+      await saveRowToFirestore(propertyId);
+      toast.success("✅ Row synced to Firestore");
+    } catch (err) {
+      toast.error("❌ Failed to sync row");
+      console.error(err);
     }
   };
 
@@ -211,31 +219,18 @@ export default function IncomeStatement({
           onSave={onSave}
         />
 
-        {SECTION_LAYOUT.map(({ key, title }) =>
-          key === "OperatingExpenses" ? (
-            <div key={key} ref={opexRef}>
-              <Section
-                title={title}
-                data={opexView}
-                onChange={handleSectionChange(key)}
-                enableSort
-                lockKeys={LOCKED_OPEX}
-                metrics={metrics}
-                deriveKeys={emptySet}
-              />
-            </div>
-          ) : (
+        {SECTION_LAYOUT.map(
+          ({ key, title }) => (
             <Section
               key={key}
-              title={title}
-              data={data[key]}
+              title={title} // Operating Income | Operating Expenses | Capital Expenses
+              data={data[key]} //defaultStructure.Income | .OperatingExpenses | .CapitalExpenses
               onChange={handleSectionChange(key)}
-              enableSort
               metrics={metrics}
-              deriveKeys={key === "Income" ? deriveGSR : emptySet}
-              fullPrefix={key}
+              fullPrefix={key} // Income | OperatingExpenses | CapitalExpenses
             />
           )
+          // )
         )}
       </div>
     </div>

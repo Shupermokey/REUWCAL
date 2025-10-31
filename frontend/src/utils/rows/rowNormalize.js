@@ -1,5 +1,5 @@
 // utils/rowNormalize.js
-import columnConfig, { columnOrder } from "../../columnConfig";
+import columnConfig, { columnOrder } from "../../constants/columnConfig";
 
 const unwrap = (v) =>
   v && typeof v === "object" && "value" in v ? v.value : v;

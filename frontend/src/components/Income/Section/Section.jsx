@@ -35,7 +35,6 @@ export default function Section({
   data = {},
   onChange,
   showTotal = true,
-  lockKeys = new Set(),
   metrics = { gbaSqft: 0, units: 0 },
   deriveKeys = new Set(["Gross Scheduled Rent"]),
   fullPrefix = "",
@@ -44,10 +43,6 @@ export default function Section({
   const { prompt, confirm } = useDialog();
   const [collapsed, setCollapsed] = useState(false);
   const [collapsedPaths, setCollapsedPaths] = useState(() => new Set());
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
-  );
 
   const modeClass =
     displayMode === "both"
@@ -67,14 +62,35 @@ export default function Section({
     await deleteAtPath({ path, data, onChange, confirm });
 
   const handleSetAtPath = useCallback(
-    (path, updater) => setAtPath({ path, data, onChange, updater }),
+    (path, updater) => {
+      console.log("Section.jsx [handleSetAtPath]", { rawPath: path });
+      const normalizedPath = path.replace(
+        /^((Income|OperatingExpenses|CapitalExpenses))\.\1(\.|$)/,
+        "$1$3"
+      );
+      console.log("Section.jsx [handleSetAtPath] normalized:", normalizedPath);
+
+      // 🩹 FIX: wrap section data under its root key
+      const sectionKey = fullPrefix || normalizedPath.split(".")[0];
+      const wrappedData = { [sectionKey]: data };
+
+      setAtPath({
+        path: normalizedPath,
+        data: wrappedData,
+        onChange: (newData) => {
+          // unwrap before passing back to section’s onChange
+          onChange(newData[sectionKey]);
+        },
+        updater,
+      });
+    },
     [data, onChange]
   );
 
   const handleCollapseAll = () => collapseAll(data, setCollapsedPaths);
   const handleExpandAll = () => expandAll(setCollapsedPaths);
 
-  // ✅ new: live refresh trigger passed to all leaves
+  //  ✅ new: live refresh trigger passed to all leaves
   const handleImmediateChange = useCallback(() => {
     onChange(structuredClone(data));
   }, [data, onChange]);
@@ -98,7 +114,8 @@ export default function Section({
             </div>
 
             <div className="sec__label">
-              <span className="sec__labelText">{title}</span>
+              <span className="sec__labelText">{title}</span>{" "}
+              {/*Operating Income | Operating Expenses | Capital Expenses */}
             </div>
 
             <div className="sec__values">
@@ -109,12 +126,12 @@ export default function Section({
               <button className="add-btn" onClick={() => handleAdd()}>
                 + Item
               </button>
-              <button className="add-btn" onClick={handleCollapseAll}>
+              {/* <button className="add-btn" onClick={handleCollapseAll}>
                 Collapse All
               </button>
               <button className="add-btn" onClick={handleExpandAll}>
                 Expand All
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -129,8 +146,6 @@ export default function Section({
             collapsedPaths={collapsedPaths}
             displayMode={displayMode}
             metrics={metrics}
-            deriveKeys={deriveKeys}
-            lockKeys={lockKeys}
             handleAdd={handleAdd}
             handleDelete={handleDelete}
             handlePromote={handlePromote}
