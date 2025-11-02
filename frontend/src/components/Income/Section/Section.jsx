@@ -32,11 +32,11 @@ import "@styles/components/Income/Section.css";
 /* -------------------------------------------------------------------------- */
 export default function Section({
   title,
-  data = {},
+  data,
   onChange,
   metrics = { gbaSqft: 0, units: 0 },
   onAutoSave,
-  fullPrefix = "",
+  sectionTitle,
   fullData,
 }) {
   const { displayMode } = useIncomeView();
@@ -55,7 +55,7 @@ export default function Section({
   const handleAdd = async (path = "") => {
     const updated = await addItem({ path, title, data, onChange, prompt });
     if (updated && onAutoSave && fullData) {
-      const merged = { ...fullData, [fullPrefix]: updated };
+      const merged = { ...fullData, [sectionTitle]: updated };
       await onAutoSave(merged);
     }
   };
@@ -63,7 +63,7 @@ export default function Section({
   const handleDelete = async (path) => {
     const updated = await deleteAtPath({ path, data, onChange, confirm });
     if (updated && onAutoSave && fullData) {
-      const merged = { ...fullData, [fullPrefix]: updated };
+      const merged = { ...fullData, [sectionTitle]: updated };
       await onAutoSave(merged);
     }
   };
@@ -73,19 +73,12 @@ export default function Section({
 
   const handleSetAtPath = useCallback(
     (path, updater) => {
-      console.log("Section.jsx [handleSetAtPath]", { rawPath: path });
-      const normalizedPath = path.replace(
-        /^((Income|OperatingExpenses|CapitalExpenses))\.\1(\.|$)/,
-        "$1$3"
-      );
-      console.log("Section.jsx [handleSetAtPath] normalized:", normalizedPath);
-
       // 🩹 FIX: wrap section data under its root key
-      const sectionKey = fullPrefix || normalizedPath.split(".")[0];
+      const sectionKey = sectionTitle || path.split(".")[0];
       const wrappedData = { [sectionKey]: data };
 
       setAtPath({
-        path: normalizedPath,
+        path: path,
         data: wrappedData,
         onChange: (newData) => {
           // unwrap before passing back to section’s onChange
@@ -145,7 +138,7 @@ export default function Section({
       {(!hasHeader || !collapsed) && (
         <>
           <ChildBranch
-            full={fullPrefix || ""}
+            sectionTitle={sectionTitle}
             depth={0}
             val={data}
             collapsedPaths={collapsedPaths}

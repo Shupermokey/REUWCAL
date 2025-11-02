@@ -35,11 +35,9 @@ export default function LeafEditor({
     onKeyDownCapture: (e) => e.stopPropagation(),
   };
 
-
-
   /** Handle input typing */
   const handleInputChange = (field) => (e) => {
-    const raw = e.target.value;
+    const raw = e.target.value; //This is the value that is changing for a partifular field
     setLocal((prev) => ({ ...prev, [field]: raw }));
     handleChange(field, raw);
   };

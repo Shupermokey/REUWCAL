@@ -65,56 +65,9 @@ export function useIncomeFieldMath({
           if (field === "grossAnnual" && isNum(n))
             next.grossMonthly = roundN(toMonthly(n));
         }
-
-        // --- 3️⃣ Sign enforcement (applies only to the edited field)
-        const pathParts = fullPath.split(".");
-        if (pathParts[0] === "Income" && fullData?.Income) {
-          const incomeKeys = Object.keys(fullData.Income);
-          const currentKey = pathParts[1];
-          const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
-          const nriIndex = incomeKeys.indexOf(FIXED_DIVIDER_INCOME_KEY);
-          const curIndex = incomeKeys.indexOf(currentKey);
-          const isBetween = curIndex > gsrIndex && curIndex < nriIndex;
-          const isBelow = curIndex > nriIndex;
-
-          if (isBetween && next[field] > 0) next[field] = -next[field];
-          if (isBelow && next[field] < 0) next[field] = Math.abs(next[field]);
-        }
-
         return next;
       });
 
-      // --- 4️⃣ Auto-update Net Rental Income totals
-      if (fullPath.startsWith("Income.") && fullData?.Income) {
-        const incomeKeys = Object.keys(fullData.Income);
-        const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
-        const nriIndex = incomeKeys.indexOf(FIXED_DIVIDER_INCOME_KEY);
-
-        if (gsrIndex >= 0 && nriIndex >= 0) {
-          const rowsAboveNRI = incomeKeys.slice(gsrIndex, nriIndex);
-          const totals = {
-            grossAnnual: 0,
-            grossMonthly: 0,
-            psfAnnual: 0,
-            psfMonthly: 0,
-            punitAnnual: 0,
-            punitMonthly: 0,
-            rateAnnual: 0,
-            rateMonthly: 0,
-          };
-
-          for (const key of rowsAboveNRI) {
-            const node = fullData.Income[key];
-            if (!node) continue;
-            for (const f in totals)
-              if (typeof node[f] === "number") totals[f] += node[f];
-          }
-
-          suppressRef.current = true;
-          setAtPath("Income.Net Rental Income", () => structuredClone(totals));
-          suppressRef.current = false;
-        }
-      }
     },
     [fullPath, setAtPath, fullData, GBA, UNITS, roundN]
   );

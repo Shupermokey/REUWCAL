@@ -67,10 +67,11 @@ function Table({ onRowSelect }) {
         const sanitizedData = normalizeForSave(rowData);
 
         if (isNew) {
+          console.log("Adding new property:", sanitizedData);
           setSavingNew(true);
           const { id, ...dataWithoutId } = sanitizedData;
           const newId = await addProperty(user.uid, dataWithoutId);
-          await initializeFileSystem(user.uid, newId, columnOrder);
+          //await initializeFileSystem(user.uid, newId, columnOrder);
           setRows((prev) => prev.filter((r) => r.id !== "new"));
         } else {
           await updateProperty(user.uid, rowData.id, sanitizedData);

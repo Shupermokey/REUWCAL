@@ -86,7 +86,7 @@ export default function IncomeStatement({ rowData, propertyId }) {
             }}
             onChange={handleSectionChange(sectionTitle)}
             metrics={metrics}
-            fullPrefix={sectionTitle}
+            sectionTitle={sectionTitle}
             fullData={data}
           />
         ))}

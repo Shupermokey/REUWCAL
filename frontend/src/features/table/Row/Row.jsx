@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "@/app/providers/AuthProvider";
-import { normalizeRow, unwrapValue, displayValue } from "@/utils/rows/rowHelpers";
+import {
+  normalizeRow,
+  unwrapValue,
+  displayValue,
+} from "@/utils/rows/rowHelpers";
 import { validateFields } from "@/utils/rows/rowValidation";
 import { useRowCalcs } from "@/hooks/useRowCalcs";
 import IncomeStatement from "@/components/Income/IncomeStatement";
@@ -9,6 +13,7 @@ import columnConfig, { columnOrder } from "@/constants/columnConfig";
 // ✅ Scoped CSS
 import "@/styles/components/Table/Row.css";
 import { HEADER_KEYS } from "@/constants";
+import { IncomeProvider } from "@/app/providers/IncomeProvider";
 
 function Row({
   row,
@@ -58,7 +63,9 @@ function Row({
       };
 
       setEditableRow((prev) => ({ ...prev, ...updates }));
-      Object.entries(updates).forEach(([k, v]) => handleCellChange(row.id, k, v));
+      Object.entries(updates).forEach(([k, v]) =>
+        handleCellChange(row.id, k, v)
+      );
     },
     [baselines, handleCellChange, row.id]
   );
@@ -83,7 +90,14 @@ function Row({
         }
       }
     },
-    [editableRow, isRentKey, recompute, setLastEdited, setLocal, toLastEditedKey]
+    [
+      editableRow,
+      isRentKey,
+      recompute,
+      setLastEdited,
+      setLocal,
+      toLastEditedKey,
+    ]
   );
 
   /* ---------------------------- Render helpers ---------------------------- */
@@ -116,7 +130,9 @@ function Row({
         const readOnly = !!config.readOnly;
         return (
           <div
-            className={`row__editable ${isInvalid ? "row__editable--invalid" : ""}`}
+            className={`row__editable ${
+              isInvalid ? "row__editable--invalid" : ""
+            }`}
             onDoubleClick={() => {
               setActiveColumn(key);
               setShowDetails(true);
@@ -177,7 +193,11 @@ function Row({
 
   /* ------------------------------- Save/Cancel ------------------------------- */
   const handleSaveClick = useCallback(() => {
-    const { ok, invalids } = validateFields(editableRow, columnOrder, columnConfig);
+    const { ok, invalids } = validateFields(
+      editableRow,
+      columnOrder,
+      columnConfig
+    );
     setInvalidFields(invalids);
     if (!ok) {
       alert("Please fix highlighted fields.");
@@ -201,11 +221,16 @@ function Row({
   /* ------------------------------- Render ------------------------------- */
   return (
     <>
-      <div className={`row ${isSelected ? "row--selected" : ""}`} onClick={onSelect}>
+      <div
+        className={`row ${isSelected ? "row--selected" : ""}`}
+        onClick={onSelect}
+      >
         {columnOrder.map((key) => (
           <div
             key={key}
-            className={`row__cell ${key === "EditingTools" ? "row__cell--tools" : ""}`}
+            className={`row__cell ${
+              key === "EditingTools" ? "row__cell--tools" : ""
+            }`}
             style={{
               width: columnConfig[key]?.width,
               minWidth: columnConfig[key]?.width,
@@ -216,10 +241,16 @@ function Row({
               <div className="row__actions">
                 {isEditing ? (
                   <>
-                    <button className="row__btn row__btn--save" onClick={handleSaveClick}>
+                    <button
+                      className="row__btn row__btn--save"
+                      onClick={handleSaveClick}
+                    >
                       ✔
                     </button>
-                    <button className="row__btn row__btn--cancel" onClick={handleCancelClick}>
+                    <button
+                      className="row__btn row__btn--cancel"
+                      onClick={handleCancelClick}
+                    >
                       ✖
                     </button>
                   </>
@@ -249,22 +280,20 @@ function Row({
                   </>
                 )}
               </div>
-            ) :
-             isEditing ?
-              (
+            ) : isEditing ? (
               renderEditableCell(key)
-            ) : 
-            (
+            ) : (
               <span className="row__value">{renderDisplayValue(key)}</span>
             )}
-
           </div>
         ))}
       </div>
 
       {showDetails && activeColumn === "incomeStatement" && (
         <div className="row__details">
-          <IncomeStatement propertyId={row.id} rowData={rowDataForIS} />
+          <IncomeProvider userId= {user.id} propertyId={row.id}>
+            <IncomeStatement propertyId={row.id} rowData={rowDataForIS} />
+          </IncomeProvider>
         </div>
       )}
     </>

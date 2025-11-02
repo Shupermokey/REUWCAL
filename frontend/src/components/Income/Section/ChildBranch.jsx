@@ -24,7 +24,7 @@ import {
 } from "@constants/incomeKeys.js";
 
 export default function ChildBranch({
-  full = "",
+  sectionTitle,
   depth = 0,
   val,
   collapsedPaths,
@@ -35,7 +35,7 @@ export default function ChildBranch({
   handlePromote,
   handleSetAtPath,
 }) {
-  const collapsed = collapsedPaths.has(full);
+  const collapsed = collapsedPaths.has(sectionTitle);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
@@ -52,7 +52,7 @@ export default function ChildBranch({
     const toKey = overId;
 
     // reorder logic unchanged
-    if (full === "") {
+    if (sectionTitle === "") {
       handleSetAtPath("", (prevData) => {
         const keys = Object.keys(prevData);
         const from = keys.indexOf(fromKey);
@@ -77,7 +77,7 @@ export default function ChildBranch({
       return;
     }
 
-    handleSetAtPath(full, (prevBranch) => {
+    handleSetAtPath(sectionTitle, (prevBranch) => {
       if (!isPO(prevBranch)) return prevBranch;
       const keys = Object.keys(prevBranch);
       const from = keys.indexOf(fromKey);
@@ -104,8 +104,10 @@ export default function ChildBranch({
       onDragEnd={onLocalDragEnd}
     >
       <SortableContext items={localKeys} strategy={verticalListSortingStrategy}>
+
         {localKeys.map((key) => {
-          const fullPath = full ? `${full}.${key}` : key; //Income.New 
+
+          const fullPath = sectionTitle ? `${sectionTitle}.${key}` : key; //Income.New 
           const node = val[key]; 
           const isLeaf = isLeafNode(node);
           const isCollapsed = collapsedPaths.has(fullPath);
@@ -127,15 +129,15 @@ export default function ChildBranch({
                 label: key,
                 values: isLeaf ? (
                   <ChildLeaf
-                    full={fullPath}
-                    label={key}
+                    fullPath={fullPath} //Income.New
+                    label={key} //"New"
                     val={node} //grossAnnual:0, psfAnnual:0, punitAnnual:0, rateAnnual:0, grossMonthly:0, psfMonthly:0, punitMonthly:0, rateMonthly:0
                     displayMode={displayMode}
                     metrics={metrics}
                     handleSetAtPath={handleSetAtPath}
                     handlePromote={handlePromote}
                     handleDelete={handleDelete}
-                    fullData={val}
+                    fullData={val} // passes whole Income object
                   />
                 ) : (<BranchTotals value={node} displayMode={displayMode} />),
               }
@@ -144,7 +146,7 @@ export default function ChildBranch({
                 !isLeaf &&
                 !isCollapsed && (
                   <ChildBranch
-                    full={fullPath}
+                    sectionTitle={fullPath}
                     depth={depth + 1}
                     val={node}
                     collapsedPaths={collapsedPaths}

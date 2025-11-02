@@ -10,7 +10,6 @@ import {
  * Handles fetching, local edits, and auto-saving to Firestore.
  */
 export function useIncomeStatement(uid, propertyId) {
-  console.log("[useIncomeStatement] save called", uid, propertyId);
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
 

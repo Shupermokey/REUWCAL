@@ -45,14 +45,13 @@ export const ADMIN_KEYS = Object.freeze([
 
 // ---------------------------------------------------------------------------
 // 🧩 Capital Expense Keys
-// --------------------------------------------------------------------------- 
+// ---------------------------------------------------------------------------
 export const CAPEX_KEYS = Object.freeze([
   "Financing Expense",
   "Capital Expenses",
   "Capital Reserve",
   "Other",
 ]);
-
 
 // ---------------------------------------------------------------------------
 // ⚙️ Computed subtotal rows (non-editable)
@@ -73,7 +72,6 @@ export default {
   COMPUTED_OPEX_KEYS,
 };
 
-
 // ---------------------------------------------------------------------------
 // Income section anchors & order
 // ---------------------------------------------------------------------------
@@ -86,6 +84,10 @@ export const INCOME_ORDER = [
   "Recoverable Income",
   "Other Income",
 ];
+
+export const OPEX_ORDER = [TAX_KEYS, INS_KEYS, CAM_KEYS, ADMIN_KEYS];
+
+export const CAPEX_ORDER = [CAPEX_KEYS];
 
 export const FIXED_FIRST_INCOME_KEY = "Gross Scheduled Rent";
 export const FIXED_DIVIDER_INCOME_KEY = "Net Rental Income";

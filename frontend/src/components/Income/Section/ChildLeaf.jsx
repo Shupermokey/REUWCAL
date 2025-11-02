@@ -2,7 +2,7 @@ import { LOCKED_INCOME_KEYS } from "@/constants/incomeKeys.js";
 import LeafEditor from "./LeafEditor";
 
 export default function ChildLeaf({
-  full,
+  fullPath,
   label,
   val,
   displayMode,
@@ -16,8 +16,8 @@ export default function ChildLeaf({
     <>
       <div className="sec__values">
         <LeafEditor
-          fullPath={full}
-          val={val}
+          fullPath={fullPath}
+          val={val} //grossAnnual:0, psfAnnual:0, punitAnnual:0, rateAnnual:0, grossMonthly:0, psfMonthly:0, punitMonthly:0, rateMonthly:0
           setAtPath={handleSetAtPath}
           displayMode={displayMode}
           metrics={metrics}

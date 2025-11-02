@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
 import { sumSectionColumns } from "@/domain/incomeStatement";
+import { defaultStructure } from "@/utils/income";
 
 const SECTION = PROPERTY_SECTIONS.INCOME_STATEMENT;
 const SECTION_KEYS = ["Income", "OperatingExpenses", "CapitalExpenses"];
@@ -16,7 +17,7 @@ const SECTION_KEYS = ["Income", "OperatingExpenses", "CapitalExpenses"];
 export const getIncomeStatement = async (uid, propertyId) => {
   const ref = doc(db, sectionPath(uid, propertyId, SECTION));
   const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
+  return snap.exists() ? snap.data() : defaultStructure;
 };
 
 export const saveIncomeStatement = async (uid, propertyId, data) => {
@@ -34,9 +35,7 @@ export const saveIncomeStatement = async (uid, propertyId, data) => {
   for (const section of SECTION_KEYS) {
     const oldSection = existing[section] || {};
     const newSection = data[section] || {};
-    const deletedKeys = Object.keys(oldSection).filter(
-      (k) => !(k in newSection)
-    );
+    const deletedKeys = Object.keys(oldSection).filter((k) => !(k in newSection));
 
     for (const key of deletedKeys) {
       await updateDoc(currentRef, { [`${section}.${key}`]: deleteField() });
@@ -44,9 +43,8 @@ export const saveIncomeStatement = async (uid, propertyId, data) => {
   }
 
   // 💾 Merge new structure in (safe for other parallel updates)
-  console.log("[saveIncomeStatement] payload:", data);
-  await setDoc(currentRef, data, { merge: true });
-  console.log("[saveIncomeStatement] ✅ data written");
+await setDoc(currentRef, data, { merge: true });
+
 
   // 💰 Compute rolled-up total for property summary
   const totalIncome = sumSectionColumns(data?.Income || {}).grossAnnual || 0;
