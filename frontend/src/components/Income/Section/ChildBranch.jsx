@@ -34,8 +34,6 @@ export default function ChildBranch({
   handleDelete,
   handlePromote,
   handleSetAtPath,
-  fullData,
-  onImmediateChange, // 👈 added
 }) {
   const collapsed = collapsedPaths.has(full);
   const sensors = useSensors(
@@ -107,8 +105,8 @@ export default function ChildBranch({
     >
       <SortableContext items={localKeys} strategy={verticalListSortingStrategy}>
         {localKeys.map((key) => {
-          const fullPath = full ? `${full}.${key}` : key;
-          const node = val[key];
+          const fullPath = full ? `${full}.${key}` : key; //Income.New 
+          const node = val[key]; 
           const isLeaf = isLeafNode(node);
           const isCollapsed = collapsedPaths.has(fullPath);
 
@@ -137,8 +135,7 @@ export default function ChildBranch({
                     handleSetAtPath={handleSetAtPath}
                     handlePromote={handlePromote}
                     handleDelete={handleDelete}
-                    fullData={fullData}
-                    onImmediateChange={onImmediateChange} // 👈 NEW
+                    fullData={val}
                   />
                 ) : (<BranchTotals value={node} displayMode={displayMode} />),
               }
@@ -157,8 +154,7 @@ export default function ChildBranch({
                     handleDelete={handleDelete}
                     handlePromote={handlePromote}
                     handleSetAtPath={handleSetAtPath}
-                    fullData={fullData}
-                    onImmediateChange={onImmediateChange} // 👈 keep passing recursively
+                    fullData={val}
                   />
                 )
               }

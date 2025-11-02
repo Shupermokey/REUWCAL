@@ -34,10 +34,10 @@ export default function Section({
   title,
   data = {},
   onChange,
-  showTotal = true,
   metrics = { gbaSqft: 0, units: 0 },
-  deriveKeys = new Set(["Gross Scheduled Rent"]),
+  onAutoSave,
   fullPrefix = "",
+  fullData,
 }) {
   const { displayMode } = useIncomeView();
   const { prompt, confirm } = useDialog();
@@ -52,14 +52,24 @@ export default function Section({
       : "mode-annual";
 
   // --- Action handlers -------------------------------------------------------
-  const handleAdd = async (path = "") =>
-    await addItem({ path, title, data, onChange, prompt });
+  const handleAdd = async (path = "") => {
+    const updated = await addItem({ path, title, data, onChange, prompt });
+    if (updated && onAutoSave && fullData) {
+      const merged = { ...fullData, [fullPrefix]: updated };
+      await onAutoSave(merged);
+    }
+  };
+
+  const handleDelete = async (path) => {
+    const updated = await deleteAtPath({ path, data, onChange, confirm });
+    if (updated && onAutoSave && fullData) {
+      const merged = { ...fullData, [fullPrefix]: updated };
+      await onAutoSave(merged);
+    }
+  };
 
   const handlePromote = async (path) =>
     await promoteToObject({ path, data, onChange, prompt });
-
-  const handleDelete = async (path) =>
-    await deleteAtPath({ path, data, onChange, confirm });
 
   const handleSetAtPath = useCallback(
     (path, updater) => {
@@ -89,11 +99,6 @@ export default function Section({
 
   const handleCollapseAll = () => collapseAll(data, setCollapsedPaths);
   const handleExpandAll = () => expandAll(setCollapsedPaths);
-
-  //  ✅ new: live refresh trigger passed to all leaves
-  const handleImmediateChange = useCallback(() => {
-    onChange(structuredClone(data));
-  }, [data, onChange]);
 
   const hasHeader = !!title;
 
@@ -150,10 +155,8 @@ export default function Section({
             handleDelete={handleDelete}
             handlePromote={handlePromote}
             handleSetAtPath={handleSetAtPath}
-            fullData={data}
-            onImmediateChange={handleImmediateChange} // 👈 added
           />
-          {showTotal && <SectionTotal data={data} title={title} />}
+          <SectionTotal data={data} title={title} />
         </>
       )}
     </div>

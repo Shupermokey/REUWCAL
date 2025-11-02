@@ -12,34 +12,50 @@ export const LEAF_KEYS = [
   "rateMonthly",
 ];
 
+// src/constants/income/opexGroups.js
 // ---------------------------------------------------------------------------
-// Opex groupings
+// 🧩 Operating Expense Sub-Groups
 // ---------------------------------------------------------------------------
-export const TAX_KEYS = [
+
+export const TAX_KEYS = Object.freeze([
   "County-Level Property Taxes",
   "Municipality-Level Property Taxes",
   "Other Taxes",
-];
-export const INS_KEYS = [
+]);
+
+export const INS_KEYS = Object.freeze([
   "Property Insurance",
   "Casualty Insurance",
   "Flood Insurance",
   "Other Insurance",
-];
-export const CAM_KEYS = [
+]);
+
+export const CAM_KEYS = Object.freeze([
   "Common-Area Utilities",
   "CAM",
   "Common-Area Routine Labor",
   "Other CAM",
-];
-export const ADMIN_KEYS = [
+]);
+
+export const ADMIN_KEYS = Object.freeze([
   "Management",
   "Administrative & Legal",
   "Other Administrative Expenses",
-];
+]);
 
 // ---------------------------------------------------------------------------
-// Read-only subtotal / total rows
+// 🧩 Capital Expense Keys
+// --------------------------------------------------------------------------- 
+export const CAPEX_KEYS = Object.freeze([
+  "Financing Expense",
+  "Capital Expenses",
+  "Capital Reserve",
+  "Other",
+]);
+
+
+// ---------------------------------------------------------------------------
+// ⚙️ Computed subtotal rows (non-editable)
 // ---------------------------------------------------------------------------
 export const COMPUTED_OPEX_KEYS = new Set([
   "Subtotal Property Taxes",
@@ -49,16 +65,25 @@ export const COMPUTED_OPEX_KEYS = new Set([
   "Total Operating Expenses",
 ]);
 
+export default {
+  TAX_KEYS,
+  INS_KEYS,
+  CAM_KEYS,
+  ADMIN_KEYS,
+  COMPUTED_OPEX_KEYS,
+};
+
+
 // ---------------------------------------------------------------------------
 // Income section anchors & order
 // ---------------------------------------------------------------------------
 export const INCOME_ORDER = [
   "Gross Scheduled Rent",
+  "Vacancy/Collections Loss",
   "Less - Free Rent and/or Allowances",
   "Less - Other Adjustments",
   "Net Rental Income",
   "Recoverable Income",
-  "BRI",
   "Other Income",
 ];
 

@@ -1,11 +1,8 @@
 // utils/incomeLayout.js
 export const SECTION_LAYOUT = [
-  { key: "Income", title: "Operating Income" },
-
+  { sectionTitle: "Income", title: "Operating Income" },
   {
-    key: "OperatingExpenses",
-    title: "Operating Expenses",
+    sectionTitle: "OperatingExpenses", title: "Operating Expenses",
   },
-
-  { key: "CapitalExpenses", title: "Capital Expenses" },
+  { sectionTitle: "CapitalExpenses", title: "Capital Expenses" },
 ];

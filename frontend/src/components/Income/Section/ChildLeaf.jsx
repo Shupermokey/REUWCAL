@@ -21,7 +21,6 @@ export default function ChildLeaf({
           setAtPath={handleSetAtPath}
           displayMode={displayMode}
           metrics={metrics}
-          deriveFromMetrics
           fullData={fullData} // passes whole Income object
         />
       </div>

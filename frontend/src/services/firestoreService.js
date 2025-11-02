@@ -1,3 +1,4 @@
+///services/firestoreService.js
 import {
   doc,
   collection,
@@ -276,6 +277,7 @@ export const createUserProfile = async (userId, data) => {
 
 const DEBUG = true;
 const log = (...a) => DEBUG && console.debug("[IncomeStmt]", ...a);
+
 
 const incomeStatementDocRef = (uid, propertyId) =>
   doc(db, "users", uid, "properties", propertyId, "incomeStatement", "current");

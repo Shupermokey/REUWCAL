@@ -1,40 +1,43 @@
-import { LEAF_KEYS } from "@/constants/incomeKeys.js";
+// src/utils/income/incomeDefaults.js
+import {
+  LEAF_KEYS,
+  INCOME_ORDER,
+  TAX_KEYS,
+  INS_KEYS,
+  CAM_KEYS,
+  ADMIN_KEYS,
+  CAPEX_KEYS,
+} from "@/constants/incomeKeys.js";
 
-export const newLeaf = () => ({
-  grossAnnual: 0, psfAnnual: 0, punitAnnual: 0, rateAnnual: 0,
-  grossMonthly: 0, psfMonthly: 0, punitMonthly: 0, rateMonthly: 0,
-});
+/* -------------------------------------------------------------------------- */
+/* 🌱 newLeaf – creates a blank leaf with all standard fields                 */
+/* -------------------------------------------------------------------------- */
+export const newLeaf = () =>
+  Object.fromEntries(LEAF_KEYS.map((key) => [key, 0]));
 
+/* -------------------------------------------------------------------------- */
+/* 🏗️ Helper to generate a section from an array of keys                      */
+/* -------------------------------------------------------------------------- */
+const buildSection = (keys) =>
+  Object.fromEntries(keys.map((label) => [label, newLeaf()]));
+
+/* -------------------------------------------------------------------------- */
+/* 🧱 Default Income Statement structure (dynamic, constant-driven)            */
+/* -------------------------------------------------------------------------- */
 export const defaultStructure = {
+  /* --------------------------- INCOME SECTION --------------------------- */
   Income: {
-    "Gross Scheduled Rent": newLeaf(),
-    "Vacancy/Collections Loss": newLeaf(),
-    "Less - Free Rent and/or Allowances": newLeaf(),
-    "Less - Other Adjustments": newLeaf(),
-    "Net Rental Income": newLeaf(), //TODO: Should this be a leaf?
-    "Recoverable Income": newLeaf(),
-    "Other Income": newLeaf(),
+    ...buildSection(INCOME_ORDER),
   },
+
+  /* ---------------------- OPERATING EXPENSES SECTION -------------------- */
   OperatingExpenses: {
-    "County-Level Property Taxes": newLeaf(),
-    "Municipality-Level Property Taxes": newLeaf(),
-    "Other Taxes": newLeaf(),
-    "Property Insurance": newLeaf(),
-    "Casualty Insurance": newLeaf(),
-    "Flood Insurance": newLeaf(),
-    "Other Insurance": newLeaf(),
-    "Common-Area Utilities": newLeaf(),
-    "CAM": newLeaf(),
-    "Common-Area Routine Labor": newLeaf(),
-    "Other CAM": newLeaf(),
-    "Management": newLeaf(),
-    "Administrative & Legal": newLeaf(),
-    "Other Administrative Expenses": newLeaf(),
+    ...buildSection(TAX_KEYS),
+    ...buildSection(INS_KEYS),
+    ...buildSection(CAM_KEYS),
+    ...buildSection(ADMIN_KEYS),
   },
-  CapitalExpenses: {
-    "Financing Expense": newLeaf(),
-    "Capital Expenses": newLeaf(),
-    "Capital Reserve": newLeaf(),
-    "Other": newLeaf(),
-  },
+
+  /* -------------------------- CAPITAL EXPENSES -------------------------- */
+  CapitalExpenses: buildSection(CAPEX_KEYS),
 };

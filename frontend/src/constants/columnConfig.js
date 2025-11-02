@@ -1,80 +1,82 @@
+import {HEADER_KEYS} from "@/constants/tableHeaders.js";
+
 const columnConfig = {
-  propertyAddress: {
+  [HEADER_KEYS.PROPERTY_ADDRESS]: {
     label: "Property Address",
     type: "string",
     input: "custom",
     width: 200,
   },
-  propertyTaxes: {
+  [HEADER_KEYS.PROPERTY_TAXES]: {
     label: "Property Taxes",
     type: "number",
     input: "custom",
     width: 150,
   },
-  propertyGSA: {
+  [HEADER_KEYS.GROSS_SITE_AREA]: {
     label: "Gross Site Area",
     type: "number",
     input: "custom",
     width: 150,
   },
-  propertyGBA: {
+  [HEADER_KEYS.GROSS_BUILDING_AREA]: {
     label: "Gross Building Area",
     type: "number",
     input: "custom",
     width: 150,
   },
-  units: {
+  [HEADER_KEYS.UNITS]: {
     label: "Units",
     type: "number",
     input: "custom",
-    width: 150,
+    width: 50,
   },
-  purchasePrice: {
+  [HEADER_KEYS.PURCHASE_PRICE]: {
     label: "Purchase Price",
     type: "number",
     input: "custom",
     width: 150,
   },
-  incomeStatement: {
+  [HEADER_KEYS.INCOME_STATEMENT]: {
     label: "Income Statement",
     type: "number",
     input: "custom",
     width: 150,
     //readOnly: true,
   },
-    financing: {
+  [HEADER_KEYS.FINANCING]: {
     label: "Financing",
     type: "number",
     input: "custom",
     width: 150,
   },
-  Category: {
+  [HEADER_KEYS.CATEGORY]: {
     label: "Category",
     type: "string",
     input: "dropdown",
     optionsFrom: "baselines",
     width: 150,
   },
-  EditingTools: {
+  [HEADER_KEYS.EDITING_TOOLS]: {
     label: "Editing Tools",
     type: "controls",
     input: null,
-    width: 200,
+    width: 100,
   },
 };
 
 // 👇 add this so `columnOrder` becomes available as a named export
 export const columnOrder = [
-  "propertyAddress",
-  "propertyTaxes",
-  "propertyGSA",
-  "propertyGBA",
-  "units",
-  "purchasePrice",
-  "incomeStatement",
-  "financing",
-  "Category",
-  "EditingTools",
+  HEADER_KEYS.PROPERTY_ADDRESS,
+  HEADER_KEYS.PROPERTY_TAXES,
+  HEADER_KEYS.GROSS_SITE_AREA,
+  HEADER_KEYS.GROSS_BUILDING_AREA,
+  HEADER_KEYS.UNITS,
+  HEADER_KEYS.PURCHASE_PRICE,
+  HEADER_KEYS.INCOME_STATEMENT,
+  HEADER_KEYS.FINANCING,
+  HEADER_KEYS.CATEGORY,
+  HEADER_KEYS.EDITING_TOOLS,
 ];
 
 export const breakdownConfig = {

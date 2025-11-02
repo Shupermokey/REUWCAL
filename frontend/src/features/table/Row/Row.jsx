@@ -8,6 +8,7 @@ import columnConfig, { columnOrder } from "@/constants/columnConfig";
 
 // ✅ Scoped CSS
 import "@/styles/components/Table/Row.css";
+import { HEADER_KEYS } from "@/constants";
 
 function Row({
   row,
@@ -92,7 +93,7 @@ function Row({
       const inputType = config?.input;
       const isInvalid = invalidFields.includes(key);
 
-      if (key === "Category") {
+      if (key === HEADER_KEYS.CATEGORY) {
         const catValue = unwrapValue(editableRow[key]) ?? "";
         return (
           <select
@@ -149,7 +150,7 @@ function Row({
   const renderDisplayValue = useCallback(
     (key) => {
       const raw = editableRow[key];
-      if (key === "Category") {
+      if (key === HEADER_KEYS.CATEGORY) {
         const id = unwrapValue(raw);
         const selected = baselines.find((b) => b.id === id);
         return selected?.name ?? id ?? "—";
@@ -211,7 +212,7 @@ function Row({
               maxWidth: columnConfig[key]?.width,
             }}
           >
-            {key === "EditingTools" ? (
+            {key === HEADER_KEYS.EDITING_TOOLS ? (
               <div className="row__actions">
                 {isEditing ? (
                   <>

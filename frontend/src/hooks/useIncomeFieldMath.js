@@ -46,15 +46,27 @@ export function useIncomeFieldMath({
   const handleChange = useCallback(
     (field, raw) => {
       if (suppressRef.current) return;
+      console.log("Handling change for", fullPath, field, raw);
 
       const n = raw === "" ? "" : Number(raw);
 
-      // ✅ Main value change
+      // --- 1️⃣ Main update: modify only the field being edited
       setAtPath(fullPath, (prev = {}) => {
         const next = structuredClone(prev);
         next[field] = n;
 
-        // --- Sign enforcement for Income section
+        // --- 2️⃣ Monthly↔Annual mirroring (lightweight)
+        if (field.endsWith("Monthly")) {
+          if (field === "rateMonthly" && isNum(n))
+            next.rateAnnual = roundN(toAnnual(n));
+          if (field === "grossMonthly" && isNum(n))
+            next.grossAnnual = roundN(toAnnual(n));
+        } else if (field.endsWith("Annual")) {
+          if (field === "grossAnnual" && isNum(n))
+            next.grossMonthly = roundN(toMonthly(n));
+        }
+
+        // --- 3️⃣ Sign enforcement (applies only to the edited field)
         const pathParts = fullPath.split(".");
         if (pathParts[0] === "Income" && fullData?.Income) {
           const incomeKeys = Object.keys(fullData.Income);
@@ -65,32 +77,14 @@ export function useIncomeFieldMath({
           const isBetween = curIndex > gsrIndex && curIndex < nriIndex;
           const isBelow = curIndex > nriIndex;
 
-          if (isBetween) {
-            for (const k in next)
-              if (typeof next[k] === "number" && next[k] > 0)
-                next[k] = -next[k];
-          } else if (isBelow) {
-            for (const k in next)
-              if (typeof next[k] === "number" && next[k] < 0)
-                next[k] = Math.abs(next[k]);
-          }
-        }
-
-        // --- Monthly↔Annual mirroring
-        if (field.endsWith("Monthly")) {
-          if (field === "rateMonthly" && isNum(n))
-            next.rateAnnual = roundN(toAnnual(n));
-          if (isNum(next.grossMonthly))
-            next.grossAnnual = roundN(toAnnual(next.grossMonthly));
-        } else if (field.endsWith("Annual")) {
-          if (isNum(next.grossAnnual))
-            next.grossMonthly = roundN(toMonthly(next.grossAnnual));
+          if (isBetween && next[field] > 0) next[field] = -next[field];
+          if (isBelow && next[field] < 0) next[field] = Math.abs(next[field]);
         }
 
         return next;
       });
 
-      // ✅ Auto-update Net Rental Income totals
+      // --- 4️⃣ Auto-update Net Rental Income totals
       if (fullPath.startsWith("Income.") && fullData?.Income) {
         const incomeKeys = Object.keys(fullData.Income);
         const gsrIndex = incomeKeys.indexOf(FIXED_FIRST_INCOME_KEY);
@@ -116,7 +110,6 @@ export function useIncomeFieldMath({
               if (typeof node[f] === "number") totals[f] += node[f];
           }
 
-          // Prevent feedback loops
           suppressRef.current = true;
           setAtPath("Income.Net Rental Income", () => structuredClone(totals));
           suppressRef.current = false;
@@ -126,15 +119,8 @@ export function useIncomeFieldMath({
     [fullPath, setAtPath, fullData, GBA, UNITS, roundN]
   );
 
-  /* -------------------- Blur sync -------------------- */
-  const handleBlur = useCallback(() => {
-    setAtPath(fullPath, (p = {}) => {
-      const n = { ...p };
-      if (isNum(n.grossAnnual))
-        n.grossMonthly = roundN(toMonthly(n.grossAnnual));
-      return n;
-    });
-  }, [fullPath, setAtPath, roundN]);
 
-  return { handleChange, handleBlur };
+ return { handleChange };
+
+
 }
