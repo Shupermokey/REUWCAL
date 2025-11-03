@@ -1,4 +1,3 @@
-// components/Income/Section/ChildBranch.jsx
 import React from "react";
 import {
   DndContext,
@@ -13,15 +12,41 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
-import BranchTotals from "../BranchTotals.jsx";
-import ChildLeaf from "./ChildLeaf.jsx";
-import SortableRow from "./SortableRow.jsx";
-
-import { isLeafNode, isPO } from "@domain/incomeSection/structureHelpers.js";
+// 🧩 Context + Helpers
+import { useIncome } from "@/app/providers/IncomeProvider.jsx";
+import { isLeafNode } from "@domain/incomeSection/structureHelpers.js";
 import {
   FIXED_FIRST_INCOME_KEY,
   FIXED_DIVIDER_INCOME_KEY,
 } from "@constants/incomeKeys.js";
+import { sortIncomeSection } from "@/constants/sortSection.js";
+
+// 🧱 Components
+import BranchTotals from "../BranchTotals.jsx";
+import ChildLeaf from "./ChildLeaf.jsx";
+import SortableRow from "./SortableRow.jsx";
+
+/* -------------------------------------------------------------------------- */
+/* 🌿 ChildBranch – provider-based recursive branch renderer                   */
+/* -------------------------------------------------------------------------- */
+
+// 🔹 Helper to safely get nested object value by "a.b.c" path
+const getByPath = (obj, path) =>
+  path.split(".").reduce((acc, key) => (acc && acc[key] ? acc[key] : null), obj);
+
+// 🔹 Helper to safely set nested object by path (immutable)
+const setByPath = (obj, path, value) => {
+  const keys = path.split(".");
+  const last = keys.pop();
+  const clone = structuredClone(obj);
+  let current = clone;
+  for (const k of keys) {
+    if (!current[k]) current[k] = {};
+    current = current[k];
+  }
+  current[last] = value;
+  return clone;
+};
 
 export default function ChildBranch({
   sectionTitle,
@@ -30,71 +55,82 @@ export default function ChildBranch({
   collapsedPaths,
   displayMode,
   metrics,
-  handleAdd,
-  handleDelete,
-  handlePromote,
-  handleSetAtPath,
 }) {
-  const collapsed = collapsedPaths.has(sectionTitle);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
-  // The localKeys are: Gross Scheduled Rent, Vacancy/Collections Loss, Less - Free Rent and/or Allowances, Less - Other Adjustments, Net Rental Income, Recoverable Income, Other Income
-  // and so on for other sections: Income, Operating Expenses, Capital Expenses
-  const localKeys = Object.keys(val || {});
 
+  const { data, setData, addItem } = useIncome();
+
+  // 🔄 Always use the *live* provider data (prevents stale val)
+  const branchData =
+    sectionTitle && sectionTitle.includes(".")
+      ? getByPath(data, sectionTitle)
+      : data?.[sectionTitle] || val || {};
+
+  if (!branchData || typeof branchData !== "object") return null;
+
+  /* ------------------------------------------------------------------------ */
+  /* 🧩 FIX: dive into .Sub automatically if it exists                        */
+  /* ------------------------------------------------------------------------ */
+  const branchCore =
+    branchData.Sub && typeof branchData.Sub === "object"
+      ? branchData.Sub
+      : branchData;
+
+  const localKeys = Object.keys(branchCore);
+  const collapsed = collapsedPaths.has(sectionTitle);
+
+  /* ------------------------------------------------------------------------ */
+  /* 🔹 Drag Reorder Logic                                                    */
+  /* ------------------------------------------------------------------------ */
   const onLocalDragEnd = (event) => {
     const activeId = event.active?.id;
     const overId = event.over?.id;
     if (!overId || activeId === overId) return;
 
-    const fromKey = activeId;
-    const toKey = overId;
+    const fromKey = activeId.split(".").pop();
+    const toKey = overId.split(".").pop();
 
-    // reorder logic unchanged
-    if (sectionTitle === "") {
-      handleSetAtPath("", (prevData) => {
-        const keys = Object.keys(prevData);
-        const from = keys.indexOf(fromKey);
-        const to = keys.indexOf(toKey);
-        if (from < 0 || to < 0) return prevData;
+    const keys = Object.keys(branchCore);
+    const from = keys.indexOf(fromKey);
+    const to = keys.indexOf(toKey);
+    if (from < 0 || to < 0) return;
 
-        if (
-          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(
-            fromKey
-          ) ||
-          [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(toKey)
-        )
-          return prevData;
-
-        const reordered = {};
-        const reorderedKeys = [...keys];
-        const [moved] = reorderedKeys.splice(from, 1);
-        reorderedKeys.splice(to, 0, moved);
-        reorderedKeys.forEach((k) => (reordered[k] = prevData[k]));
-        return reordered;
-      });
+    // 🛡️ Skip locked rows
+    if (
+      [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(fromKey) ||
+      [FIXED_FIRST_INCOME_KEY, FIXED_DIVIDER_INCOME_KEY].includes(toKey)
+    ) {
+      console.warn("Attempted to move a locked item — ignored.");
       return;
     }
 
-    handleSetAtPath(sectionTitle, (prevBranch) => {
-      if (!isPO(prevBranch)) return prevBranch;
-      const keys = Object.keys(prevBranch);
-      const from = keys.indexOf(fromKey);
-      const to = keys.indexOf(toKey);
-      if (from < 0 || to < 0) return prevBranch;
+    // 🔄 Perform reorder
+    const reorderedKeys = [...keys];
+    const [moved] = reorderedKeys.splice(from, 1);
+    reorderedKeys.splice(to, 0, moved);
 
-      const reorderedKeys = [...keys];
-      const [moved] = reorderedKeys.splice(from, 1);
-      reorderedKeys.splice(to, 0, moved);
+    const reorderedBranch = {};
+    reorderedKeys.forEach((k) => (reorderedBranch[k] = branchCore[k]));
 
-      const reorderedBranch = {};
-      reorderedKeys.forEach((k) => (reorderedBranch[k] = prevBranch[k]));
-      return reorderedBranch;
-    });
+    // 🧩 Sort + update provider cleanly
+    const newData =
+      sectionTitle === "Income"
+        ? setByPath(data, sectionTitle, sortIncomeSection(reorderedBranch))
+        : setByPath(data, sectionTitle, reorderedBranch);
+
+    setData(newData);
   };
 
-  if (!val || typeof val !== "object") return null;
+  /* ------------------------------------------------------------------------ */
+  /* 🔹 Render Rows                                                           */
+  /* ------------------------------------------------------------------------ */
+  const itemIds = localKeys.map((key) =>
+    sectionTitle ? `${sectionTitle}.${key}` : key
+  );
+
+  console.log("[ChildBranch render]", sectionTitle, localKeys);
 
   return (
     <DndContext
@@ -103,25 +139,25 @@ export default function ChildBranch({
       collisionDetection={closestCenter}
       onDragEnd={onLocalDragEnd}
     >
-      <SortableContext items={localKeys} strategy={verticalListSortingStrategy}>
-
+      <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
         {localKeys.map((key) => {
-
-          const fullPath = sectionTitle ? `${sectionTitle}.${key}` : key; //Income.New 
-          const node = val[key]; 
+          const fullPath = sectionTitle ? `${sectionTitle}.${key}` : key;
+          const node = branchCore[key];
           const isLeaf = isLeafNode(node);
           const isCollapsed = collapsedPaths.has(fullPath);
 
           return (
             <SortableRow
               key={fullPath}
-              id={key}
-              mainRow={
-                {
+              id={fullPath}
+              mainRow={{
                 leading: !isLeaf ? (
                   <button
                     className="sec__caret"
-                    onClick={() => handleSetAtPath(fullPath)}
+                    onClick={() => {
+                      addItem(fullPath, "Sub Item");
+                      collapsedPaths.delete(fullPath); // 🧩 auto-expand after adding
+                    }}
                   >
                     {isCollapsed ? "▸" : "▾"}
                   </button>
@@ -129,19 +165,16 @@ export default function ChildBranch({
                 label: key,
                 values: isLeaf ? (
                   <ChildLeaf
-                    fullPath={fullPath} //Income.New
-                    label={key} //"New"
-                    val={node} //grossAnnual:0, psfAnnual:0, punitAnnual:0, rateAnnual:0, grossMonthly:0, psfMonthly:0, punitMonthly:0, rateMonthly:0
+                    fullPath={fullPath}
+                    label={key}
+                    val={node}
                     displayMode={displayMode}
                     metrics={metrics}
-                    handleSetAtPath={handleSetAtPath}
-                    handlePromote={handlePromote}
-                    handleDelete={handleDelete}
-                    fullData={val} // passes whole Income object
                   />
-                ) : (<BranchTotals value={node} displayMode={displayMode} />),
-              }
-            }
+                ) : (
+                  <BranchTotals value={node} displayMode={displayMode} />
+                ),
+              }}
               childrenBelow={
                 !isLeaf &&
                 !isCollapsed && (
@@ -152,11 +185,6 @@ export default function ChildBranch({
                     collapsedPaths={collapsedPaths}
                     displayMode={displayMode}
                     metrics={metrics}
-                    handleAdd={handleAdd}
-                    handleDelete={handleDelete}
-                    handlePromote={handlePromote}
-                    handleSetAtPath={handleSetAtPath}
-                    fullData={val}
                   />
                 )
               }

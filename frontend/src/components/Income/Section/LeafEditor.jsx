@@ -1,82 +1,31 @@
-// components/Income/LeafEditor.jsx
-import { useIncomeFieldMath } from "@/hooks/useIncomeFieldMath";
-import React, { useEffect, useState, useCallback } from "react";
-import "@styles/components/Income/LeafEditor.css";
+import React from "react";
+import { useIncome } from "@/app/providers/IncomeProvider";
 
+export default function LeafEditor({ fullPath, val, displayMode, metrics }) {
+  const { updateField } = useIncome();
 
-export default function LeafEditor({
-  fullPath,
-  val,
-  setAtPath,
-  displayMode,
-  metrics,
-  fullData,
-}) {
-
-  const { handleChange } = useIncomeFieldMath({
-    setAtPath,
-    fullPath,
-    metrics,
-    fullData,
-  });
-
-  const [local, setLocal] = useState(val || {});
-
-  useEffect(() => setLocal(val || {}), [val]);
+  const handle = (field) => (e) =>
+    updateField(fullPath, field, e.target.value, metrics);
 
   const showAnnual = displayMode === "annual" || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
 
-
-  /** Prevent drag handles stealing focus */
-  const guard = {
-    onPointerDownCapture: (e) => e.stopPropagation(),
-    onMouseDownCapture: (e) => e.stopPropagation(),
-    onKeyDownCapture: (e) => e.stopPropagation(),
-  };
-
-  /** Handle input typing */
-  const handleInputChange = (field) => (e) => {
-    const raw = e.target.value; //This is the value that is changing for a partifular field
-    setLocal((prev) => ({ ...prev, [field]: raw }));
-    handleChange(field, raw);
-  };
-
-
-  const renderField = (field) => {
-    const valNum = local[field];
-    const isNegative = Number(valNum) < 0;
-
-    return (
-      <input
-        key={field}
-        value={valNum}
-        type="number"
-        onChange={handleInputChange(field)}
-        className={`leaf-input ${isNegative ? "negative" : ""}`}
-        {...guard}
-      />
-    );
-  };
+  const render = (f) => (
+    <input
+      key={f}
+      type="number"
+      value={val?.[f] ?? ""}
+      onChange={handle(f)}
+      className="leaf-input"
+    />
+  );
 
   return (
     <div className="leaf-editor">
-      {showMonthly && (
-        <>
-          {renderField("rateMonthly")}
-          {renderField("grossMonthly")}
-          {renderField("psfMonthly")}
-          {renderField("punitMonthly")}
-        </>
-      )}
-      {showAnnual && (
-        <>
-          {renderField("rateAnnual")}
-          {renderField("grossAnnual")}
-          {renderField("psfAnnual")}
-          {renderField("punitAnnual")}
-        </>
-      )}
+      {showMonthly &&
+        ["rateMonthly", "grossMonthly", "psfMonthly", "punitMonthly"].map(render)}
+      {showAnnual &&
+        ["rateAnnual", "grossAnnual", "psfAnnual", "punitAnnual"].map(render)}
     </div>
   );
 }

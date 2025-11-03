@@ -14,6 +14,7 @@ import columnConfig, { columnOrder } from "@/constants/columnConfig";
 import "@/styles/components/Table/Row.css";
 import { HEADER_KEYS } from "@/constants";
 import { IncomeProvider } from "@/app/providers/IncomeProvider";
+import IncomeStatementWrapper from "@/components/Income/IncomeStatement";
 
 function Row({
   row,
@@ -291,9 +292,7 @@ function Row({
 
       {showDetails && activeColumn === "incomeStatement" && (
         <div className="row__details">
-          <IncomeProvider userId= {user.id} propertyId={row.id}>
-            <IncomeStatement propertyId={row.id} rowData={rowDataForIS} />
-          </IncomeProvider>
+          <IncomeStatementWrapper rowData={rowDataForIS} propertyId={row.id} />
         </div>
       )}
     </>

@@ -1,8 +1,18 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { getIncomeStatement, saveIncomeStatement } from "@/services/firestore/incomeStatementService.js";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import {
+  getIncomeStatement,
+  saveIncomeStatement,
+} from "@/services/firestore/incomeStatementService.js";
 import { recalcMetrics } from "@/utils/income";
 import { toMonthly, toAnnual, isNum } from "@/utils/income/mathUtils"; // optional helper split
 import { getNodeAtPath, setNodeAtPath } from "@/utils/income/pathUtils"; // we'll add next
+import toast from "react-hot-toast";
 
 const IncomeContext = createContext(null);
 
@@ -26,7 +36,7 @@ export function IncomeProvider({ userId, propertyId, children }) {
   // ────────────────────────────────────────────────
   // 🔹 Core field updater (the new “handleChange”)
   const updateField = useCallback((fullPath, field, raw, metrics = {}) => {
-    setData(prev => {
+    setData((prev) => {
       const next = structuredClone(prev);
       const node = getNodeAtPath(next, fullPath) || {};
       const n = raw === "" ? "" : Number(raw);
@@ -36,9 +46,11 @@ export function IncomeProvider({ userId, propertyId, children }) {
       // Monthly↔Annual mirror
       if (field.endsWith("Monthly")) {
         if (field === "rateMonthly" && isNum(n)) node.rateAnnual = toAnnual(n);
-        if (field === "grossMonthly" && isNum(n)) node.grossAnnual = toAnnual(n);
+        if (field === "grossMonthly" && isNum(n))
+          node.grossAnnual = toAnnual(n);
       } else if (field.endsWith("Annual")) {
-        if (field === "grossAnnual" && isNum(n)) node.grossMonthly = toMonthly(n);
+        if (field === "grossAnnual" && isNum(n))
+          node.grossMonthly = toMonthly(n);
       }
 
       setNodeAtPath(next, fullPath, node);
@@ -48,43 +60,78 @@ export function IncomeProvider({ userId, propertyId, children }) {
   }, []);
 
   // ────────────────────────────────────────────────
-  // 🔹 Add / Delete rows (simplified)
-  const addItem = useCallback((path, label = "New Item") => {
-    setData(prev => {
-      const next = structuredClone(prev);
-      const branch = getNodeAtPath(next, path) || {};
-      branch[label] = {
-        rateMonthly: 0, grossMonthly: 0, psfMonthly: 0, punitMonthly: 0,
-        rateAnnual: 0, grossAnnual: 0, psfAnnual: 0, punitAnnual: 0,
-      };
-      setNodeAtPath(next, path, branch);
-      return next;
-    });
-    setDirty(true);
-  }, []);
 
-  const deleteItem = useCallback((path) => {
-    setData(prev => {
-      const next = structuredClone(prev);
-      const keys = path.split(".");
-      const last = keys.pop();
-      const parent = getNodeAtPath(next, keys.join("."));
-      if (parent && parent[last]) delete parent[last];
-      return next;
-    });
-    setDirty(true);
-  }, []);
+  /* --------------------------------- Save --------------------------------- */
+  const save = useCallback(
+    async (customData) => {
+      try {
+        await saveIncomeStatement(userId, propertyId, customData || data);
+        setDirty(false);
+        toast.success("💾 Auto-saved");
+      } catch (err) {
+        console.error("Save failed:", err);
+        toast.error("❌ Auto-save failed");
+      }
+    },
+    [userId, propertyId, data]
+  );
 
-  // ────────────────────────────────────────────────
-  // 🔹 Save to Firestore
-  const save = useCallback(async () => {
-    if (!userId || !propertyId) return;
-    await saveIncomeStatement(userId, propertyId, data);
-    setDirty(false);
-  }, [userId, propertyId, data]);
+  /* -------------------------------- Add ---------------------------------- */
+  const addItem = useCallback(
+    async (path, label) => {
+      if (!path) return;
+      let updated;
+      setData((prev) => {
+        updated = structuredClone(prev);
+        const keys = path.split(".");
+        let cur = updated;
+        for (const k of keys) cur = cur[k] ||= {};
+        let unique = label;
+        let i = 2;
+        while (cur[unique]) unique = `${label} ${i++}`;
+        cur[unique] = {
+          rateAnnual: 0,
+          grossAnnual: 0,
+          psfAnnual: 0,
+          punitAnnual: 0,
+          rateMonthly: 0,
+          grossMonthly: 0,
+          psfMonthly: 0,
+          punitMonthly: 0,
+        };
+        return updated;
+      });
+
+      // ✅ Save immediately after updating
+      await save(updated);
+    },
+    [save]
+  );
+
+  /* -------------------------------- Delete -------------------------------- */
+  const deleteItem = useCallback(
+    async (path) => {
+      let updated;
+      setData((prev) => {
+        updated = structuredClone(prev);
+        const keys = path.split(".");
+        let cur = updated;
+        for (let i = 0; i < keys.length - 1; i++) cur = cur[keys[i]];
+        delete cur[keys.at(-1)];
+        return updated;
+      });
+
+      // ✅ Save immediately after updating
+      await save(updated);
+    },
+    [save]
+  );
+
+
 
   const value = {
     data,
+    setData,
     loading,
     dirty,
     updateField,
@@ -93,7 +140,9 @@ export function IncomeProvider({ userId, propertyId, children }) {
     save,
   };
 
-  return <IncomeContext.Provider value={value}>{children}</IncomeContext.Provider>;
+  return (
+    <IncomeContext.Provider value={value}>{children}</IncomeContext.Provider>
+  );
 }
 
 export const useIncome = () => {
