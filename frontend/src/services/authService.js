@@ -59,17 +59,3 @@ export const handleSignInWithGoogle = async () => {
 export const handleSignOut = () => {
   return auth.signOut();
 }
-
-// export const handlePasswordReset = (email) => {
-//   return sendPasswordResetEmail(auth, email);
-// }
-
-// export const handlePasswordChange = (password) => {
-//   return updatePassword(auth.currentUser, password);
-// }
-
-// export const handleSendEmailVerification = () => {
-//   return sendEmailVerification(auth.currentUser, {
-//     url: `${window.location.origin}/home`,
-//   });
-// }

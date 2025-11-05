@@ -49,15 +49,3 @@ export const deleteBaseline = async (uid, baselineId) => {
   await deleteDoc(ref);
 };
 
-/**
- * 🔄 Listen for real-time updates to a user's baselines.
- * Returns an unsubscribe function.
- */
-// export const onBaselinesSnapshot = (uid, callback) => {
-//   if (!uid) return () => {};
-//   const colRef = collection(db, FIRESTORE_PATHS.USERS, uid, FIRESTORE_PATHS.BASELINES);
-//   return onSnapshot(colRef, (snap) => {
-//     const baselines = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-//     callback(baselines);
-//   });
-// };

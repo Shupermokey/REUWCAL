@@ -10,14 +10,10 @@ import {
   where,
 } from "firebase/firestore";
 import { useAuth } from "../app/providers/AuthProvider";
-import { loadStripe } from "@stripe/stripe-js";
 import { db } from "../services/firebaseConfig";
 import "@/styles/pages/Home.css"; // ✅ Scoped page styles
 import Sidebar from "@/components/Sidebar/Sidebar";
 
-// const stripePromise = loadStripe(
-//   "pk_test_51NbDDDEgiGJZMTseM8sReTmk3TwiQIQwZLOwEzVHXy0uZFt7Ikn3qIc2sbKts0tFEBN5d73GFG46qA7KMbYBj5OX00SUx5fV2y"
-// );
 
 function Home() {
   const [selectedRow, setSelectedRow] = useState(null);

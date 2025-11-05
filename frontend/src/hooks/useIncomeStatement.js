@@ -13,50 +13,27 @@ export function useIncomeStatement(uid, propertyId) {
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // 🧩 Fetch
   useEffect(() => {
     if (!uid || !propertyId) return;
-    let mounted = true;
 
-    (async () => {
-      try {
-        const result = await getIncomeStatement(uid, propertyId); //{"Income":{...},"OperatingExpenses":{...},"CapitalExpenses":{...}}
-        if (mounted) setData(result || {});
-      } catch (err) {
-        toast.error("Failed to load Income Statement");
-        console.error(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
+    setLoading(true);
 
-    return () => (mounted = false);
+    getIncomeStatement(uid, propertyId)
+      .then((fetched) => {
+        setData(fetched || {});
+      })
+      .catch((err) => console.error("Failed to load income statement:", err))
+      .finally(() => setLoading(false));
   }, [uid, propertyId]);
 
   /** Save changes back to Firestore */
-  const save = useCallback(
-    async (updates) => {
-      if (!uid || !propertyId) return;
-      try {
-        await saveIncomeStatement(uid, propertyId, updates);
-        setData(updates);
-        toast.success("💾 Saved Income Statement");
-      } catch (err) {
-        console.error("Failed to save:", err);
-        toast.error("❌ Save failed");
-      }
-    },
-    [uid, propertyId]
-  );
+  // 💾 Save
+  const save = useCallback(async () => {
+    if (!uid || !propertyId) return;
+    await saveIncomeStatement(uid, propertyId, data);
+  }, [uid, propertyId, data]);
 
-  /** Convenience: apply a mutation function to the current data */
-  const update = useCallback(
-    async (mutator) => {
-      const updated = mutator(structuredClone(data));
-      setData(updated);
-      await save(updated);
-    },
-    [data, save]
-  );
 
-  return { data, setData, save, update, loading };
+  return { data, setData, save, loading };
 }

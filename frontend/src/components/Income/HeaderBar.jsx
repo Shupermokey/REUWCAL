@@ -3,7 +3,7 @@ import ViewToggle from "./ViewToggle.jsx"; // ⬅️ add this
 
 import "@/styles/components/Income/HeaderBar.css";
 
-export default function HeaderBar({ saving, error, lastSavedAt, onSave }) {
+export default function HeaderBar({ saving, onSave }) {
   return (
     <div className="income-header">
       <div className="title">
@@ -11,7 +11,6 @@ export default function HeaderBar({ saving, error, lastSavedAt, onSave }) {
       </div>
 
       <div className="header-actions">
-        {/* ⬇️ moved here; replaces the old green buttons */}
         <ViewToggle />
 
         <button className="btn-save" disabled={saving} onClick={onSave}>

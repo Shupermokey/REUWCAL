@@ -13,8 +13,6 @@ import columnConfig, { columnOrder } from "@/constants/columnConfig";
 // ✅ Scoped CSS
 import "@/styles/components/Table/Row.css";
 import { HEADER_KEYS } from "@/constants";
-import { IncomeProvider } from "@/app/providers/IncomeProvider";
-import IncomeStatementWrapper from "@/components/Income/IncomeStatement";
 
 function Row({
   row,
@@ -292,7 +290,12 @@ function Row({
 
       {showDetails && activeColumn === "incomeStatement" && (
         <div className="row__details">
-          <IncomeStatementWrapper rowData={rowDataForIS} propertyId={row.id} />
+          <IncomeStatement
+            propertyId={row.id}
+            grossBuildingAreaSqFt={rowDataForIS.grossBuildingAreaSqFt}
+            units={rowDataForIS.units}
+            baselineData={editableRow.baselineSnapshot}
+          />
         </div>
       )}
     </>

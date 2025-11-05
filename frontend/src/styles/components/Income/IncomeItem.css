@@ -1,0 +1,30 @@
+/* Income Item Styles - Minimal overrides for label input */
+
+.income-item__label-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: transparent;
+  transition: all 0.2s;
+  color: #111827;
+}
+
+.income-item__label-input:hover:not([readonly]) {
+  border-color: #d1d5db;
+  background-color: white;
+}
+
+.income-item__label-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.income-item__label-input[readonly] {
+  font-weight: 600;
+  cursor: default;
+  color: #1e3a8a;
+}
