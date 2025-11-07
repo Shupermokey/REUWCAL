@@ -2,6 +2,15 @@
  * Configuration for special income statement items
  */
 
+import {
+  INCOME_ORDER,
+  TAX_KEYS,
+  INS_KEYS,
+  CAM_KEYS,
+  ADMIN_KEYS,
+  CAPEX_KEYS,
+} from "@/constants/incomeKeys.js";
+
 // Special item IDs
 export const SPECIAL_IDS = {
   GROSS_SCHEDULED_RENT: "gsr",
@@ -9,6 +18,11 @@ export const SPECIAL_IDS = {
   TOTAL_INCOME: "total-income",
   TOTAL_OPERATING_EXPENSES: "total-opex",
   TOTAL_CAPITAL_EXPENSES: "total-capex",
+  // Operating Expense Group IDs
+  TAX_GROUP: "tax-group",
+  INS_GROUP: "ins-group",
+  CAM_GROUP: "cam-group",
+  ADMIN_GROUP: "admin-group",
 };
 
 /**
@@ -109,6 +123,33 @@ export function isDeductionItem(sectionKey, itemId, order) {
 }
 
 /**
+ * Helper to create a basic item
+ */
+function createBasicItem(id, label) {
+  return {
+    id,
+    label,
+    grossMonthly: 0,
+    grossAnnual: 0,
+    rateMonthly: 0,
+    rateAnnual: 0,
+    psfMonthly: 0,
+    psfAnnual: 0,
+    punitMonthly: 0,
+    punitAnnual: 0,
+    childOrder: [],
+    children: {},
+  };
+}
+
+/**
+ * Helper to generate a simple ID from a label
+ */
+function generateIdFromLabel(label) {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
+/**
  * Initialize a section with required special items
  */
 export function initializeSection(sectionKey) {
@@ -117,48 +158,62 @@ export function initializeSection(sectionKey) {
 
   switch (sectionKey) {
     case "Income": {
-      // Gross Scheduled Rent at top
-      order.push(SPECIAL_IDS.GROSS_SCHEDULED_RENT);
-      items[SPECIAL_IDS.GROSS_SCHEDULED_RENT] = {
-        id: SPECIAL_IDS.GROSS_SCHEDULED_RENT,
-        label: ITEM_CONFIG[SPECIAL_IDS.GROSS_SCHEDULED_RENT].label,
-        grossMonthly: 0,
-        grossAnnual: 0,
-        rateMonthly: 0,
-        rateAnnual: 0,
-        psfMonthly: 0,
-        psfAnnual: 0,
-        punitMonthly: 0,
-        punitAnnual: 0,
-        childOrder: [],
-        children: {},
-      };
+      // Add items from INCOME_ORDER
+      INCOME_ORDER.forEach((label) => {
+        const id = label === "Gross Scheduled Rent"
+          ? SPECIAL_IDS.GROSS_SCHEDULED_RENT
+          : label === "Net Rental Income"
+          ? SPECIAL_IDS.NET_RENTAL_INCOME
+          : generateIdFromLabel(label);
 
-      // Net Rental Income in middle
-      order.push(SPECIAL_IDS.NET_RENTAL_INCOME);
-      items[SPECIAL_IDS.NET_RENTAL_INCOME] = {
-        id: SPECIAL_IDS.NET_RENTAL_INCOME,
-        label: ITEM_CONFIG[SPECIAL_IDS.NET_RENTAL_INCOME].label,
-        grossMonthly: 0,
-        grossAnnual: 0,
-        rateMonthly: 0,
-        rateAnnual: 0,
-        psfMonthly: 0,
-        psfAnnual: 0,
-        punitMonthly: 0,
-        punitAnnual: 0,
-        childOrder: [],
-        children: {},
-      };
+        order.push(id);
+        items[id] = createBasicItem(id, label);
+      });
 
-      // Total at bottom (will be added when rendering)
       break;
     }
 
-    case "OperatingExpenses":
-    case "CapitalExpenses":
-      // No special items yet, boss hasn't specified
+    case "OperatingExpenses": {
+      // Create groups: Taxes, Insurance, CAM, Admin
+      const groups = [
+        { id: SPECIAL_IDS.TAX_GROUP, label: "Property Taxes", children: TAX_KEYS },
+        { id: SPECIAL_IDS.INS_GROUP, label: "Insurance", children: INS_KEYS },
+        { id: SPECIAL_IDS.CAM_GROUP, label: "CAM", children: CAM_KEYS },
+        { id: SPECIAL_IDS.ADMIN_GROUP, label: "Administrative & Other", children: ADMIN_KEYS },
+      ];
+
+      groups.forEach(({ id, label, children: childLabels }) => {
+        order.push(id);
+
+        const childOrder = [];
+        const children = {};
+
+        childLabels.forEach((childLabel) => {
+          const childId = generateIdFromLabel(childLabel);
+          childOrder.push(childId);
+          children[childId] = createBasicItem(childId, childLabel);
+        });
+
+        items[id] = {
+          ...createBasicItem(id, label),
+          childOrder,
+          children,
+        };
+      });
+
       break;
+    }
+
+    case "CapitalExpenses": {
+      // Add items from CAPEX_KEYS
+      CAPEX_KEYS.forEach((label) => {
+        const id = generateIdFromLabel(label);
+        order.push(id);
+        items[id] = createBasicItem(id, label);
+      });
+
+      break;
+    }
 
     default:
       break;

@@ -6,8 +6,17 @@
 .income-wrapper {
   display: flex;
   flex-direction: column;
-  width: 1800px;
+  width: 100%;
+  max-width: 1800px;
+  height: 80vh; /* Take up 80% of viewport height */
+  max-height: 900px;
+  margin: 0 auto;
+  background: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
+
 .header-bar {
   flex: 0 0 auto;            /* fixed height */
 }
@@ -16,10 +25,11 @@
   flex: 1 1 auto;            /* fill remaining space */
   overflow-y: auto;          /* scroll vertically */
   overflow-x: auto;          /* scroll horizontally when needed */
-  padding: 0 8px 48px 0;     /* bottom space for last rows */
+  padding: 16px;             /* padding all around */
   scroll-behavior: smooth;
   box-sizing: border-box;
   width: 100%;
+  background: #ffffff;
 }
 
 /* Layout inside */
@@ -29,44 +39,86 @@
 
 /* Scroll behavior when long */
 .income-statement-panel::-webkit-scrollbar {
-  height: 10px;
-  width: 8px;
+  width: 12px;
+  height: 12px;
 }
+
+.income-statement-panel::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 8px;
+  margin: 4px;
+}
+
 .income-statement-panel::-webkit-scrollbar-thumb {
   background: #c5c5c5;
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 3px solid #f1f3f4;
+  background-clip: padding-box;
 }
+
 .income-statement-panel::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+  border: 3px solid #f1f3f4;
+  background-clip: padding-box;
+}
+
+.income-statement-panel::-webkit-scrollbar-corner {
+  background: #f1f3f4;
 }
 
 /* ----------------------------------------------------------
    Section spacing within the statement
    ---------------------------------------------------------- */
 .income-statement-panel .sec {
-  margin-top: 10px;
-  border-radius: 8px;
+  margin-bottom: 24px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+.income-statement-panel .sec:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Ensure HeaderBar & Sections visually connect */
 .income-header + .sec {
-  margin-top: 8px;
+  margin-top: 16px;
+}
+
+/* Last section should have bottom margin */
+.income-statement-panel .sec:last-child {
+  margin-bottom: 0;
 }
 
 /* ----------------------------------------------------------
    Responsiveness
    ---------------------------------------------------------- */
+@media (max-width: 1400px) {
+  .income-wrapper {
+    max-width: 95%;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 1024px) {
+  .income-wrapper {
+    height: 85vh;
+    max-height: 800px;
+  }
+
   .income-statement-panel {
-    padding: 12px 14px;
-    margin: 12px auto;
+    padding: 12px;
   }
 }
 
 @media (max-width: 768px) {
+  .income-wrapper {
+    height: 90vh;
+    border-radius: 8px;
+  }
+
   .income-statement-panel {
-    padding: 10px;
-    border-radius: 10px;
+    padding: 8px;
   }
 }

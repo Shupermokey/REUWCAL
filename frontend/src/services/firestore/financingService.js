@@ -1,16 +1,37 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
+import { defaultFinancing } from "@/utils/financing/financingDefaults";
 
-const SECTION = PROPERTY_SECTIONS.FINANCING;
+/**
+ * Get financing data for a specific property
+ */
+export async function getFinancing(userId, propertyId) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "financing");
+    const docSnap = await getDoc(docRef);
 
-export const getFinancing = async (uid, propertyId) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
-};
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      // Return default structure if doesn't exist
+      return defaultFinancing();
+    }
+  } catch (error) {
+    console.error("Error getting financing:", error);
+    throw error;
+  }
+}
 
-export const saveFinancing = async (uid, propertyId, data) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  await setDoc(ref, data, { merge: true });
-};
+/**
+ * Save financing data
+ */
+export async function saveFinancing(userId, propertyId, data) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "financing");
+    await setDoc(docRef, data, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error saving financing:", error);
+    throw error;
+  }
+}

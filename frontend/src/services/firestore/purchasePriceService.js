@@ -1,16 +1,37 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
+import { defaultPurchasePrice } from "@/utils/purchasePrice/purchasePriceDefaults";
 
-const SECTION = PROPERTY_SECTIONS.PURCHASE_PRICE;
+/**
+ * Get purchase price data for a specific property
+ */
+export async function getPurchasePrice(userId, propertyId) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "purchasePrice");
+    const docSnap = await getDoc(docRef);
 
-export const getPurchasePrice = async (uid, propertyId) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
-};
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      // Return default structure if doesn't exist
+      return defaultPurchasePrice();
+    }
+  } catch (error) {
+    console.error("Error getting purchase price:", error);
+    throw error;
+  }
+}
 
-export const savePurchasePrice = async (uid, propertyId, data) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  await setDoc(ref, data, { merge: true });
-};
+/**
+ * Save purchase price data
+ */
+export async function savePurchasePrice(userId, propertyId, data) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "purchasePrice");
+    await setDoc(docRef, data, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error saving purchase price:", error);
+    throw error;
+  }
+}

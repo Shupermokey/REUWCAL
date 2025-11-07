@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  getPropertyTaxes,
-  savePropertyTaxes,
-} from "@/services/firestore/propertyTaxesService";
-import { defaultPropertyTaxes } from "@/utils/propertyTaxes/propertyTaxesDefaults";
+  getPropertyAddress,
+  savePropertyAddress,
+} from "@/services/firestore/propertyAddressService";
+import { defaultPropertyAddress } from "@/utils/propertyAddress/propertyAddressDefaults";
 
 /**
- * Hook to manage property taxes data
+ * Hook to manage property address data
  */
-export function usePropertyTaxes(userId, propertyId) {
+export function usePropertyAddress(userId, propertyId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,17 +25,17 @@ export function usePropertyTaxes(userId, propertyId) {
     async function loadData() {
       try {
         setLoading(true);
-        const propertyTaxesData = await getPropertyTaxes(userId, propertyId);
+        const propertyAddressData = await getPropertyAddress(userId, propertyId);
 
         if (isMounted) {
-          setData(propertyTaxesData || defaultPropertyTaxes());
+          setData(propertyAddressData || defaultPropertyAddress());
           setError(null);
         }
       } catch (err) {
-        console.error("Error loading property taxes:", err);
+        console.error("Error loading property address:", err);
         if (isMounted) {
           setError(err);
-          setData(defaultPropertyTaxes());
+          setData(defaultPropertyAddress());
         }
       } finally {
         if (isMounted) {
@@ -58,10 +58,10 @@ export function usePropertyTaxes(userId, propertyId) {
     }
 
     try {
-      await savePropertyTaxes(userId, propertyId, data);
+      await savePropertyAddress(userId, propertyId, data);
       return true;
     } catch (err) {
-      console.error("Error saving property taxes:", err);
+      console.error("Error saving property address:", err);
       throw err;
     }
   }, [userId, propertyId, data]);

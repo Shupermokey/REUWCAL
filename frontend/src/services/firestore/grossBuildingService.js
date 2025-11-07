@@ -1,16 +1,37 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { sectionPath, PROPERTY_SECTIONS } from "@/constants";
+import { defaultGrossBuildingArea } from "@/utils/grossBuildingArea/grossBuildingAreaDefaults";
 
-const SECTION = PROPERTY_SECTIONS.GROSS_BUILDING_AREA;
+/**
+ * Get gross building area data for a specific property
+ */
+export async function getGrossBuildingArea(userId, propertyId) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "grossBuildingArea");
+    const docSnap = await getDoc(docRef);
 
-export const getGrossBuildingArea = async (uid, propertyId) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  const snap = await getDoc(ref);
-  return snap.exists() ? snap.data() : null;
-};
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      // Return default structure if doesn't exist
+      return defaultGrossBuildingArea();
+    }
+  } catch (error) {
+    console.error("Error getting gross building area:", error);
+    throw error;
+  }
+}
 
-export const saveGrossBuildingArea = async (uid, propertyId, data) => {
-  const ref = doc(db, sectionPath(uid, propertyId, SECTION));
-  await setDoc(ref, data, { merge: true });
-};
+/**
+ * Save gross building area data
+ */
+export async function saveGrossBuildingArea(userId, propertyId, data) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "grossBuildingArea");
+    await setDoc(docRef, data, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error saving gross building area:", error);
+    throw error;
+  }
+}

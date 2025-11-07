@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  getPropertyTaxes,
-  savePropertyTaxes,
-} from "@/services/firestore/propertyTaxesService";
-import { defaultPropertyTaxes } from "@/utils/propertyTaxes/propertyTaxesDefaults";
+  getGrossBuildingArea,
+  saveGrossBuildingArea,
+} from "@/services/firestore/grossBuildingService";
+import { defaultGrossBuildingArea } from "@/utils/grossBuildingArea/grossBuildingAreaDefaults";
 
 /**
- * Hook to manage property taxes data
+ * Hook to manage gross building area data
  */
-export function usePropertyTaxes(userId, propertyId) {
+export function useGrossBuildingArea(userId, propertyId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,17 +25,17 @@ export function usePropertyTaxes(userId, propertyId) {
     async function loadData() {
       try {
         setLoading(true);
-        const propertyTaxesData = await getPropertyTaxes(userId, propertyId);
+        const grossBuildingAreaData = await getGrossBuildingArea(userId, propertyId);
 
         if (isMounted) {
-          setData(propertyTaxesData || defaultPropertyTaxes());
+          setData(grossBuildingAreaData || defaultGrossBuildingArea());
           setError(null);
         }
       } catch (err) {
-        console.error("Error loading property taxes:", err);
+        console.error("Error loading gross building area:", err);
         if (isMounted) {
           setError(err);
-          setData(defaultPropertyTaxes());
+          setData(defaultGrossBuildingArea());
         }
       } finally {
         if (isMounted) {
@@ -58,10 +58,10 @@ export function usePropertyTaxes(userId, propertyId) {
     }
 
     try {
-      await savePropertyTaxes(userId, propertyId, data);
+      await saveGrossBuildingArea(userId, propertyId, data);
       return true;
     } catch (err) {
-      console.error("Error saving property taxes:", err);
+      console.error("Error saving gross building area:", err);
       throw err;
     }
   }, [userId, propertyId, data]);

@@ -8,6 +8,13 @@ import {
 import { validateFields } from "@/utils/rows/rowValidation";
 import { useRowCalcs } from "@/hooks/useRowCalcs";
 import IncomeStatement from "@/components/Income/IncomeStatement";
+import PropertyAddress from "@/components/PropertyAddress/PropertyAddress";
+import PropertyTaxes from "@/components/PropertyTaxes/PropertyTaxes";
+import GrossSiteArea from "@/components/GrossSiteArea/GrossSiteArea";
+import GrossBuildingArea from "@/components/GrossBuildingArea/GrossBuildingArea";
+import Units from "@/components/Units/Units";
+import PurchasePrice from "@/components/PurchasePrice/PurchasePrice";
+import Financing from "@/components/Financing/Financing";
 import columnConfig, { columnOrder } from "@/constants/columnConfig";
 
 // ✅ Scoped CSS
@@ -80,7 +87,7 @@ function Row({
       const nextCell = { ...base, value: e.target.value };
       setLocal(key, nextCell);
 
-      if (isRentKey(key) || key === "propertyGBA" || key === "units") {
+      if (isRentKey(key) || key === "grossBuildingArea" || key === "units") {
         if (isRentKey(key)) setLastEdited(toLastEditedKey(key));
         const nextRow = { ...editableRow, [key]: nextCell };
         const patch = recompute(nextRow);
@@ -184,7 +191,7 @@ function Row({
 
   const rowDataForIS = useMemo(
     () => ({
-      grossBuildingAreaSqFt: asNumber(editableRow.propertyGBA),
+      grossBuildingAreaSqFt: asNumber(editableRow.grossBuildingArea),
       units: asNumber(editableRow.units),
     }),
     [editableRow, asNumber]
@@ -288,6 +295,57 @@ function Row({
         ))}
       </div>
 
+      {showDetails && activeColumn === "propertyAddress" && (
+        <div className="row__details">
+          <PropertyAddress propertyId={row.id} />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "propertyTaxes" && (
+        <div className="row__details">
+          <PropertyTaxes
+            propertyId={row.id}
+            currentTaxAmount={asNumber(editableRow.propertyTaxes)}
+          />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "grossSiteArea" && (
+        <div className="row__details">
+          <GrossSiteArea
+            propertyId={row.id}
+            squareFeet={asNumber(editableRow.grossSiteArea)}
+          />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "grossBuildingArea" && (
+        <div className="row__details">
+          <GrossBuildingArea
+            propertyId={row.id}
+            gba={asNumber(editableRow.grossBuildingArea)}
+          />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "units" && (
+        <div className="row__details">
+          <Units
+            propertyId={row.id}
+            totalUnits={asNumber(editableRow.units)}
+          />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "purchasePrice" && (
+        <div className="row__details">
+          <PurchasePrice
+            propertyId={row.id}
+            totalPrice={asNumber(editableRow.purchasePrice)}
+          />
+        </div>
+      )}
+
       {showDetails && activeColumn === "incomeStatement" && (
         <div className="row__details">
           <IncomeStatement
@@ -296,6 +354,12 @@ function Row({
             units={rowDataForIS.units}
             baselineData={editableRow.baselineSnapshot}
           />
+        </div>
+      )}
+
+      {showDetails && activeColumn === "financing" && (
+        <div className="row__details">
+          <Financing propertyId={row.id} />
         </div>
       )}
     </>

@@ -22,6 +22,7 @@
   --col-drag: 32px;
   --col-label: 1fr;
   --col-value: 120px;
+  --col-value-both: 110px;
   --col-actions: 160px;
 }
 
@@ -57,8 +58,9 @@
   grid-template-columns:
     var(--col-drag)
     var(--col-label)
-    repeat(8, var(--col-value))
+    repeat(8, var(--col-value-both))
     var(--col-actions);
+  column-gap: 8px;
 }
 
 /* ==========================================================
@@ -191,6 +193,12 @@
   color: #6b7280;
 }
 
+/* Compact inputs for "both" mode */
+.sec.mode-both .leaf-editor input {
+  font-size: 0.75rem;
+  padding: 4px 6px;
+}
+
 /* ==========================================================
    Buttons
    ========================================================== */
@@ -274,61 +282,71 @@
   display: grid;
   align-items: center;
   background: #f9fafb;
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid #d1d5db;
   font-weight: 600;
   color: #111827;
-  padding: 10px 12px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: inset 0 1px 0 #e5e7eb;
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
+  padding: 12px 10px;
+  column-gap: 120px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
 }
 
-.sec.mode-both .sec__totalRow {
+/* Use same grid template as regular rows based on mode */
+.sec.mode-monthly .sec__totalRow {
   grid-template-columns:
     var(--col-drag)
     var(--col-label)
-    repeat(8, var(--col-value))
+    repeat(4, var(--col-value))
+    var(--col-actions);
+}
+
+.sec.mode-annual .sec__totalRow {
+  grid-template-columns:
+    var(--col-drag)
+    var(--col-label)
+    repeat(4, var(--col-value))
     var(--col-actions);
 }
 
 .sec__totalRow .sec__labelText {
-  font-size: 0.9rem;
-  color: #1f2937;
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+  font-weight: 700;
+}
+
+.sec__totalRow .sec__labelText--total {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
 }
 
 .sec__totalRow .total-cell {
   background: #ffffff;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 2px solid #d1d5db;
   text-align: right;
-  padding: 6px 8px;
-  font-weight: 600;
+  padding: 8px 10px;
+  font-weight: 700;
   color: #111827;
   font-size: 0.9rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .total-cell.negative {
-  color: #b91c1c;
+  color: #dc2626;
   font-weight: 700;
 }
 
-.sec__totalRow .total-cell:first-child {
-  border-left: 2px solid #2563eb;
-}
-
-.sec__totalRow .total-cell:last-child {
-  color: #1e3a8a;
-  font-weight: 700;
-}
-
-.total-cell.negative {
-  color: #b91c1c;
-  font-weight: 600;
+/* Compact total cells for "both" mode */
+.sec.mode-both .sec__totalRow .total-cell {
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  min-height: 32px;
 }
 
 /* ==========================================================
@@ -370,8 +388,9 @@
     grid-template-columns:
       24px
       1fr
-      repeat(4, var(--col-value))
+      repeat(4, var(--col-value-both))
       var(--col-actions);
+    column-gap: 6px;
   }
 
   .sec__actions {

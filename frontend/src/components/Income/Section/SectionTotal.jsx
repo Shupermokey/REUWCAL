@@ -76,18 +76,23 @@ export default function SectionTotal({ data, title }) {
 
   return (
     <div className="sec__totalRow">
-      <div className="sec__rowGrid">
-        <div className="sec__firstCell" value={title}/>
-        <div className="sec__label">
-          <span className="sec__labelText">
-            Total {title ?? "Section"}
-          </span>
-        </div>
-        <div className={`sec__values mode-${displayMode}`}>
-          {renderValues()}
-        </div>
-        <div className="sec__actions" />
+      {/* Drag handle placeholder */}
+      <div className="sec__firstCell" />
+
+      {/* Label */}
+      <div className="sec__label">
+        <span className="sec__labelText sec__labelText--total">
+          Total {title ?? "Section"}
+        </span>
       </div>
+
+      {/* Values - using display: contents wrapper */}
+      <div className="sec__values">
+        {renderValues()}
+      </div>
+
+      {/* Actions placeholder */}
+      <div className="sec__actions" />
     </div>
   );
 }

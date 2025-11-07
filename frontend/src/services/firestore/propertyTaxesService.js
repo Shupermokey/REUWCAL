@@ -1,20 +1,37 @@
 import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-
-const path = (uid, pid) =>
-  doc(db, "users", uid, "properties", pid, "propertyTaxes", "current");
+import { defaultPropertyTaxes } from "@/utils/propertyTaxes/propertyTaxesDefaults";
 
 /**
- * Get the property taxes document for a given property.
+ * Get property taxes data for a specific property
  */
-export const getPropertyTaxes = async (uid, pid) => {
-  const snap = await getDoc(path(uid, pid));
-  return snap.exists() ? snap.data() : null;
-};
+export async function getPropertyTaxes(userId, propertyId) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "propertyTaxes");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      // Return default structure if doesn't exist
+      return defaultPropertyTaxes();
+    }
+  } catch (error) {
+    console.error("Error getting property taxes:", error);
+    throw error;
+  }
+}
 
 /**
- * Save or update the property taxes document.
+ * Save property taxes data
  */
-export const savePropertyTaxes = async (uid, pid, data) => {
-  await setDoc(path(uid, pid), data, { merge: true });
-};
+export async function savePropertyTaxes(userId, propertyId, data) {
+  try {
+    const docRef = doc(db, "users", userId, "properties", propertyId, "details", "propertyTaxes");
+    await setDoc(docRef, data, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error saving property taxes:", error);
+    throw error;
+  }
+}

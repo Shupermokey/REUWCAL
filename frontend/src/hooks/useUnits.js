@@ -1,14 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  getPropertyTaxes,
-  savePropertyTaxes,
-} from "@/services/firestore/propertyTaxesService";
-import { defaultPropertyTaxes } from "@/utils/propertyTaxes/propertyTaxesDefaults";
+import { getUnits, saveUnits } from "@/services/firestore/unitsService";
+import { defaultUnits } from "@/utils/units/unitsDefaults";
 
 /**
- * Hook to manage property taxes data
+ * Hook to manage units data
  */
-export function usePropertyTaxes(userId, propertyId) {
+export function useUnits(userId, propertyId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,17 +22,17 @@ export function usePropertyTaxes(userId, propertyId) {
     async function loadData() {
       try {
         setLoading(true);
-        const propertyTaxesData = await getPropertyTaxes(userId, propertyId);
+        const unitsData = await getUnits(userId, propertyId);
 
         if (isMounted) {
-          setData(propertyTaxesData || defaultPropertyTaxes());
+          setData(unitsData || defaultUnits());
           setError(null);
         }
       } catch (err) {
-        console.error("Error loading property taxes:", err);
+        console.error("Error loading units:", err);
         if (isMounted) {
           setError(err);
-          setData(defaultPropertyTaxes());
+          setData(defaultUnits());
         }
       } finally {
         if (isMounted) {
@@ -58,10 +55,10 @@ export function usePropertyTaxes(userId, propertyId) {
     }
 
     try {
-      await savePropertyTaxes(userId, propertyId, data);
+      await saveUnits(userId, propertyId, data);
       return true;
     } catch (err) {
-      console.error("Error saving property taxes:", err);
+      console.error("Error saving units:", err);
       throw err;
     }
   }, [userId, propertyId, data]);
