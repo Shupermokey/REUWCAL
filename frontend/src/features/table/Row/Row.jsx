@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/app/providers/AuthProvider";
 import {
   normalizeRow,
@@ -39,6 +39,7 @@ function Row({
   const [invalidFields, setInvalidFields] = useState([]);
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const detailsRef = useRef(null);
 
   /* ---------------------------- Derived utilities ---------------------------- */
   const RENT_KEYS = useMemo(
@@ -121,8 +122,9 @@ function Row({
             value={catValue}
             onChange={(e) => applyBaseline(e.target.value)}
             onClick={(e) => e.stopPropagation()}
+            required
           >
-            <option value="">Select a baseline</option>
+            <option value="">Select a baseline *</option>
             {baselines.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name || b.id}
@@ -150,6 +152,8 @@ function Row({
               value={unwrapValue(editableRow[key]) || ""}
               onChange={(e) => handleInputChange(key, e)}
               onClick={(e) => e.stopPropagation()}
+              placeholder={readOnly ? "" : "Double-click to edit *"}
+              required
             />
           </div>
         );
@@ -163,6 +167,8 @@ function Row({
           value={currentValue}
           onChange={(e) => handleInputChange(key, e)}
           onClick={(e) => e.stopPropagation()}
+          placeholder={`Enter ${columnConfig[key]?.label || key} *`}
+          required
         />
       );
     },
@@ -206,7 +212,10 @@ function Row({
     );
     setInvalidFields(invalids);
     if (!ok) {
-      alert("Please fix highlighted fields.");
+      const fieldNames = invalids
+        .map(key => columnConfig[key]?.label || key)
+        .join(", ");
+      alert(`All fields are required. Please fill out: ${fieldNames}`);
       return;
     }
     onSave(editableRow);
@@ -223,6 +232,32 @@ function Row({
       setShowDetails(false);
     }
   }, [onCancel, row]);
+
+  const handleCloseDetails = useCallback(() => {
+    setShowDetails(false);
+    setActiveColumn(null);
+  }, []);
+
+  /* ------------------------ Click outside to close details ----------------------- */
+  useEffect(() => {
+    if (!showDetails) return;
+
+    const handleClickOutside = (event) => {
+      if (detailsRef.current && !detailsRef.current.contains(event.target)) {
+        handleCloseDetails();
+      }
+    };
+
+    // Add listener on next tick to avoid closing immediately
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDetails, handleCloseDetails]);
 
   /* ------------------------------- Render ------------------------------- */
   return (
@@ -296,13 +331,19 @@ function Row({
       </div>
 
       {showDetails && activeColumn === "propertyAddress" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <PropertyAddress propertyId={row.id} />
         </div>
       )}
 
       {showDetails && activeColumn === "propertyTaxes" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <PropertyTaxes
             propertyId={row.id}
             currentTaxAmount={asNumber(editableRow.propertyTaxes)}
@@ -311,7 +352,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "grossSiteArea" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <GrossSiteArea
             propertyId={row.id}
             squareFeet={asNumber(editableRow.grossSiteArea)}
@@ -320,7 +364,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "grossBuildingArea" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <GrossBuildingArea
             propertyId={row.id}
             gba={asNumber(editableRow.grossBuildingArea)}
@@ -329,7 +376,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "units" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <Units
             propertyId={row.id}
             totalUnits={asNumber(editableRow.units)}
@@ -338,7 +388,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "purchasePrice" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <PurchasePrice
             propertyId={row.id}
             totalPrice={asNumber(editableRow.purchasePrice)}
@@ -347,7 +400,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "incomeStatement" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <IncomeStatement
             propertyId={row.id}
             grossBuildingAreaSqFt={rowDataForIS.grossBuildingAreaSqFt}
@@ -358,7 +414,10 @@ function Row({
       )}
 
       {showDetails && activeColumn === "financing" && (
-        <div className="row__details">
+        <div className="row__details" ref={detailsRef}>
+          <button className="row__details-close" onClick={handleCloseDetails} aria-label="Close">
+            ✖
+          </button>
           <Financing propertyId={row.id} />
         </div>
       )}

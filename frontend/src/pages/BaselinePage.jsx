@@ -5,11 +5,11 @@ import {
   subscribeToBaselines,
 } from "../services/firestoreService";
 import { useAuth } from "../app/providers/AuthProvider";
-import Sidebar from "../components/Sidebar";
 import BaselineSection from "../features/baseline/BaselineAssumptions/BaselineSection";
 
 //CSS
 import "@/styles/components/Baseline.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
 
 
 const defaultRows = [

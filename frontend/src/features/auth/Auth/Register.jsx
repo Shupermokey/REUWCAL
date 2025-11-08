@@ -13,7 +13,6 @@ import { handleSignInWithGoogle } from "../../../services/authService";
 import { useAuth } from "../../../app/providers/AuthProvider";
 
 const Register = () => {
-  const { setSubscription } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -103,10 +102,7 @@ const Register = () => {
         <select
           id="tier"
           value={tier}
-          onChange={(e) => {
-            setTier(e.target.value);
-            setSubscription?.(e.target.value); // keep your local context behavior
-          }}
+          onChange={(e) => setTier(e.target.value)}
         >
           <option value="free">Free</option>
           <option value="marketing">Marketing ($10/mo)</option>

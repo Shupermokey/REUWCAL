@@ -6,6 +6,7 @@ import React from "react";
 
 const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 const RegisterPage = React.lazy(() => import("@/pages/RegisterPage"));
+const MagicLinkPage = React.lazy(() => import("@/pages/MagicLinkPage"));
 const VerifyEmail = React.lazy(() => import("@/pages/VerifyEmail"));
 const Home = React.lazy(() => import("@/pages/Home"));
 const DashboardPage = React.lazy(() => import("@/pages/DashboardPage"));
@@ -20,6 +21,7 @@ export const routesConfig = [
   { path: "/", element: <LoginPage />, isPublic: true },
   { path: "/login", element: <LoginPage />, isPublic: true },
   { path: "/register", element: <RegisterPage />, isPublic: true },
+  { path: "/magic-link", element: <MagicLinkPage />, isPublic: true },
   { path: "/pricing", element: <PricingPage />, isPublic: true },
 
   // Authenticated (Free tier)

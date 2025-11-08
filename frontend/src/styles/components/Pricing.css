@@ -1,0 +1,207 @@
+/* ==========================================================
+   PRICING — subscription plans display
+   ========================================================== */
+
+/* Pricing section wrapper */
+.pricing {
+  width: 100%;
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* Pricing header */
+.pricing h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.pricing > p {
+  font-size: 1.05rem;
+  color: #6b7280;
+  margin-bottom: 48px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* Pricing grid */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Pricing card */
+.pricing-card {
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: left;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #6366f1;
+}
+
+/* Plan name */
+.pricing-card h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+/* Plan description */
+.pricing-card .muted {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  min-height: 42px;
+}
+
+/* Price display */
+.pricing-card .price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #6366f1;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Features list */
+.pricing-card .features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px 0;
+  flex: 1;
+}
+
+.pricing-card .features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.pricing-card .features li::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Buttons */
+.pricing-card .btn {
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-align: center;
+}
+
+.pricing-card .btn.primary {
+  background: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+}
+
+.pricing-card .btn.primary:hover:not(:disabled) {
+  background: #4f46e5;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+}
+
+.pricing-card .btn.primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pricing-card .btn.secondary {
+  background: #ffffff;
+  color: #6366f1;
+  border: 1.5px solid #6366f1;
+}
+
+.pricing-card .btn.secondary:hover {
+  background: #f0f1ff;
+  border-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.pricing-card .btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Confirmation message */
+.confirmation-message {
+  margin-top: 32px;
+  padding: 16px 24px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  color: #0369a1;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.confirmation-message b {
+  font-weight: 600;
+  color: #075985;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pricing {
+    margin: 40px auto;
+    padding: 32px 16px;
+  }
+
+  .pricing h1 {
+    font-size: 1.65rem;
+  }
+
+  .pricing > p {
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pricing-card {
+    padding: 28px 20px;
+  }
+
+  .pricing-card .price {
+    font-size: 1.75rem;
+  }
+}

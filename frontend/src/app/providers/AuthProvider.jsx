@@ -2,29 +2,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../services/firebaseConfig";
+import { saveBaseline } from "@/services/firestore/baselinesService";
+import { DEFAULT_BASELINE_ID, getDefaultBaseline } from "@/utils/baseline/createDefaultBaseline";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [subscription, setSubscription] = useState(null); // priceId
-  const [tier, setTier] = useState("free");               // readable
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState("");
-
-  const priceIdToTier = {
-    [import.meta.env.VITE_PRICE_FREE]: "free",
-    [import.meta.env.VITE_PRICE_MARKETING]: "marketing",
-    [import.meta.env.VITE_PRICE_DEVELOPER]: "developer",
-    [import.meta.env.VITE_PRICE_SYNDICATOR]: "syndicator",
-  };
-
-  const tierToPriceId = {
-    free: import.meta.env.VITE_PRICE_FREE,
-    marketing: import.meta.env.VITE_PRICE_MARKETING,
-    developer: import.meta.env.VITE_PRICE_DEVELOPER,
-    syndicator: import.meta.env.VITE_PRICE_SYNDICATOR,
-  };
   
 
   useEffect(() => {
@@ -36,20 +22,21 @@ export const AuthProvider = ({ children }) => {
         setToken(idToken);
         setUser(updatedUser);
 
-        // Fetch Firestore subscription (priceId)
-        const userRef = doc(db, "users", updatedUser.uid);
-        const userSnap = await getDoc(userRef);
+        // Create default baseline for new users
+        try {
+          const baselineRef = doc(db, "users", updatedUser.uid, "baselines", DEFAULT_BASELINE_ID);
+          const baselineSnap = await getDoc(baselineRef);
 
-        const priceId = userSnap.exists() ? userSnap.data().priceId : null;
-        setSubscription(priceId);
-
-        const resolvedTier = priceIdToTier[priceId] || "free";
-        setTier(resolvedTier);
+          if (!baselineSnap.exists()) {
+            // User doesn't have a default baseline, create one
+            await saveBaseline(updatedUser.uid, DEFAULT_BASELINE_ID, getDefaultBaseline());
+          }
+        } catch (error) {
+          console.error("Error creating default baseline:", error);
+        }
       } else {
         setUser(null);
         setToken(null);
-        setSubscription(null);
-        setTier("free");
       }
       setLoading(false);
     });
@@ -61,8 +48,6 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
     setUser(null);
     setToken(null);
-    setSubscription(null);
-    setTier("free");
     window.location.href = "/";
   };
 
@@ -72,9 +57,6 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         token,
-        subscription, // Stripe price ID
-        tier,         // "free", "developer", etc.
-        setSubscription,
         setToken,
         logout,
       }}

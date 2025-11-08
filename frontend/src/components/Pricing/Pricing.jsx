@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useSubscription } from "../../app/providers/SubscriptionProvider"; // must exist from Step #2
 import { openBillingPortal, PRICE_IDS, startCheckout } from "../../utils/stripeService";
+import "@/styles/components/Pricing.css";
 
 
 const PLANS = [

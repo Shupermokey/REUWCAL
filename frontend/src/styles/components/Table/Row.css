@@ -112,6 +112,7 @@
 
 /* === Details Panel (below row) === */
 .row__details {
+  position: relative;
   display: flex;
   width: 100%;
   border-top: 1px solid var(--color-border);
@@ -132,6 +133,37 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Close Button for Details Panel */
+.row__details-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.row__details-close:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #dc2626;
+  transform: scale(1.1);
+}
+
+.row__details-close:active {
+  transform: scale(0.95);
 }
 
 /* === Responsive === */

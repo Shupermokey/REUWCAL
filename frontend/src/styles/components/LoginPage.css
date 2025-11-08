@@ -1,63 +1,347 @@
 /* ==========================================================
    LOGIN PAGE — clean minimal auth form
    ========================================================== */
-.login-page {
+
+/* Main container for the entire login page */
+.login-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+}
+
+/* Top section containing logo and login form */
+.login-page-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Logo styling */
+.logo {
+  width: 280px;
+  max-width: 90%;
+  height: auto;
+  margin-bottom: 32px;
+  object-fit: contain;
+}
+
+/* Login form container */
+.login-form {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+/* Form inputs */
+.email-login-input,
+.pass-login-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.email-login-input:focus,
+.pass-login-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.email-login-input::placeholder,
+.pass-login-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Login button */
+.login-btn {
+  width: 100%;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.login-btn:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+/* Register button */
+.register-btn {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.register-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.register-btn:active {
+  transform: scale(0.98);
+}
+
+/* Error message */
+.login-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Back to login button (for magic link page) */
+.back-to-login-btn {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-to-login-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Divider between login methods */
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  position: relative;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+/* Google Sign-In Button */
+.google-login-btn {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: var(--color-bg);
+  gap: 12px;
+  background: #ffffff;
+  color: #3c4043;
+  border: 1.5px solid #dadce0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.login-card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--sp-6);
-  width: 100%;
-  max-width: 380px;
+.google-login-btn:hover {
+  background: #f8f9fa;
+  border-color: #c6c6c6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.login-card h1 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: var(--sp-5);
+.google-login-btn:active {
+  background: #f1f3f4;
+  transform: scale(0.98);
+}
+
+.google-login-btn svg {
+  flex-shrink: 0;
+}
+
+/* Link Button */
+.link-btn {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.link-btn:hover {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
+/* Login footer (magic link section) */
+.login-footer {
+  margin-top: 16px;
   text-align: center;
 }
 
-.login-card .form-group {
-  margin-bottom: var(--sp-4);
+/* Magic Link Success Message */
+.magic-link-success {
+  text-align: center;
+  padding: 32px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.login-card button {
+.magic-link-success h3 {
+  color: #065f46;
+  margin: 0 0 12px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.magic-link-success p {
+  color: #374151;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.magic-link-success .muted {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Magic Link Form */
+.magic-link-form {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 32px;
   width: 100%;
-  background: var(--color-accent);
-  color: #fff;
+  max-width: 420px;
+}
+
+.magic-link-form h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.magic-link-form .muted {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.magic-link-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.magic-link-form input[type="email"] {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.magic-link-form input[type="email"]:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.magic-link-form input[type="email"]::placeholder {
+  color: #9ca3af;
+}
+
+.magic-link-form button[type="submit"] {
+  width: 100%;
+  background: #6366f1;
+  color: #ffffff;
   border: none;
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.login-card button:hover {
-  background: var(--color-accent-hover);
+.magic-link-form button[type="submit"]:hover:not(:disabled) {
+  background: #4f46e5;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
 }
 
-.login-footer {
-  text-align: center;
-  margin-top: var(--sp-4);
-  font-size: 0.9rem;
-  color: var(--color-text-weak);
+.magic-link-form button[type="submit"]:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-.login-footer a {
-  color: var(--color-accent);
-  text-decoration: none;
+.magic-link-form button[type="submit"]:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-.login-footer a:hover {
-  text-decoration: underline;
+.magic-link-form .error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: -8px;
 }

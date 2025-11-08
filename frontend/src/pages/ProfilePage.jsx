@@ -3,15 +3,14 @@ import {
   getUserMetadata,
   subscribeToProperties,
 } from "../services/firestoreService";
-import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
-import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSidebar";
 
 import { useAuth } from "../app/providers/AuthProvider";
 
 //CSS
 import "@/styles/pages/ProfilePage.css";
 import "@/styles/utils/buttons.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
 
 
 export default function ProfilePage() {

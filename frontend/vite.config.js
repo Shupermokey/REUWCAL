@@ -21,4 +21,19 @@ export default defineConfig({
       "@utils": path.resolve(__dirname, "src/utils"),
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/tests/setup.js',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/tests/',
+        '**/*.test.{js,jsx,ts,tsx}',
+        '**/__tests__/**',
+      ],
+    },
+  },
 });

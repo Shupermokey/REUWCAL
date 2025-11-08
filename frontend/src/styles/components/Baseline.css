@@ -1,52 +1,372 @@
 /* ==========================================================
    BASELINE ASSUMPTIONS — baseline cards and layout
    ========================================================== */
-.baseline-container {
+
+.baseline-wrapper {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.baseline-wrapper header {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-4);
-  padding: var(--sp-4);
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.baseline-wrapper header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.baseline-wrapper header button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.baseline-wrapper header button:hover {
+  background: #1d4ed8;
+}
+
+.baseline-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+  margin-bottom: 32px;
 }
 
 .baseline-card {
-  flex: 1 1 220px;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: var(--sp-4);
+  position: relative;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
 }
 
 .baseline-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.baseline-card h3 {
-  font-size: 1rem;
-  margin-bottom: var(--sp-3);
+.baseline-card span {
+  font-size: 1.1rem;
   font-weight: 600;
+  word-wrap: break-word;
+  line-height: 1.3;
 }
 
-.baseline-card p {
+.baseline-card button {
+  position: absolute;
+  top: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
   font-size: 0.9rem;
-  color: var(--color-text-dim);
-  margin: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.baseline-card button:first-of-type {
+  right: 50px;
+}
+
+.baseline-card button:nth-of-type(2) {
+  right: 10px;
+}
+
+.baseline-card button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
 }
 
 .add-baseline-btn {
-  background: var(--color-accent);
+  background: #2563eb;
   color: #fff;
   border: none;
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
+  border-radius: 8px;
+  padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .add-baseline-btn:hover {
-  background: var(--color-accent-hover);
+  background: #1d4ed8;
+}
+
+/* ==========================================================
+   BASELINE TABLE — editing section
+   ========================================================== */
+
+.baseline-table-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin-top: 32px;
+}
+
+.baseline-table-container h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Content wrapper with table and controls */
+.baseline-content-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.baseline-table-section {
+  flex: 1;
+  min-width: 0; /* Allow flexbox to shrink */
+}
+
+/* Sticky controls panel */
+.baseline-controls-panel {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.controls-sticky {
+  position: sticky;
+  top: 20px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.controls-sticky h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.controls-sticky h5 {
+  margin: 0 0 16px 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.toggle-unit-btn {
+  width: 100%;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.toggle-unit-btn:hover {
+  background: #4f46e5;
+}
+
+.controls-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 16px 0;
+}
+
+.baseline-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.baseline-table-container thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.baseline-table-container thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.baseline-table-container tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.baseline-table-container tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Section headers */
+.baseline-table-container tbody tr td[colspan="4"] {
+  background: #eff6ff;
+  border-top: 2px solid #bfdbfe;
+  border-bottom: 2px solid #bfdbfe;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1e40af;
+  padding: 10px 16px;
+}
+
+/* Section headers - Total row */
+.baseline-table-container tbody tr.total-row td {
+  background: #f0fdf4;
+  border-top: 2px solid #86efac;
+  font-weight: 700;
+  color: #065f46;
+}
+
+/* Input styles */
+.baseline-table-container td {
+  position: relative;
+}
+
+.baseline-table-container input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.baseline-table-container input[type="number"] {
+  width: calc(100% - 30px);
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.baseline-table-container td span {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.baseline-table-container input[type="text"]:focus,
+.baseline-table-container input[type="number"]:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.baseline-table-container input[type="text"]:disabled,
+.baseline-table-container input[type="number"]:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Action buttons */
+.baseline-table-container td button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+}
+
+.baseline-table-container td button:hover {
+  transform: scale(1.2);
+}
+
+/* Button group in controls */
+.controls-sticky .button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controls-sticky .button-group button {
+  width: 100%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.controls-sticky .button-group button:hover {
+  background: #1d4ed8;
+  transform: translateX(2px);
+}
+
+.controls-sticky .button-group button:nth-child(1) {
+  background: #10b981;
+}
+
+.controls-sticky .button-group button:nth-child(1):hover {
+  background: #059669;
+}
+
+.controls-sticky .button-group button:nth-child(2) {
+  background: #ef4444;
+}
+
+.controls-sticky .button-group button:nth-child(2):hover {
+  background: #dc2626;
+}
+
+.controls-sticky .button-group button:nth-child(3),
+.controls-sticky .button-group button:nth-child(4) {
+  background: #8b5cf6;
+}
+
+.controls-sticky .button-group button:nth-child(3):hover,
+.controls-sticky .button-group button:nth-child(4):hover {
+  background: #7c3aed;
+}
+
+.controls-sticky .button-group button:last-child {
+  background: #6b7280;
+}
+
+.controls-sticky .button-group button:last-child:hover {
+  background: #4b5563;
 }
