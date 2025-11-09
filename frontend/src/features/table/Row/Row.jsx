@@ -15,6 +15,7 @@ import GrossBuildingArea from "@/components/GrossBuildingArea/GrossBuildingArea"
 import Units from "@/components/Units/Units";
 import PurchasePrice from "@/components/PurchasePrice/PurchasePrice";
 import Financing from "@/components/Financing/Financing";
+import FileSystemManager from "@/components/FileSystem/FileSystemManager";
 import columnConfig, { columnOrder } from "@/constants/columnConfig";
 
 // ✅ Scoped CSS
@@ -30,7 +31,6 @@ function Row({
   onDelete,
   onSelect,
   isSelected,
-  onOpenFiles,
 }) {
   const { user } = useAuth();
 
@@ -39,6 +39,7 @@ function Row({
   const [invalidFields, setInvalidFields] = useState([]);
   const [activeColumn, setActiveColumn] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showFileManager, setShowFileManager] = useState(false);
   const detailsRef = useRef(null);
 
   /* ---------------------------- Derived utilities ---------------------------- */
@@ -314,7 +315,10 @@ function Row({
                     </button>
                     <button
                       className="row__btn row__btn--files"
-                      onClick={() => onOpenFiles(row.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowFileManager(true);
+                      }}
                     >
                       📁
                     </button>
@@ -420,6 +424,14 @@ function Row({
           </button>
           <Financing propertyId={row.id} />
         </div>
+      )}
+
+      {/* File System Manager */}
+      {showFileManager && (
+        <FileSystemManager
+          propertyId={row.id}
+          onClose={() => setShowFileManager(false)}
+        />
       )}
     </>
   );
