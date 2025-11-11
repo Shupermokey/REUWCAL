@@ -11,6 +11,18 @@
   font-family: "Segoe UI", system-ui, sans-serif;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   scroll-behavior: smooth;
+  transition: all 0.3s ease;
+}
+
+
+/* Collapsed Section */
+.sec--collapsed {
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.sec--collapsed .sec__header {
+  border-bottom: none;
 }
 
 
@@ -68,21 +80,22 @@
    ========================================================== */
 
 .sec__header {
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #6b7280;
-  position: sticky;
-  top: 0;
+  background: #d9dbdd; /* Medium grey to match Excel header */
+  border-bottom: 2px solid #a9abaf;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111827;
+  position: relative;
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .sec__headerGrid {
   display: grid;
   align-items: center;
   column-gap: 120px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -96,14 +109,20 @@
   justify-content: flex-end;
   align-items: center;
   text-align: right;
-  font-weight: 500;
-  color: #374151;
-  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.9rem;
   padding-right: 4px;
 }
 
 .sec__headerGrid > .sec__label {
   text-align: left;
+}
+
+.sec__labelText {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
 }
 
 /* ==========================================================
@@ -123,22 +142,23 @@
 
 .sec__rowGrid {
   padding: 6px 10px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8f9fa; /* Parent items - light grey/white */
 }
 
 .sec__rowGrid:hover {
-  background: #f8fafc;
+  background: #f0f1f3;
 }
 
-/* Sub-row indentation */
+/* Sub-row indentation - all white/very light */
 .sec__subRowGrid {
   padding: 4px 10px 4px 38px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fcfcfd;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff; /* Children - white */
 }
 
 .sec__subRowGrid:hover {
-  background: #f9fafc;
+  background: #f8f9fa;
 }
 
 .sec__firstCell {
@@ -354,7 +374,6 @@
    ========================================================== */
 
 .sec__labelText {
-  font-weight: 500;
   color: #111827;
 }
 

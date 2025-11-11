@@ -11,6 +11,18 @@
  */
 
 /**
+ * Check if an item is the Vacancy/Collections Loss item
+ * @param {object} currentItem - The item to check
+ * @returns {boolean} - True if this is the vacancy item
+ */
+function isVacancyItem(currentItem) {
+  // Check for common vacancy identifiers
+  const id = currentItem.id?.toLowerCase() || "";
+  const label = currentItem.label?.toLowerCase() || "";
+  return id.includes("vacancy") || label.includes("vacancy");
+}
+
+/**
  * Calculate all derived values when a field is edited
  * @param {string} editedField - The field that was just edited
  * @param {number} newValue - The new value for that field
@@ -21,8 +33,16 @@
  * @returns {object} - Object with all updated field values
  */
 export function calculateValues(editedField, newValue, currentItem, gba, units, forceNegative = false) {
-  // Force negative if needed
-  if (forceNegative && newValue > 0) {
+  const isVacancy = isVacancyItem(currentItem);
+
+  // For Rate fields: convert to percentage (0-100) and ensure non-negative
+  const isRateField = editedField.includes("rate");
+  if (isRateField && newValue < 0) {
+    newValue = Math.abs(newValue); // Rate cannot be negative
+  }
+
+  // Force negative if needed (but not for rate fields on vacancy items)
+  if (forceNegative && newValue > 0 && !isRateField) {
     newValue = -newValue;
   }
 
@@ -38,11 +58,27 @@ export function calculateValues(editedField, newValue, currentItem, gba, units, 
   // Helper to round to 2 decimals
   const round = (n) => Math.round(n * 100) / 100;
 
+  // Helper to round to 4 decimals (for rates)
+  const roundRate = (n) => Math.round(n * 10000) / 10000;
+
+  // SPECIAL CASE: Vacancy item - Rate is editable and drives Gross calculation
+  if (isVacancy && baseField === "rate") {
+    // Rate changed on vacancy - need to recalculate Gross based on parent GSR's Gross
+    // For now, we just sync the rate between monthly and annual
+    // The actual Gross calculation will happen in the component level
+    if (isMonthly) {
+      updates.rateAnnual = roundRate(newValue); // Rate is same for monthly/annual
+    } else if (isAnnual) {
+      updates.rateMonthly = roundRate(newValue); // Rate is same for monthly/annual
+    }
+    return updates; // Exit early - Gross will be calculated by component
+  }
+
   // CASE 1: User edited a Monthly field
   if (isMonthly) {
     // Calculate corresponding Annual value
     const annualField = `${baseField}Annual`;
-    updates[annualField] = round(newValue * 12);
+    updates[annualField] = baseField === "rate" ? roundRate(newValue) : round(newValue * 12);
 
     // If Gross was edited, recalculate PSF and PUnit
     if (baseField === "gross") {
@@ -81,7 +117,7 @@ export function calculateValues(editedField, newValue, currentItem, gba, units, 
   if (isAnnual) {
     // Calculate corresponding Monthly value
     const monthlyField = `${baseField}Monthly`;
-    updates[monthlyField] = round(newValue / 12);
+    updates[monthlyField] = baseField === "rate" ? roundRate(newValue) : round(newValue / 12);
 
     // If Gross was edited, recalculate PSF and PUnit
     if (baseField === "gross") {
@@ -116,18 +152,37 @@ export function calculateValues(editedField, newValue, currentItem, gba, units, 
     }
   }
 
-  // Rate doesn't auto-calculate anything else (it's standalone)
+  // Rate doesn't auto-calculate anything else (it's standalone for non-vacancy items)
 
   return updates;
 }
 
 /**
+ * Helper: Check if an item is the Vacancy/Collections Loss item (exported for use in components)
+ */
+export { isVacancyItem };
+
+/**
  * Recursively sum all children values
  * Used for parent items that should show the sum of their children
+ * Excludes subtotal rows from the sum
  */
 export function sumChildrenValues(item) {
   if (!item.childOrder || item.childOrder.length === 0) {
-    // Leaf node - return its own values
+    // Leaf node - return its own values (unless it's a subtotal)
+    if (item.isSubtotal) {
+      // If this is a subtotal, return zeros (it shouldn't contribute to parent sums)
+      return {
+        grossMonthly: 0,
+        grossAnnual: 0,
+        rateMonthly: 0,
+        rateAnnual: 0,
+        psfMonthly: 0,
+        psfAnnual: 0,
+        punitMonthly: 0,
+        punitAnnual: 0,
+      };
+    }
     return {
       grossMonthly: item.grossMonthly || 0,
       grossAnnual: item.grossAnnual || 0,
@@ -140,7 +195,7 @@ export function sumChildrenValues(item) {
     };
   }
 
-  // Has children - sum them up
+  // Has children - sum them up (excluding subtotals)
   const totals = {
     grossMonthly: 0,
     grossAnnual: 0,
@@ -154,7 +209,8 @@ export function sumChildrenValues(item) {
 
   item.childOrder.forEach((childId) => {
     const child = item.children[childId];
-    if (child) {
+    if (child && !child.isSubtotal) {
+      // Skip subtotal children in the sum
       const childTotals = sumChildrenValues(child);
       Object.keys(totals).forEach((key) => {
         totals[key] += childTotals[key];

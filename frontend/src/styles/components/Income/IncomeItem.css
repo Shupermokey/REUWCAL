@@ -28,3 +28,49 @@
   cursor: default;
   color: #1e3a8a;
 }
+
+/* Subtotal Row Styling - Dark grey with spacing below */
+.income-item--subtotal {
+  background: #c8cacc !important; /* Darker grey for subtotals like Excel */
+  border-top: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  margin-bottom: 8px; /* Space between subtotal and next row */
+}
+
+.income-item--subtotal:hover {
+  background: #bdbfc1 !important;
+}
+
+.income-item--subtotal .income-item__label-input {
+  font-weight: 700;
+  color: #111827;
+  font-style: normal;
+}
+
+.income-item--subtotal input[readonly] {
+  background: transparent;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Total Row Styling - Light grey like section title in Excel */
+.income-item--total {
+  background: #e8eaec !important; /* Light grey for totals */
+  border-top: 1px solid #d1d5db;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.income-item--total:hover {
+  background: #dfe1e3 !important;
+}
+
+.income-item--total .income-item__label-input {
+  font-weight: 700;
+  color: #111827;
+}
+
+.income-item--total input[readonly] {
+  background: transparent;
+  font-weight: 700;
+  color: #111827;
+}

@@ -14,6 +14,7 @@ import {
 // Special item IDs
 export const SPECIAL_IDS = {
   GROSS_SCHEDULED_RENT: "gsr",
+  VACANCY_COLLECTIONS_LOSS: "vacancy-collections-loss",
   NET_RENTAL_INCOME: "nri",
   TOTAL_INCOME: "total-income",
   TOTAL_OPERATING_EXPENSES: "total-opex",
@@ -45,6 +46,16 @@ export const ITEM_CONFIG = {
     allowClone: false,
     allowDelete: false,
     forceNegative: false,
+  },
+  [SPECIAL_IDS.VACANCY_COLLECTIONS_LOSS]: {
+    label: "Vacancy/Collections Loss",
+    pinned: true,
+    calculated: false,
+    required: true,
+    allowSub: true,
+    allowClone: false,
+    allowDelete: false,
+    forceNegative: true,
   },
   [SPECIAL_IDS.NET_RENTAL_INCOME]: {
     label: "Net Rental Income",
@@ -162,6 +173,8 @@ export function initializeSection(sectionKey) {
       INCOME_ORDER.forEach((label) => {
         const id = label === "Gross Scheduled Rent"
           ? SPECIAL_IDS.GROSS_SCHEDULED_RENT
+          : label === "Vacancy/Collections Loss"
+          ? SPECIAL_IDS.VACANCY_COLLECTIONS_LOSS
           : label === "Net Rental Income"
           ? SPECIAL_IDS.NET_RENTAL_INCOME
           : generateIdFromLabel(label);

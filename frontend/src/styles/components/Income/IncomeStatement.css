@@ -15,6 +15,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  position: relative;
 }
 
 .header-bar {
@@ -25,11 +26,151 @@
   flex: 1 1 auto;            /* fill remaining space */
   overflow-y: auto;          /* scroll vertically */
   overflow-x: auto;          /* scroll horizontally when needed */
-  padding: 16px;             /* padding all around */
+  padding: 0 16px 16px 16px; /* No top padding */
   scroll-behavior: smooth;
   box-sizing: border-box;
   width: 100%;
   background: #ffffff;
+  position: relative;
+}
+
+/* Sticky Header Bar */
+.income-statement-panel .income-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 -16px 12px -16px; /* Extend to full width, no top margin */
+  padding: 10px 16px; /* Compact padding */
+  border-radius: 0; /* Remove border radius when sticky */
+}
+
+/* Floating section header - appears below income header when scrolling */
+.floating-section-header {
+  position: sticky;
+  top: 60px; /* Below the income header with some gap */
+  z-index: 90;
+  background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
+  border-bottom: 2px solid #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  animation: slideDown 0.2s ease-out;
+  border-top: 1px solid #e5e7eb; /* Subtle top border for separation */
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Grid layout matching section headers */
+.floating-section-header__grid {
+  display: grid;
+  align-items: center;
+  column-gap: 120px;
+  padding: 12px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Match the section grid templates based on view mode */
+.income-statement-panel[data-mode="monthly"] .floating-section-header__grid {
+  grid-template-columns:
+    32px         /* drag/caret */
+    1fr          /* label */
+    repeat(4, 120px)  /* 4 value columns */
+    160px;       /* actions */
+}
+
+.income-statement-panel[data-mode="annual"] .floating-section-header__grid {
+  grid-template-columns:
+    32px
+    1fr
+    repeat(4, 120px)
+    160px;
+}
+
+.income-statement-panel[data-mode="both"] .floating-section-header__grid {
+  grid-template-columns:
+    32px
+    1fr
+    repeat(8, 110px)  /* 8 value columns for both */
+    160px;
+  column-gap: 8px;
+}
+
+.floating-section-header__firstCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floating-section-header__label {
+  font-size: 1rem;
+  font-weight: 800; /* Extra bold for sticky state */
+  letter-spacing: 0.3px;
+  color: #111827;
+  text-align: left;
+}
+
+.floating-section-header__values {
+  display: contents;
+}
+
+.floating-section-header__values .value-columns {
+  display: contents;
+}
+
+.floating-section-header__values .value-columns span {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: right;
+  font-weight: 700; /* Bold for sticky state */
+  color: #111827; /* Darker for emphasis */
+  font-size: 0.9rem;
+  padding-right: 4px;
+}
+
+.floating-section-header .sec__caret {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.floating-section-header__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+  min-width: 140px;
+  overflow: visible;
+}
+
+.floating-section-header__actions .add-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: #2563eb;
+  color: #fff;
+}
+
+.floating-section-header__actions .add-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
 /* Layout inside */

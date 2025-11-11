@@ -6,10 +6,15 @@ export function IncomeViewProvider({ children }) {
   // 'monthly' | 'annual' | 'both'
   const [displayMode, setDisplayMode] = useState('monthly');
 
+  // Rate decimal places: 0-4
+  const [rateDecimalPlaces, setRateDecimalPlaces] = useState(2);
+
   const value = useMemo(() => ({
     displayMode,
     setDisplayMode,
-  }), [displayMode]);
+    rateDecimalPlaces,
+    setRateDecimalPlaces,
+  }), [displayMode, rateDecimalPlaces]);
 
   return <IncomeViewCtx.Provider value={value}>{children}</IncomeViewCtx.Provider>;
 }

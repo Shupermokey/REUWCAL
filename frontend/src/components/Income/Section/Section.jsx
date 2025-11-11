@@ -19,6 +19,7 @@ import { useDialog } from "@/app/providers/DialogProvider.jsx";
 import {
   addItemToSection,
   addChildItem,
+  addChildrenWithSubtotal,
   deleteItem,
   deleteChildItem,
   cloneItem,
@@ -40,7 +41,7 @@ import "@styles/components/Income/Section.css";
 /* -------------------------------------------------------------------------- */
 /* 💼 Section – Renders a section with items                                  */
 /* -------------------------------------------------------------------------- */
-export default function Section({
+const Section = React.forwardRef(({
   title,
   sectionKey, // "Income", "OperatingExpenses", "CapitalExpenses"
   data = {},
@@ -48,8 +49,11 @@ export default function Section({
   grossBuildingAreaSqFt = 0,
   units = 0,
   baselineData = null,
-}) {
-  const { prompt, confirm } = useDialog();
+  isSticky = false,
+  isCollapsed = false,
+  onToggleCollapse = () => {},
+}, ref) => {
+  const { prompt, confirm, promptMultiple } = useDialog();
   const { displayMode: globalDisplayMode } = useIncomeView();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -106,14 +110,53 @@ export default function Section({
       parentLabel = current?.children?.[parentId]?.label || "Item";
     }
 
-    const label = await prompt({
-      title: "New sub-item",
-      message: `Parent: ${parentLabel}`,
-      placeholder: "e.g., Sub-item",
+    // Check if parent already has children
+    const parent = path.length === 0 ? items[parentId] : null;
+    const hasExistingChildren = parent && parent.childOrder && parent.childOrder.length > 0;
+
+    // Count non-subtotal children to determine if we're at the limit
+    const currentChildCount = hasExistingChildren
+      ? parent.childOrder.filter(id => !parent.children[id]?.isSubtotal).length
+      : 0;
+
+    // Always use multi-item prompt (allows adding multiple at once, up to 10 total)
+    const remainingSlots = 10 - currentChildCount;
+
+    if (remainingSlots <= 0) {
+      alert("Maximum of 10 sub-items reached.");
+      return;
+    }
+
+    const labels = await promptMultiple({
+      title: hasExistingChildren ? "Add More Sub-Items" : "Add Sub-Items",
+      message: `Adding to: ${parentLabel} (${currentChildCount}/10 items)`,
+      fields: hasExistingChildren
+        ? [{ label: "New Sub-Item", placeholder: "e.g., New Item" }]
+        : [
+            { label: "First Sub-Item", placeholder: "e.g., Item 1" },
+            { label: "Second Sub-Item", placeholder: "e.g., Item 2" },
+          ],
+      maxFields: remainingSlots,
     });
 
-    if (label) {
-      const updated = addChildItem(data, parentId, label, path);
+    if (!labels || labels.length === 0) return;
+
+    // If no existing children, need at least 1 item to create with subtotal
+    if (!hasExistingChildren && labels.length < 1) {
+      alert("Please add at least 1 sub-item.");
+      return;
+    }
+
+    if (!hasExistingChildren) {
+      // First time: create children with subtotal
+      const updated = addChildrenWithSubtotal(data, parentId, labels, path);
+      onUpdateSection(updated);
+    } else {
+      // Subsequent times: add items one by one (they'll be inserted before subtotal)
+      let updated = data;
+      labels.forEach(label => {
+        updated = addChildItem(updated, parentId, label, path);
+      });
       onUpdateSection(updated);
     }
   };
@@ -146,8 +189,24 @@ export default function Section({
     }
   };
 
-  const handleClone = (itemId) => {
-    const updated = cloneItem(data, itemId);
+  const handleClone = (itemId, path = [], numClones = 1) => {
+    // Validate clone count
+    if (!numClones || numClones < 1 || numClones > 10) {
+      return;
+    }
+
+    // Clone the item multiple times
+    let updated = data;
+    for (let i = 0; i < numClones; i++) {
+      if (path.length === 0) {
+        // Root item
+        updated = cloneItem(updated, itemId);
+      } else {
+        // Child item
+        updated = cloneChildItem(updated, itemId, path);
+      }
+    }
+
     onUpdateSection(updated);
   };
 
@@ -194,18 +253,30 @@ export default function Section({
       ? "mode-monthly"
       : "mode-annual";
 
+  // Use scroll-based collapse if provided, otherwise use local state
+  const effectivelyCollapsed = isCollapsed || collapsed;
+
   return (
-    <div className={`sec ${modeClass}`}>
+    <div
+      ref={ref}
+      className={`sec ${modeClass} ${isSticky ? 'sec--sticky' : ''} ${effectivelyCollapsed ? 'sec--collapsed' : ''}`}
+    >
       {hasHeader && (
         <div className="sec__header">
           <div className="sec__headerGrid">
             <div className="sec__firstCell">
               <button
                 className="sec__caret"
-                onClick={() => setCollapsed((c) => !c)}
-                title={collapsed ? "Expand" : "Collapse"}
+                onClick={() => {
+                  if (isCollapsed) {
+                    onToggleCollapse();
+                  } else {
+                    setCollapsed((c) => !c);
+                  }
+                }}
+                title={effectivelyCollapsed ? "Expand" : "Collapse"}
               >
-                {collapsed ? "▸" : "▾"}
+                {effectivelyCollapsed ? "▸" : "▾"}
               </button>
             </div>
 
@@ -226,7 +297,7 @@ export default function Section({
         </div>
       )}
 
-      {(!hasHeader || !collapsed) && (
+      {(!hasHeader || !effectivelyCollapsed) && (
         <>
           {/* Render all items with drag & drop */}
           <DndContext
@@ -261,6 +332,7 @@ export default function Section({
                     order={order}
                     grossBuildingAreaSqFt={grossBuildingAreaSqFt}
                     units={units}
+                    sectionItems={items}
                   />
                 );
               })}
@@ -273,4 +345,8 @@ export default function Section({
       )}
     </div>
   );
-}
+});
+
+Section.displayName = 'Section';
+
+export default Section;

@@ -78,8 +78,6 @@ export default {
 export const INCOME_ORDER = [
   "Gross Scheduled Rent",
   "Vacancy/Collections Loss",
-  "Less - Free Rent and/or Allowances",
-  "Less - Other Adjustments",
   "Net Rental Income",
   "Recoverable Income",
   "Other Income",

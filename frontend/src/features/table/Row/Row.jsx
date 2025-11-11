@@ -240,25 +240,26 @@ function Row({
   }, []);
 
   /* ------------------------ Click outside to close details ----------------------- */
-  useEffect(() => {
-    if (!showDetails) return;
+  // DISABLED: Only close via X button
+  // useEffect(() => {
+  //   if (!showDetails) return;
 
-    const handleClickOutside = (event) => {
-      if (detailsRef.current && !detailsRef.current.contains(event.target)) {
-        handleCloseDetails();
-      }
-    };
+  //   const handleClickOutside = (event) => {
+  //     if (detailsRef.current && !detailsRef.current.contains(event.target)) {
+  //       handleCloseDetails();
+  //     }
+  //   };
 
-    // Add listener on next tick to avoid closing immediately
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 0);
+  //   // Add listener on next tick to avoid closing immediately
+  //   const timeoutId = setTimeout(() => {
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //   }, 0);
 
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDetails, handleCloseDetails]);
+  //   return () => {
+  //     clearTimeout(timeoutId);
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [showDetails, handleCloseDetails]);
 
   /* ------------------------------- Render ------------------------------- */
   return (

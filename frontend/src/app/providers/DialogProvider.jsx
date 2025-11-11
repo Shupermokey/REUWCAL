@@ -21,8 +21,12 @@ export function DialogProvider({ children }) {
     return new Promise((resolve) => setDialog({ type: "prompt", resolve, ...opts }));
   }, []);
 
+  const promptMultiple = useCallback((opts = {}) => {
+    return new Promise((resolve) => setDialog({ type: "promptMultiple", resolve, ...opts }));
+  }, []);
+
   return (
-    <DialogCtx.Provider value={{ confirm, prompt }}>
+    <DialogCtx.Provider value={{ confirm, prompt, promptMultiple }}>
       {children}
       {dialog && <DialogModal dialog={dialog} onClose={close} />}
     </DialogCtx.Provider>
@@ -42,13 +46,48 @@ function DialogModal({ dialog, onClose }) {
     message = "",
     placeholder = "",
     defaultValue = "",
+    fields = [], // For promptMultiple: array of { label, placeholder, defaultValue }
+    maxFields = 10, // Maximum number of fields allowed
   } = dialog;
 
   const [value, setValue] = useState(defaultValue);
+  const [multiValues, setMultiValues] = useState(
+    fields.length > 0 ? fields.map(f => f.defaultValue || "") : []
+  );
+  const [fieldCount, setFieldCount] = useState(fields.length);
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") onClose(type === "confirm" ? false : null);
     if (e.key === "Enter" && type === "prompt") onClose(value);
+    // Don't close on Enter for promptMultiple - user might be typing
+  };
+
+  const handleMultiChange = (index, newValue) => {
+    const updated = [...multiValues];
+    updated[index] = newValue;
+    setMultiValues(updated);
+  };
+
+  const handleAddField = () => {
+    if (fieldCount < maxFields) {
+      setFieldCount(fieldCount + 1);
+      setMultiValues([...multiValues, ""]);
+    }
+  };
+
+  const handleRemoveField = (index) => {
+    if (fieldCount > 1) { // Keep at least 1 field
+      const updated = [...multiValues];
+      updated.splice(index, 1);
+      setMultiValues(updated);
+      setFieldCount(fieldCount - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    // Filter out empty values
+    const filteredValues = multiValues.filter(v => v && v.trim() !== "");
+    onClose(filteredValues);
   };
 
   const body = (
@@ -61,6 +100,7 @@ function DialogModal({ dialog, onClose }) {
       <div style={modalStyle}>
         <h3 style={{ margin: 0 }}>{title}</h3>
         {message && <p style={{ marginTop: 8 }}>{message}</p>}
+
         {type === "prompt" && (
           <input
             autoFocus
@@ -71,6 +111,66 @@ function DialogModal({ dialog, onClose }) {
             style={inputStyle}
           />
         )}
+
+        {type === "promptMultiple" && (
+          <>
+            {Array.from({ length: fieldCount }).map((_, idx) => (
+              <div key={idx} style={{ marginTop: idx === 0 ? 8 : 12, display: "flex", gap: 8, alignItems: "flex-end" }}>
+                <div style={{ flex: 1 }}>
+                  {idx < fields.length && fields[idx]?.label && (
+                    <label style={{ display: "block", marginBottom: 4, fontSize: "0.9rem", fontWeight: 500 }}>
+                      {fields[idx].label}
+                    </label>
+                  )}
+                  {idx >= fields.length && (
+                    <label style={{ display: "block", marginBottom: 4, fontSize: "0.9rem", fontWeight: 500 }}>
+                      Sub-Item {idx + 1}
+                    </label>
+                  )}
+                  <input
+                    autoFocus={idx === 0}
+                    type="text"
+                    placeholder={idx < fields.length ? fields[idx]?.placeholder || "" : `Item ${idx + 1}`}
+                    value={multiValues[idx] || ""}
+                    onChange={(e) => handleMultiChange(idx, e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+                {fieldCount > 1 && (
+                  <button
+                    onClick={() => handleRemoveField(idx)}
+                    style={{
+                      ...btnStyle,
+                      padding: "8px 10px",
+                      color: "#dc2626",
+                      border: "1px solid #fca5a5",
+                      background: "#fef2f2",
+                    }}
+                    title="Remove this field"
+                  >
+                    ✖
+                  </button>
+                )}
+              </div>
+            ))}
+            {fieldCount < maxFields && (
+              <button
+                onClick={handleAddField}
+                style={{
+                  ...btnStyle,
+                  marginTop: 12,
+                  width: "100%",
+                  background: "#f0f9ff",
+                  color: "#0369a1",
+                  border: "1px solid #7dd3fc",
+                }}
+              >
+                + Add Another Sub-Item ({fieldCount}/{maxFields})
+              </button>
+            )}
+          </>
+        )}
+
         <div style={btnRowStyle}>
           <button onClick={() => onClose(type === "confirm" ? false : null)} style={btnStyle}>
             Cancel
@@ -78,6 +178,10 @@ function DialogModal({ dialog, onClose }) {
           {type === "confirm" ? (
             <button onClick={() => onClose(true)} style={primaryBtnStyle}>
               Confirm
+            </button>
+          ) : type === "promptMultiple" ? (
+            <button onClick={handleSubmit} style={primaryBtnStyle}>
+              OK
             </button>
           ) : (
             <button onClick={() => onClose(value)} style={primaryBtnStyle}>
