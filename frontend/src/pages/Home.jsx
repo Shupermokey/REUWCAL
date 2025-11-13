@@ -1,129 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { ScenarioProvider } from "../app/ScenarioRowProvider"; 
-import { RowProvider } from "../app/RowProvider";
-import Sidebar from "../components/Sidebar";
+import React, { useState } from "react";
 import Table from "../features/table/Table";
-import { useApp } from "../app/AppProvider";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  onSnapshot,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { useAuth } from "../app/AuthProvider";
-import { loadStripe } from "@stripe/stripe-js";
-
-import { db } from "../services/firebaseConfig";
-
-
-const stripePromise = loadStripe(
-  "pk_test_51NbDDDEgiGJZMTseM8sReTmk3TwiQIQwZLOwEzVHXy0uZFt7Ikn3qIc2sbKts0tFEBN5d73GFG46qA7KMbYBj5OX00SUx5fV2y"
-);
+import { useAuth } from "../app/providers/AuthProvider";
+import { useSubscription } from "../app/providers/SubscriptionProvider";
+import "@/styles/pages/Home.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
 
 function Home() {
-  const { base } = useApp();
-  const [products, setProducts] = useState([]);
   const { user } = useAuth();
-  const [selectedRow, setSelectedRow] = useState(null); // 🔴 NEW
-  const [scenarioRows, setScenarioRows] = useState([]); // 🔴 NEW
-  const [baselines, setBaselines] = useState([]); // 🔴 NEW
-
-  const baselineMap = {
-    baseRentGrowth: "Base Rent (MR) Growth Rate",
-    vacancyRate: "Vacancy Rate",
-    propertyTaxExpenses: "Property Tax Expenses",
-    insurance: "Property Insurance Expenses",
-    utilities: "Property Utility Expenses",
-    repairs: "Property Repair Expenses",
-    cam: "Property CAM Expenses",
-    management: "Property Management Expenses",
-    capex: "CAP Ex"
-  }; // 🔴 Map expense field names to Baseline rows
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const productsCollection = collection(db, "products"); // ✅ Correct Firestore collection reference
-        const q = query(productsCollection, where("active", "==", true));
-
-        const snapshot = await getDocs(q);
-        const productList = [];
-
-        for (const productDoc of snapshot.docs) {
-          const productData = productDoc.data();
-          const productId = productDoc.id;
-
-          const priceRef = collection(db, "products", productId, "prices"); // ✅ Correct subcollection reference
-          const priceSnapshot = await getDocs(priceRef);
-          const prices = priceSnapshot.docs.map((priceDoc) => ({
-            priceId: priceDoc.id,
-            priceData: priceDoc.data(),
-          }));
-
-          productList.push({
-            id: productId,
-            ...productData,
-            prices, // ✅ Add price data
-          });
-        }
-
-        setProducts(productList);
-      } catch (error) {
-        console.error("❌ Error fetching products:", error.message);
-      }
-    };
-
-    fetchProducts();
-  }, []); // ✅ Run only once on component mount
-
-  useEffect(() => {
-    if (!user) return;
-    const fetchBaselines = async () => {
-      const snapshot = await getDocs(collection(db, "users", user.uid, "baselines"));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setBaselines(data);
-    };
-    fetchBaselines();
-  }, [user]);
-
+  const { tier } = useSubscription();
+  const [selectedRow, setSelectedRow] = useState(null);
 
   const handleRowSelect = (row) => {
     setSelectedRow(row);
-    setScenarioRows([row]); // Start with a copy of the base row
   };
 
   return (
-    <>
-      <ScenarioProvider>
-        <RowProvider>
-          <Sidebar />
-          <div style={{ display: "flex", flexDirection: "column" }}>
-          {base === false && <Table onRowSelect={handleRowSelect} />} {/* 🔴 Pass down row select */}
-          {base !== false && <BaselineTable />}
-            {/* <SubscriptionUpgrade /> */}
+    <div className="home">
+      <Sidebar />
 
-            {/* <div>
-            {selectedRow && (
-              <PerformaTable
-              baseRow={selectedRow}
-              baselines={baselines}
-              scenarioRows={scenarioRows}
-              setScenarioRows={setScenarioRows}
-              baselineMap={baselineMap} // 🔴 Provide mapping to Proforma
-              />
-            )}
-          </div> */}
+      <main className="home__main">
+        <header className="home__header">
+          <div className="home__header-content">
+            <h1>Property Dashboard</h1>
+            <p className="home__header-subtitle">
+              Manage and analyze your real estate portfolio
+            </p>
           </div>
-          {/* 🔴 NEW: Render Proforma Table */}
-         
-        </RowProvider>
-      </ScenarioProvider>
-    </>
+          <div className="home__header-actions">
+            <span className="home__tier-badge">{tier || 'Free'} Plan</span>
+          </div>
+        </header>
+
+        <section className="home__content">
+          <Table onRowSelect={handleRowSelect} />
+        </section>
+      </main>
+    </div>
   );
 }
 

@@ -1,10 +1,11 @@
 // Rank defines privilege order. Adjust names to your exact tiers.
-export const TIERS = {
-  Free: 'Free',
-  Marketing: 'Marketing',
-  Developer: 'Developer',
-  Syndicator: 'Syndicator',
-};
+export const TIERS = Object.freeze({
+  Free: "Free",
+  Marketing: "Marketing",
+  Developer: "Developer",
+  Syndicator: "Syndicator",
+});
+
 
 const RANK = { Free: 0, Marketing: 1, Developer: 2, Syndicator: 3 };
 

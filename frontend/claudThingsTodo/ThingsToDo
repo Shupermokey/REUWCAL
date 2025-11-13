@@ -1,0 +1,471 @@
+Hi Claude,
+
+I have a React + Firebase + Stripe SaaS application that currently has a B+ rating. 
+I want you to help me implement changes to achieve SSS+++ (production-ready) status.
+
+Here's what needs to be implemented:
+
+================================================================================
+PHASE 1: CRITICAL FIXES (Do First - Day 1)
+================================================================================
+
+1. FIX MISSING IMPORT
+   - File: src/app/providers/TableProvider.jsx (line 40)
+   - Action: Add missing import for saveRowData
+   - Code: import { saveRowData } from '@/services/firestore/rowsService';
+
+2. ENVIRONMENT VARIABLES SETUP
+   - Create .env.example with all required variables:
+     * VITE_FIREBASE_API_KEY
+     * VITE_FIREBASE_AUTH_DOMAIN
+     * VITE_FIREBASE_PROJECT_ID
+     * VITE_FIREBASE_STORAGE_BUCKET
+     * VITE_FIREBASE_MESSAGING_SENDER_ID
+     * VITE_FIREBASE_APP_ID
+     * VITE_STRIPE_PUBLISHABLE_KEY
+     * VITE_API_URL
+     * VITE_API_URL_PRODUCTION
+     * VITE_ENVIRONMENT
+   - Ensure .env is in .gitignore
+
+3. FIX HARDCODED URLS
+   - File: src/utils/stripeService.js (around line 19)
+   - Action: Replace hardcoded "http://localhost:4000" with environment variable
+   - Code: const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+4. REMOVE DUPLICATE FUNCTIONS
+   - File: src/services/authService.js
+   - Action: Remove either registerUser/loginUser OR handle* versions
+   - Update all imports/usages to use chosen functions
+
+5. FIX DEBUG FLAGS
+   - File: src/services/firestore/firestoreService.js (line 278)
+   - Action: Change const DEBUG = true; to const DEBUG = import.meta.env.DEV;
+
+================================================================================
+PHASE 2: TESTING INFRASTRUCTURE (Week 2-3)
+================================================================================
+
+1. INSTALL TESTING DEPENDENCIES
+   npm install --save-dev @testing-library/react @testing-library/jest-dom 
+   @testing-library/user-event @vitest/ui vitest jsdom
+
+2. CREATE VITEST CONFIG
+   - File: vitest.config.js
+   - Include: globals, jsdom environment, test setup file, coverage config
+   - Add path aliases resolution
+
+3. CREATE TEST SETUP
+   - File: src/tests/setup.js
+   - Mock Firebase (app, auth, firestore)
+   - Setup cleanup after each test
+   - Import @testing-library/jest-dom
+
+4. ADD TEST SCRIPTS TO PACKAGE.JSON
+   - "test": "vitest"
+   - "test:ui": "vitest --ui"
+   - "test:coverage": "vitest run --coverage"
+
+5. WRITE UNIT TESTS (Target: 50+ tests)
+   - Create: src/utils/__tests__/ (calculation tests)
+   - Create: src/services/__tests__/ (auth, stripe, firestore tests)
+   - Create: src/hooks/__tests__/ (custom hooks tests)
+   - Target: 70%+ coverage
+
+6. WRITE INTEGRATION TESTS (Target: 10+ tests)
+   - Create: src/features/auth/__tests__/ (login/signup flows)
+   - Create: src/features/table/__tests__/ (table operations)
+   - Create: src/features/income/__tests__/ (income calculations)
+
+7. SETUP E2E TESTING
+   npm install --save-dev @playwright/test
+   npx playwright install
+   - Create: e2e/auth.spec.js (auth flow)
+   - Create: e2e/subscription.spec.js (payment flow)
+   - Create: e2e/dashboard.spec.js (main features)
+
+================================================================================
+PHASE 3: CI/CD PIPELINE (Week 3-4)
+================================================================================
+
+1. CREATE PR CHECKS WORKFLOW
+   - File: .github/workflows/pr-checks.yml
+   - Jobs: lint, test, build, e2e-tests, security-scan
+   - Run on: pull_request to main/develop
+
+2. CREATE STAGING DEPLOYMENT WORKFLOW
+   - File: .github/workflows/deploy-staging.yml
+   - Trigger: push to develop branch
+   - Deploy to Firebase Hosting staging
+   - Run smoke tests after deployment
+
+3. CREATE PRODUCTION DEPLOYMENT WORKFLOW
+   - File: .github/workflows/deploy-production.yml
+   - Trigger: push to main or version tags
+   - Require manual approval
+   - Deploy to Firebase Hosting production
+   - Create Sentry release
+   - Run smoke tests
+
+4. SETUP GIT HOOKS
+   npm install --save-dev husky lint-staged
+   - Create: .husky/pre-commit
+   - Add lint-staged config to package.json
+   - Run linting and formatting on staged files
+
+5. SETUP DEPENDABOT
+   - File: .github/dependabot.yml
+   - Weekly npm dependency updates
+   - Auto-create PRs for updates
+
+================================================================================
+PHASE 4: PERFORMANCE OPTIMIZATION (Week 4-5)
+================================================================================
+
+1. REACT PERFORMANCE
+   - Add React.memo to expensive components:
+     * src/features/income/IncomeStatement.jsx
+     * src/features/table/Table.jsx
+     * src/components/Section/*.jsx
+   - Add useCallback to event handlers in providers
+   - Add useMemo to expensive calculations
+
+2. BUNDLE OPTIMIZATION
+   - Update vite.config.js with:
+     * rollup manualChunks (react-vendor, firebase, stripe)
+     * visualizer plugin for bundle analysis
+   - Implement code splitting for large features
+   - Target: <500KB initial bundle (gzipped)
+
+3. CACHING STRATEGY
+   npm install @tanstack/react-query
+   - Create: src/config/queryClient.js
+   - Wrap app in QueryClientProvider
+   - Convert hooks to use useQuery:
+     * usePropertyAddress
+     * useIncomeStatement
+     * useTier
+   - Set staleTime, cacheTime, refetch policies
+
+4. MONITORING SETUP
+   npm install @sentry/react
+   - Create: src/config/sentry.js
+   - Initialize Sentry with DSN, environment
+   - Add BrowserTracing integration
+   - Add Replay integration
+
+5. ERROR BOUNDARY
+   - Create: src/components/ErrorBoundary.jsx
+   - Implement componentDidCatch
+   - Integrate with Sentry
+   - Wrap app in main.jsx
+
+6. ANALYTICS SETUP
+   - Create: src/config/analytics.js
+   - Setup Firebase Analytics
+   - Add trackPageView, trackEvent, trackUserAction
+   - Add page view tracking to App.jsx
+
+7. WEB VITALS MONITORING
+   npm install web-vitals
+   - Create: src/utils/webVitals.js
+   - Report CLS, FID, FCP, LCP, TTFB
+   - Send metrics to Sentry and Analytics
+   - Initialize in main.jsx
+
+================================================================================
+PHASE 5: SECURITY HARDENING (Week 5-6)
+================================================================================
+
+1. FIREBASE SECURITY RULES
+   - File: firestore.rules
+   - Implement rules with helper functions:
+     * isAuthenticated()
+     * isOwner(userId)
+     * hasVerifiedEmail()
+     * hasTier(tier)
+   - Rules for: users, properties, baselines, subscriptions, income_statements
+   - Ensure tier-based access control
+
+2. SECURITY RULES TESTING
+   npm install --save-dev @firebase/rules-unit-testing
+   - Create: firestore-rules.test.js
+   - Test: user can read own data
+   - Test: user cannot read others' data
+   - Test: tier-based access works
+   - Run: firebase emulators:start --only firestore
+
+3. API SECURITY (BACKEND)
+   - Add rate limiting middleware
+   - Configure CORS with allowed origins only
+   - Add input validation with express-validator
+   - Add security headers with helmet
+
+4. CONTENT SECURITY POLICY
+   - Add CSP meta tag to index.html
+   - Allow: self, Firebase, Stripe, Google domains
+   - Restrict: inline scripts (where possible)
+
+5. DEPENDENCY SECURITY
+   - Create: .github/workflows/security.yml
+   - Schedule: weekly npm audit
+   - Run: Snyk security scan
+   - Fail on: high severity vulnerabilities
+
+6. SECRETS MANAGEMENT
+   - Verify no secrets in git history
+   - Document secret rotation process
+   - Setup GitHub Secrets for CI/CD
+   - Consider: Doppler or similar for secret management
+
+================================================================================
+PHASE 6: DOCUMENTATION (Week 6-7)
+================================================================================
+
+1. UPDATE README.MD
+   - Add: Quick start guide
+   - Add: Tech stack overview
+   - Add: Folder structure
+   - Add: Available scripts
+   - Add: Links to other docs
+
+2. CREATE ARCHITECTURE.MD
+   - Document: System architecture diagram
+   - Document: Folder structure details
+   - Document: State management approach
+   - Document: Firebase integration
+   - Document: Stripe integration
+   - Document: Routing structure
+   - Document: Security approach
+
+3. CREATE API.MD
+   - Document all backend endpoints
+   - Include: Request/response examples
+   - Include: Authentication requirements
+   - Include: Error codes
+   - Include: Rate limits
+
+4. CREATE CONTRIBUTING.MD
+   - Document: Development setup
+   - Document: Branch strategy
+   - Document: Commit message format
+   - Document: PR process
+   - Document: Code style guidelines
+   - Include: Component/service/hook templates
+
+5. CREATE CHANGELOG.MD
+   - Setup: Keep a Changelog format
+   - Document: All versions
+   - Include: Added, Fixed, Changed, Deprecated, Removed
+
+6. SETUP STORYBOOK
+   npx storybook@latest init
+   - Create stories for 10+ key components
+   - Document component props
+   - Include usage examples
+   - Deploy Storybook to hosting
+
+7. ADD JSDOC COMMENTS
+   - Add JSDoc to all major components
+   - Document: params, returns, examples
+   - Generate docs: npm run docs:generate
+
+================================================================================
+PHASE 7: PRODUCTION LAUNCH PREP (Week 7-8)
+================================================================================
+
+1. PERFORMANCE AUDIT
+   npm install -g @lhci/cli
+   - Create: lighthouserc.json
+   - Run Lighthouse CI on all pages
+   - Target scores:
+     * Performance: 90+
+     * Accessibility: 90+
+     * Best Practices: 90+
+     * SEO: 90+
+   - Fix any issues found
+
+2. SECURITY AUDIT
+   - Run: npm audit (fix all high/critical)
+   - Test: securityheaders.com (target: A+)
+   - Test: ssllabs.com (target: A+)
+   - Verify: No secrets in repository
+   - Complete: OWASP Top 10 checklist
+
+3. BACKUP & RECOVERY
+   - Setup: Automated Firestore backups (daily)
+   - Test: Backup restoration process
+   - Document: Disaster recovery procedures
+   - Document: RTO/RPO targets
+
+4. LOAD TESTING
+   brew install k6  # or apt-get install k6
+   - Create: tests/load/basic.js
+   - Test: 100-200 concurrent users
+   - Verify: Response times <500ms
+   - Verify: Error rate <1%
+
+5. MONITORING & ALERTING
+   - Setup: Uptime monitoring (UptimeRobot/similar)
+   - Configure: Alert thresholds
+     * Error rate >5%: critical
+     * Response time >3s: warning
+     * Uptime <99.9%: critical
+   - Setup: Notification channels (Slack, email, PagerDuty)
+
+6. LEGAL & COMPLIANCE
+   - Create: Privacy Policy page
+   - Create: Terms of Service page
+   - Implement: Cookie consent (if EU traffic)
+   - Verify: GDPR compliance (if applicable)
+   - Test: Accessibility (WCAG 2.1 AA)
+
+7. STATUS PAGE
+   - Setup: Status page (statuspage.io or self-hosted)
+   - Monitor: API, Database, Auth services
+   - Configure: Incident communication templates
+
+8. LAUNCH COMMUNICATIONS
+   - Prepare: Announcement email template
+   - Prepare: Social media posts
+   - Prepare: In-app changelog
+   - Prepare: Support documentation
+   - Setup: User feedback channels
+
+================================================================================
+ADDITIONAL IMPROVEMENTS
+================================================================================
+
+1. ERROR HANDLING STANDARDIZATION
+   - Create: src/utils/errorHandler.js
+   - Standardize: Toast notifications vs inline errors
+   - Add: User-friendly error messages
+   - Log: All errors to Sentry
+
+2. LOADING STATES
+   - Add: Skeleton loaders for all async operations
+   - Add: Loading spinners where appropriate
+   - Ensure: All providers expose loading flags
+
+3. EMAIL VERIFICATION
+   - Decision: Enable or document why disabled
+   - File: src/components/ProtectedRoute.jsx (lines 30-33)
+   - Implement: Verification flow if enabled
+
+4. STYLE SYSTEM MIGRATION (OPTIONAL)
+   - Consider: CSS Modules or styled-components
+   - OR: Migrate to Tailwind CSS
+   - Goal: Better scoping and smaller bundle
+
+5. TYPESCRIPT MIGRATION (OPTIONAL)
+   - Add: TypeScript to new files
+   - Gradually: Convert existing files
+   - Configure: tsconfig.json
+   - Add: Type definitions for all props
+
+================================================================================
+SUCCESS METRICS - TRACK THESE
+================================================================================
+
+CODE QUALITY
+- [ ] Test coverage: 80%+ (currently ~10%)
+- [ ] Critical bugs: 0 (currently 4)
+- [ ] Code smells: <5
+- [ ] Consistent code style: Yes
+
+PERFORMANCE
+- [ ] Lighthouse score: 95+ (currently ?)
+- [ ] LCP: <2s
+- [ ] FID: <100ms
+- [ ] CLS: <0.1
+- [ ] Bundle size: <500KB
+
+SECURITY
+- [ ] Security headers: A+ (currently ?)
+- [ ] High vulnerabilities: 0
+- [ ] Critical vulnerabilities: 0
+- [ ] Firebase rules: Tested and deployed
+
+RELIABILITY
+- [ ] Uptime: 99.9%+
+- [ ] Error rate: <1%
+- [ ] MTTR: <4 hours
+- [ ] Automated backups: Daily
+
+DEVELOPER EXPERIENCE
+- [ ] Setup time: <10 minutes
+- [ ] Build time: <60 seconds
+- [ ] Documentation: Complete
+- [ ] CI/CD: Fully automated
+
+================================================================================
+IMPLEMENTATION STRATEGY
+================================================================================
+
+APPROACH 1: INCREMENTAL (RECOMMENDED)
+- Start with Phase 1 (critical fixes)
+- Complete one phase before moving to next
+- Test thoroughly after each phase
+- Commit frequently with good messages
+
+APPROACH 2: PARALLEL
+- Multiple developers work on different phases
+- Requires good coordination
+- Can complete faster
+- Higher risk of conflicts
+
+APPROACH 3: CRITICAL PATH
+- Do only what's needed for production launch
+- Phases 1, 2 (basic tests), 3, 5, 7
+- Skip or defer: Advanced performance, extensive docs
+- Faster but less comprehensive
+
+================================================================================
+MY PROJECT STRUCTURE AND FILES
+================================================================================
+
+[PASTE YOUR PROJECT STRUCTURE AND RELEVANT FILES BELOW]
+
+PROJECT STRUCTURE:
+[Paste output of: tree -L 3 -I 'node_modules|dist|.git']
+
+KEY FILES TO REVIEW:
+1. package.json
+2. src/app/providers/TableProvider.jsx
+3. src/services/authService.js
+4. src/services/stripeService.js
+5. src/services/firestore/firestoreService.js
+6. vite.config.js
+7. Current README.md
+8. Any existing test files
+
+CURRENT ISSUES KNOWN:
+[List any other issues you're aware of]
+
+SPECIFIC REQUESTS:
+[Add any specific priorities or constraints]
+- Budget: $___
+- Timeline: ___
+- Team size: ___
+- Must-have features: ___
+- Nice-to-have features: ___
+
+================================================================================
+PLEASE IMPLEMENT:
+================================================================================
+
+Start with [PHASE NUMBER] and implement the following specific items:
+1. [Specific task]
+2. [Specific task]
+3. [Specific task]
+
+For each implementation:
+- Show me the complete file contents (not just snippets)
+- Explain what changed and why
+- Provide testing instructions
+- Note any dependencies to install
+- Flag any manual steps I need to do
+
+Let's begin! 🚀
+
+================================================================================

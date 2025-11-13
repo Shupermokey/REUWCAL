@@ -102,4 +102,13 @@ Income Statement
 vacancy loss: % loss
 
 
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+Gross Scheduled Rent: What is written in Contract: 12,000
+Vacancy/Collection Loss: What is lost in renters Income (contract only) - of gross scheduled rent only 12,000 * -0.05 (Present in every RE income statement)
+Less - Free Rent and/or Allowances: (typicall hard coded in)
+Less - Other Adjustments
+Net Rental Income 
+
+Row -> IncomeStatement -> When typeing in a value and click save, remove all incomestatement values and just populate Gross Income.
+
 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI Sanity Sheet — Professional Neutral</title>
+  <link rel="stylesheet" href="./src/styles/index.css" />
+  <style>
+    body { padding: 40px; background: var(--color-bg); color: var(--color-text); }
+    section { margin-bottom: 48px; }
+    h2 { margin-bottom: 16px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>UI Sanity Sheet</h1>
+  <section>
+    <h2>Buttons</h2>
+    <button class="btn">Primary</button>
+    <button class="btn btn-outline">Outline</button>
+    <button class="btn btn-danger">Danger</button>
+    <button class="btn" disabled>Disabled</button>
+  </section>
+
+  <section>
+    <h2>Inputs</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Amount</label>
+      <input type="number" placeholder="1234.56" />
+    </div>
+    <div class="form-group">
+      <label>Dropdown</label>
+      <select>
+        <option>Option A</option>
+        <option>Option B</option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cards & Layout</h2>
+    <div class="grid-3">
+      <div class="card"><h3>Card One</h3><p>Simple card content.</p></div>
+      <div class="card"><h3>Card Two</h3><p>Shadow hover test.</p></div>
+      <div class="card"><h3>Card Three</h3><p>Rounded corners.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sections & Rows</h2>
+    <div class="sec">
+      <div class="sec__header">Header Example</div>
+      <div class="sec__row"><span>Row 1</span></div>
+      <div class="sec__row"><span>Row 2</span></div>
+      <div class="sec__total"><span>Total</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Modal Preview</h2>
+    <div class="modal" style="display:block;position:relative;max-width:400px;margin:auto;">
+      <div class="modal-header">Modal Header</div>
+      <div class="modal-body">Modal body content here</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline">Cancel</button>
+        <button class="btn">Save</button>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
