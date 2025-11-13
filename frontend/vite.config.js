@@ -60,7 +60,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom', // Switch from jsdom to happy-dom (faster and more reliable)
     setupFiles: './src/tests/setup.js',
     coverage: {
       provider: 'v8',
