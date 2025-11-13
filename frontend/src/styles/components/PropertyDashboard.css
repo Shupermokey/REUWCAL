@@ -1,0 +1,232 @@
+/* ==========================================================
+   PROPERTY DASHBOARD — main property overview + file/income panels
+   ========================================================== */
+
+/* Dashboard wrapper */
+.property-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  background: var(--color-bg);
+  padding: var(--sp-6);
+  min-height: 100vh;
+  color: var(--color-text);
+}
+
+/* Header */
+.property-dashboard__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-5);
+}
+
+.property-dashboard__header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.property-dashboard__header .actions {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.property-dashboard__header button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* Button styles */
+.property-dashboard__header .btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.property-dashboard__header .btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.property-dashboard__header .btn-secondary {
+  background: #f3f4f6;
+  color: var(--color-text);
+}
+
+.property-dashboard__header .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Content area */
+.property-dashboard__content {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: var(--sp-6);
+  align-items: flex-start;
+}
+
+/* Left side (tables, summaries) */
+.property-dashboard__main {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-5);
+}
+
+/* Section titles */
+.property-dashboard__main h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--sp-2);
+}
+
+/* Income summary */
+.income-summary {
+  background: #f9fafb;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-5);
+}
+
+.income-summary__label {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.income-summary__value {
+  font-weight: 700;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+
+/* Right side (File explorer / details) */
+.property-dashboard__side {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--sp-5);
+  position: relative;
+}
+
+/* Side panel header */
+.property-dashboard__side h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: var(--sp-4);
+}
+
+/* Embedded file system view */
+.property-dashboard__files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--sp-3);
+}
+
+.property-dashboard__file-item {
+  background: #fafafa;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  text-align: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.property-dashboard__file-item:hover {
+  background: #f3f4f6;
+  box-shadow: var(--shadow-xs);
+}
+
+.property-dashboard__file-item .icon {
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  margin-bottom: var(--sp-2);
+}
+
+.property-dashboard__file-item .label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* Totals / analytics cards */
+.property-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-5);
+}
+
+.property-totals__card {
+  background: #f9fafb;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.property-totals__card:hover {
+  background: #f3f4f6;
+  box-shadow: var(--shadow-sm);
+}
+
+.property-totals__card h4 {
+  font-size: 0.95rem;
+  color: var(--color-text-dim);
+  margin-bottom: var(--sp-2);
+}
+
+.property-totals__card p {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Scrollbar */
+.property-dashboard__side::-webkit-scrollbar,
+.property-dashboard__main::-webkit-scrollbar {
+  width: 10px;
+}
+
+.property-dashboard__side::-webkit-scrollbar-thumb,
+.property-dashboard__main::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 8px;
+}
+
+.property-dashboard__side::-webkit-scrollbar-thumb:hover,
+.property-dashboard__main::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .property-dashboard__content {
+    grid-template-columns: 1fr;
+  }
+
+  .property-dashboard__side {
+    order: -1;
+  }
+}

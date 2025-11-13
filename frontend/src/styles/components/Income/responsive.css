@@ -1,0 +1,25 @@
+/* ==========================================================
+   RESPONSIVE ADAPTATIONS — Income Statement grids
+   ========================================================== */
+@media (max-width: 1024px) {
+  .section-header,
+  .section-row {
+    grid-template-columns: 24px minmax(180px, 1fr) repeat(2, minmax(100px, 1fr)) auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-header,
+  .section-row {
+    grid-template-columns: 18px minmax(160px, 1fr) repeat(1, minmax(100px, 1fr)) auto;
+    font-size: 0.85rem;
+  }
+
+  .leaf-editor {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .value-columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

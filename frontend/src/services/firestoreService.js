@@ -1,3 +1,4 @@
+///services/firestoreService.js
 import {
   doc,
   collection,
@@ -11,6 +12,7 @@ import {
   query,
   where,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
@@ -196,13 +198,17 @@ export const getProperties = async (userId) => {
 
 export const addProperty = async (userId, data) => {
   const colRef = collection(db, `users/${userId}/properties`);
-  const docRef = await addDoc(colRef, data);
+ const docRef = await addDoc(colRef, {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
   return docRef.id;
 };
 
 export const updateProperty = async (userId, propertyId, data) => {
   const docRef = doc(db, `users/${userId}/properties/${propertyId}`);
-  await updateDoc(docRef, data);
+  await updateDoc(docRef, { ...data, updatedAt: serverTimestamp() });
 };
 
 export const deleteProperty = async (userId, propertyId) => {
@@ -242,7 +248,8 @@ export const initializeFileSystem = async (
 
 export const subscribeToProperties = (userId, callback, onError = console.error) => {
   const colRef = collection(db, `users/${userId}/properties`);
-  return onSnapshot(colRef, (snapshot) => {
+  const q = query(colRef, /* add indexes in Firestore */ orderBy("createdAt", "asc"));
+  return onSnapshot(q, (snapshot) => {
     const properties = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     callback(properties);
   }, onError);
@@ -268,8 +275,9 @@ export const createUserProfile = async (userId, data) => {
   }, { merge: true });
 };
 
-const DEBUG = true;
+const DEBUG = import.meta.env.DEV;
 const log = (...a) => DEBUG && console.debug("[IncomeStmt]", ...a);
+
 
 const incomeStatementDocRef = (uid, propertyId) =>
   doc(db, "users", uid, "properties", propertyId, "incomeStatement", "current");

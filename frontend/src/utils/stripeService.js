@@ -1,6 +1,15 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 
+// Get API URL based on environment
+const getApiUrl = () => {
+  const env = import.meta.env.VITE_ENVIRONMENT || 'development';
+  if (env === 'production') {
+    return import.meta.env.VITE_API_URL_PRODUCTION || '';
+  }
+  return import.meta.env.VITE_API_URL || 'http://localhost:4000';
+};
+
 export const handleCheckout = async (uid, tier) => {
   try {
     console.log("🚀 Starting checkout for:", { uid, tier });
@@ -15,8 +24,9 @@ export const handleCheckout = async (uid, tier) => {
     }
 
     // 🔹 Call Backend to Create Stripe Checkout Session
+    const API_URL = getApiUrl();
     const response = await fetch(
-      "http://localhost:4000/api/subscription/create-checkout-session",
+      `${API_URL}/api/subscription/create-checkout-session`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,9 +49,6 @@ export const handleCheckout = async (uid, tier) => {
 };
 
 
-// src/utils/stripeService.js
-const API_BASE = import.meta.env.VITE_API_BASE || ""; // e.g. "" or "/api"
-
 export const PRICE_IDS = {
   Marketing: import.meta.env.VITE_STRIPE_PRICE_MARKETING,
   Developer: import.meta.env.VITE_STRIPE_PRICE_DEVELOPER,
@@ -54,7 +61,8 @@ const must = (v, name) => {
 };
 
 const postJson = async (path, body) => {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const API_URL = getApiUrl();
+  const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

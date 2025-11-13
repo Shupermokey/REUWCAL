@@ -1,0 +1,76 @@
+/* Income Item Styles - Minimal overrides for label input */
+
+.income-item__label-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: transparent;
+  transition: all 0.2s;
+  color: #111827;
+}
+
+.income-item__label-input:hover:not([readonly]) {
+  border-color: #d1d5db;
+  background-color: white;
+}
+
+.income-item__label-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.income-item__label-input[readonly] {
+  font-weight: 600;
+  cursor: default;
+  color: #1e3a8a;
+}
+
+/* Subtotal Row Styling - Dark grey with spacing below */
+.income-item--subtotal {
+  background: #c8cacc !important; /* Darker grey for subtotals like Excel */
+  border-top: 2px solid #000000;
+  border-bottom: 2px solid #000000;
+  margin-bottom: 8px; /* Space between subtotal and next row */
+}
+
+.income-item--subtotal:hover {
+  background: #bdbfc1 !important;
+}
+
+.income-item--subtotal .income-item__label-input {
+  font-weight: 700;
+  color: #111827;
+  font-style: normal;
+}
+
+.income-item--subtotal input[readonly] {
+  background: transparent;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Total Row Styling - Light grey like section title in Excel */
+.income-item--total {
+  background: #e8eaec !important; /* Light grey for totals */
+  border-top: 1px solid #d1d5db;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.income-item--total:hover {
+  background: #dfe1e3 !important;
+}
+
+.income-item--total .income-item__label-input {
+  font-weight: 700;
+  color: #111827;
+}
+
+.income-item--total input[readonly] {
+  background: transparent;
+  font-weight: 700;
+  color: #111827;
+}

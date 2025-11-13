@@ -1,0 +1,219 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if user has a valid subscription tier
+    function hasSubscription(tier) {
+      let subscriptions = get(/databases/$(database)/documents/customers/$(request.auth.uid)/subscriptions).data;
+      return subscriptions != null && subscriptions.status == 'active' && subscriptions.tier == tier;
+    }
+
+    // Validate string field (non-empty, max length)
+    function isValidString(field, maxLength) {
+      return field is string && field.size() > 0 && field.size() <= maxLength;
+    }
+
+    // Validate number field (within range)
+    function isValidNumber(field, min, max) {
+      return field is number && field >= min && field <= max;
+    }
+
+    // Rate limiting helper (check if user hasn't exceeded write limit)
+    function withinRateLimit() {
+      // Simple rate limit: max 100 writes per minute per user
+      // Note: This is a basic implementation. For production, consider using Firebase Extensions
+      return true; // Placeholder - implement with counters if needed
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // USER PROFILES
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      // Users can read and write their own profile
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['createdAt'])
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner(userId)
+        && withinRateLimit();
+      allow delete: if false; // Prevent accidental deletion
+
+      // ───────────────────────────────────────────────────────────
+      // PROPERTIES
+      // ───────────────────────────────────────────────────────────
+
+      match /properties/{propertyId} {
+        // Users can manage their own properties
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasAll(['createdAt', 'updatedAt'])
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && withinRateLimit();
+        allow update: if isOwner(userId)
+          && request.resource.data.updatedAt == request.time
+          && withinRateLimit();
+        allow delete: if isOwner(userId);
+
+        // ─────────────────────────────────────────────────────────
+        // PROPERTY ROWS
+        // ─────────────────────────────────────────────────────────
+
+        match /rows/{rowId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId)
+            && request.resource.data.createdAt == request.time
+            && withinRateLimit();
+          allow update: if isOwner(userId)
+            && withinRateLimit();
+          allow delete: if isOwner(userId);
+
+          // Scenarios within rows
+          match /scenarios/{scenarioId} {
+            allow read: if isOwner(userId);
+            allow create: if isOwner(userId)
+              && request.resource.data.createdAt == request.time
+              && withinRateLimit();
+            allow update: if isOwner(userId)
+              && withinRateLimit();
+            allow delete: if isOwner(userId);
+          }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // FILE SYSTEM
+        // ─────────────────────────────────────────────────────────
+
+        match /fileSystem/{fileId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId)
+            && withinRateLimit();
+          allow update: if isOwner(userId)
+            && withinRateLimit();
+          allow delete: if isOwner(userId);
+
+          // Nested folders
+          match /folders/{folderId} {
+            allow read: if isOwner(userId);
+            allow create: if isOwner(userId)
+              && request.resource.data.createdAt == request.time
+              && withinRateLimit();
+            allow update: if isOwner(userId)
+              && withinRateLimit();
+            allow delete: if isOwner(userId);
+
+            // Allow deeply nested folder structure
+            match /{document=**} {
+              allow read: if isOwner(userId);
+              allow write: if isOwner(userId)
+                && withinRateLimit();
+            }
+          }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // INCOME STATEMENTS
+        // ─────────────────────────────────────────────────────────
+
+        match /incomeStatement/{statementId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId)
+            && withinRateLimit();
+          allow update: if isOwner(userId)
+            && withinRateLimit();
+          allow delete: if isOwner(userId);
+        }
+      }
+
+      // ───────────────────────────────────────────────────────────
+      // BASELINES
+      // ───────────────────────────────────────────────────────────
+
+      match /baselines/{baselineId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && withinRateLimit();
+        allow update: if isOwner(userId)
+          && request.resource.data.updatedAt == request.time
+          && withinRateLimit();
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // STRIPE CUSTOMERS & SUBSCRIPTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    match /customers/{userId} {
+      // Users can read their own customer data
+      allow read: if isOwner(userId);
+      // Only Stripe webhooks can write (via Admin SDK)
+      allow write: if false;
+
+      match /checkout_sessions/{sessionId} {
+        // Users can read and create their own checkout sessions
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        // Only Stripe webhooks can update/delete
+        allow update, delete: if false;
+      }
+
+      match /subscriptions/{subscriptionId} {
+        // Users can read their own subscriptions
+        allow read: if isOwner(userId);
+        // Only Stripe webhooks can write
+        allow write: if false;
+      }
+
+      match /payments/{paymentId} {
+        // Users can read their own payment history
+        allow read: if isOwner(userId);
+        // Only Stripe webhooks can write
+        allow write: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PRODUCTS & PRICES (Public Read)
+    // ═══════════════════════════════════════════════════════════════
+
+    match /products/{productId} {
+      // Anyone can read products
+      allow read: if true;
+      // Only admins can write (via Admin SDK)
+      allow write: if false;
+
+      match /prices/{priceId} {
+        // Anyone can read prices
+        allow read: if true;
+        // Only admins can write
+        allow write: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DENY ALL OTHER PATHS
+    // ═══════════════════════════════════════════════════════════════
+
+    // Explicitly deny access to any paths not defined above
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

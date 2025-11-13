@@ -1,12 +1,18 @@
 // src/pages/LoginPage.jsx
 import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import Login from "../features/auth/Auth/Login";
 import Logo from "../features/auth/LoginPage/Logo";
 import LoginFooter from "../features/auth/LoginPage/LoginFooter";
 import Pricing from "../components/Pricing/Pricing";
 import { resumeCheckoutIfPending } from "../utils/stripeService"; 
+
+//CSS
+import "@/styles/components/LoginPage.css";
+import "@/styles/utils/forms.css";
+import "@/styles/utils/buttons.css";
+
 
 function LoginPage() {
   const navigate = useNavigate();

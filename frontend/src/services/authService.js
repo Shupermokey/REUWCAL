@@ -1,20 +1,34 @@
 // authService.js
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updatePassword, sendEmailVerification } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  signInWithPopup
+} from "firebase/auth";
 import { auth, googleProvider } from "./firebaseConfig";
 
-
-// Register User
+/**
+ * Register a new user with email and password
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @returns {Promise<UserCredential>} Firebase user credential
+ */
 export const registerUser = async (email, password) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential; // This should contain a "user" property
+    return userCredential;
   } catch (error) {
     console.error("Error registering user:", error.message);
-    throw error; // Propagate the error so it can be handled by the calling code
+    throw error;
   }
 };
 
-// Log In User
+/**
+ * Sign in user with email and password
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @returns {Promise<User>} Firebase user
+ */
 export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -25,7 +39,10 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// Log Out User
+/**
+ * Sign out the current user
+ * @returns {Promise<void>}
+ */
 export const logoutUser = async () => {
   try {
     await signOut(auth);
@@ -36,40 +53,16 @@ export const logoutUser = async () => {
   }
 };
 
-
-
-export const handleCreateUserWithEmailAndPassword = async (email, password) => {
-  return createUserWithEmailAndPassword(auth, email, password);
-};
-
-export const handleSignInWithEmailAndPassword = (email, password) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
-
+/**
+ * Sign in with Google OAuth provider
+ * @returns {Promise<UserCredential>} Firebase user credential
+ */
 export const handleSignInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-  return result;
-  }
-  catch(err){
-    console.log(err)
+    return result;
+  } catch (error) {
+    console.error("Error signing in with Google:", error.message);
+    throw error;
   }
 };
-
-export const handleSignOut = () => {
-  return auth.signOut();
-}
-
-// export const handlePasswordReset = (email) => {
-//   return sendPasswordResetEmail(auth, email);
-// }
-
-// export const handlePasswordChange = (password) => {
-//   return updatePassword(auth.currentUser, password);
-// }
-
-// export const handleSendEmailVerification = () => {
-//   return sendEmailVerification(auth.currentUser, {
-//     url: `${window.location.origin}/home`,
-//   });
-// }

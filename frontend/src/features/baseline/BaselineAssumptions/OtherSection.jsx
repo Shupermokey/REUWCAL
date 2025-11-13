@@ -9,6 +9,8 @@ const OtherSection = ({
   handleRowChange,
   handleDeleteRow,
 }) => {
+  if (rows.length === 0) return null;
+
   return (
     <>
       <tr><td colSpan={4}><strong>Other</strong></td></tr>
@@ -27,10 +29,10 @@ const OtherSection = ({
               onChange={(e) => handleRowChange(
                 baselineId,
                 row.id,
-                isPSF ? 'percentBRI' : 'PSF',
+                isPSF ? 'percentBRI' : '$PSF',
                 parseFloat(e.target.value) || 0
               )}
-            />{' '}
+            />
             <span>{isPSF ? '%' : '$'}</span>
           </td>
           <td>
@@ -43,8 +45,8 @@ const OtherSection = ({
                 'growthRate',
                 parseFloat(e.target.value) || 0
               )}
-            />{' '}
-            <span>{isPSF ? '%' : '$'}</span>
+            />
+            <span>%</span>
           </td>
           <td>
             <button onClick={() => handleDeleteRow(row.id)}>🗑</button>

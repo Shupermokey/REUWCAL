@@ -1,0 +1,216 @@
+/* ==========================================================
+   FILE SYSTEM SIDEBAR — embedded folder/file browser
+   ========================================================== */
+
+.file-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  max-width: 90%;
+  height: 100vh;
+  background: var(--color-card);
+  border-left: 1px solid var(--color-border);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 950;
+  transform: translateX(100%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.file-sidebar.open {
+  transform: translateX(0);
+  box-shadow: -8px 0 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Header */
+.file-sidebar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-5);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.file-sidebar__close {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-text-weak);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.file-sidebar__close:hover {
+  color: var(--color-accent);
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--sp-4);
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+}
+
+.breadcrumb span {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb span:hover {
+  color: var(--color-accent);
+}
+
+.breadcrumb .separator {
+  color: var(--color-border-strong);
+}
+
+/* Folder grid */
+.folder-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--sp-3);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Folder item */
+.folder-item {
+  background: #f9fafb;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+
+.folder-item:hover {
+  background: #f3f4f6;
+  box-shadow: var(--shadow-xs);
+}
+
+.folder-item .icon {
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  margin-bottom: var(--sp-2);
+}
+
+.folder-item .name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+/* File item */
+.file-item {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  position: relative;
+}
+
+.file-item:hover {
+  background: #f9fafb;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Upload / Create Buttons */
+.file-sidebar__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}
+
+.file-sidebar__actions button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.file-sidebar__actions .upload {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.file-sidebar__actions .upload:hover {
+  background: var(--color-accent-hover);
+}
+
+.file-sidebar__actions .create {
+  background: #f3f4f6;
+  color: var(--color-text);
+}
+
+.file-sidebar__actions .create:hover {
+  background: #e5e7eb;
+}
+
+/* Delete overlay button */
+.delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.9rem;
+  color: var(--color-danger);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.folder-item:hover .delete-btn,
+.file-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #b91c1c;
+}
+
+/* Scrollbar */
+.folder-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.folder-grid::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 8px;
+}
+
+.folder-grid::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .file-sidebar {
+    width: 100%;
+    padding: var(--sp-5);
+  }
+}

@@ -1,0 +1,49 @@
+/* ==========================================================
+   PROFILE PAGE — account info and settings
+   ========================================================== */
+.profile-page {
+  max-width: 800px;
+  margin: 40px auto;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-6);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+}
+
+.profile-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.profile-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-6);
+}
+
+.profile-info label {
+  font-weight: 500;
+  color: var(--color-text-dim);
+  margin-bottom: var(--sp-2);
+}
+
+.profile-info p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+}

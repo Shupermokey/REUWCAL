@@ -1,0 +1,240 @@
+/* ==========================================================
+   PROPERTY ADDRESS PANEL
+   ========================================================== */
+
+.property-address-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  height: 80vh;
+  max-height: 900px;
+  margin: 0 auto;
+  background: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.property-address-panel {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 24px;
+  background: #ffffff;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* Header */
+.pa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.pa-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pa-save-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.pa-save-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* Sections */
+.pa-section {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.pa-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #d1d5db;
+  padding-bottom: 8px;
+}
+
+.pa-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* Fields */
+.pa-field {
+  margin-bottom: 20px;
+}
+
+.pa-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.pa-field .required {
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.pa-field input[type="text"],
+.pa-field input[type="date"],
+.pa-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.pa-field input:focus,
+.pa-field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pa-field input::placeholder {
+  color: #9ca3af;
+}
+
+/* Radio Group (for zoning category) */
+.pa-radio-group {
+  display: flex;
+  gap: 12px;
+}
+
+.pa-radio-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pa-radio-btn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.pa-radio-btn.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Folder Sections */
+.pa-folder-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+}
+
+.pa-folder-placeholder {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Folders Grid */
+.pa-folders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pa-folder-card {
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pa-folder-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+.pa-folder-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.pa-folder-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .property-address-panel {
+    padding: 16px;
+  }
+
+  .pa-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pa-save-btn {
+    width: 100%;
+  }
+
+  .pa-radio-group {
+    flex-direction: column;
+  }
+
+  .pa-folders-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* ✅ Modern JS + React setup */
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "jsx": "react-jsx",
+
+    /* ✅ Allow all JS/JSX files to be included */
+    "allowJs": true,
+    "checkJs": false,
+
+    /* ✅ Makes VS Code resolve imports relative to src/ */
+    "baseUrl": "./src",
+
+    /* ✅ Optional aliases for cleaner imports */
+    "paths": {
+      "@/*": ["*"],
+      "@app/*": ["app/*"],
+      "@assets/*": ["assets/*"],
+      "@components/*": ["components/*"],
+      "@constants/*": ["constants/*"],
+      "@domain/*": ["domain/*"],
+      "@hooks/*": ["hooks/*"],
+      "@pages/*": ["pages/*"],
+      "@services/*": ["services/*"],
+      "@styles/*": ["styles/*"],
+      "@utils/*": ["utils/*"],
+      "@routes/*": ["routes/*"],
+      "@features/*": ["features/*"]
+    }
+  },
+  /* ✅ Index everything under src */
+  "include": ["src/**/*"],
+
+  /* ✅ Ignore build + dependency folders */
+  "exclude": ["node_modules", "dist", "build"]
+}

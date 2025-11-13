@@ -3,12 +3,15 @@ import {
   getUserMetadata,
   subscribeToProperties,
 } from "../services/firestoreService";
-import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
-import FileSystemSidebar from "../components/Sidebar/FileSystem/FileSystemSidebar";
-import "../styles/ProfilePage.css";
-import { useAuth } from "../app/AuthProvider";
-// import axios from "axios";
+
+import { useAuth } from "../app/providers/AuthProvider";
+
+//CSS
+import "@/styles/pages/ProfilePage.css";
+import "@/styles/utils/buttons.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
+
 
 export default function ProfilePage() {
   const { user, tier } = useAuth(); // ✅ from context
@@ -20,8 +23,6 @@ export default function ProfilePage() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
- 
 
   const openFileSystem = (propertyId) => {
     setSelectedPropertyId(propertyId);
@@ -167,7 +168,6 @@ export default function ProfilePage() {
               setSearchTerm(e.target.value);
               setCurrentPage(1); // reset page on search
             }}
-            
             className="property-search-input"
           />
 

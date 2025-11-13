@@ -1,0 +1,157 @@
+/* ==========================================================
+   HEADERBAR.CSS — Top bar for Income Statement
+   Minimal + aligned with ViewToggle & Save button
+   ========================================================== */
+
+.income-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* ----------------------------------------------------------
+   Title area (📊 Income Statement + Mode Badge)
+   ---------------------------------------------------------- */
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.income-header .title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.income-header .title span[role="img"] {
+  font-size: 1.1rem;
+}
+
+/* Current Mode Badge - Large, prominent display */
+.current-mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.current-mode-badge__icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.current-mode-badge__text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ----------------------------------------------------------
+   Right side — toggle + save
+   ---------------------------------------------------------- */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Save button */
+.btn-save {
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-save:hover {
+  background: #1d4ed8;
+}
+
+.btn-save:active {
+  transform: scale(0.97);
+}
+
+.btn-save:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------- */
+@media (max-width: 768px) {
+  .income-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .current-mode-badge {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+
+  .current-mode-badge__icon {
+    font-size: 1rem;
+  }
+
+  .current-mode-badge__text {
+    font-size: 0.85rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-save {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+}
