@@ -275,7 +275,7 @@ export const createUserProfile = async (userId, data) => {
   }, { merge: true });
 };
 
-const DEBUG = true;
+const DEBUG = import.meta.env.DEV;
 const log = (...a) => DEBUG && console.debug("[IncomeStmt]", ...a);
 
 

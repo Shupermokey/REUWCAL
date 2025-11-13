@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { useAuth } from "./AuthProvider";
+import { saveRowData } from "@/services/firestore/rowsService";
 
 // Create a context for the game state
 const TableContext = createContext();

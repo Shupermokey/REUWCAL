@@ -12,15 +12,23 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "npm run test:run && npm run test:e2e",
+    "prepare": "husky"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@sentry/react": "^10.25.0",
     "@stripe/react-stripe-js": "^3.1.1",
     "@stripe/stripe-js": "^5.6.0",
+    "@tanstack/react-query": "^5.90.8",
     "firebase": "^11.1.0",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
@@ -31,9 +39,11 @@
     "react-hot-toast": "^2.5.2",
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.1.1",
+    "web-vitals": "^5.1.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -43,8 +53,20 @@
     "dependency-cruiser": "^17.0.2",
     "eslint": "^9.13.0",
     "eslint-plugin-unused-imports": "^4.2.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.0.1",
+    "lint-staged": "^16.2.6",
+    "terser": "^5.44.1",
     "vite": "^5.4.10",
     "vitest": "^4.0.8"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "vitest related --run"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

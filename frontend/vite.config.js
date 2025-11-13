@@ -21,6 +21,43 @@ export default defineConfig({
       "@utils": path.resolve(__dirname, "src/utils"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React vendor chunk
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Firebase chunk
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          // Stripe chunk
+          'stripe': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
+          // DnD libraries
+          'dnd': [
+            '@dnd-kit/core',
+            '@dnd-kit/sortable',
+            '@dnd-kit/utilities',
+            '@dnd-kit/modifiers',
+            'react-dnd',
+            'react-dnd-html5-backend'
+          ],
+          // UI libraries
+          'ui': ['react-hot-toast', 'react-modal', 'react-burger-menu'],
+        },
+      },
+    },
+    // Target modern browsers for smaller bundles
+    target: 'es2015',
+    // Minify with terser for better compression
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+      },
+    },
+    // Increase chunk size warning limit (we're optimizing it)
+    chunkSizeWarningLimit: 600,
+  },
   test: {
     globals: true,
     environment: 'jsdom',

@@ -22,7 +22,7 @@ import { useIncomeStatement } from "@/hooks/useIncomeStatement.js";
 /* -------------------------------------------------------------------------- */
 /* 💼 IncomeStatement (Context-based core component)                          */
 /* -------------------------------------------------------------------------- */
-export default function IncomeStatement({
+const IncomeStatement = React.memo(function IncomeStatement({
   propertyId,
   grossBuildingAreaSqFt = 0,
   units = 0,
@@ -224,4 +224,6 @@ export default function IncomeStatement({
       </div>
     </div>
   );
-}
+});
+
+export default IncomeStatement;
