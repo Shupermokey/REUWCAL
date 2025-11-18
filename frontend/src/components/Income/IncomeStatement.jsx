@@ -27,6 +27,7 @@ const IncomeStatement = React.memo(function IncomeStatement({
   grossBuildingAreaSqFt = 0,
   units = 0,
   baselineData = null,
+  onGsrTotalChange,
 }) {
   const { user } = useAuth();
   const { displayMode } = useIncomeView();
@@ -60,6 +61,9 @@ const IncomeStatement = React.memo(function IncomeStatement({
     }
   }, [data, loading, setData]);
 
+  // Track previous GSR total for comparison
+  const prevGsrTotalRef = useRef();
+
   // Update a specific section
   const updateSection = useCallback(
     (sectionKey, updatedSectionData) => {
@@ -70,6 +74,61 @@ const IncomeStatement = React.memo(function IncomeStatement({
     },
     [setData]
   );
+
+  // Sync GSR total to Row and Property when it changes
+  useEffect(() => {
+    if (!data?.Income?.items?.gsr || !propertyId || !user) return;
+
+    const gsr = data.Income.items.gsr;
+
+    // Calculate GSR total from children if they exist
+    let gsrTotal = 0;
+    if (gsr.childOrder && gsr.childOrder.length > 0) {
+      gsrTotal = gsr.childOrder.reduce((sum, childId) => {
+        const child = gsr.children?.[childId];
+        return sum + (child?.grossAnnual || 0);
+      }, 0);
+      gsrTotal = Math.round(gsrTotal * 100) / 100;
+    } else {
+      gsrTotal = gsr.grossAnnual || 0;
+    }
+
+    // Only sync if the value actually changed
+    if (prevGsrTotalRef.current !== gsrTotal && prevGsrTotalRef.current !== undefined) {
+      console.log(`GSR total changed from ${prevGsrTotalRef.current} to ${gsrTotal}, syncing to property`);
+
+      // Sync to Row if callback provided
+      if (onGsrTotalChange) {
+        onGsrTotalChange(gsrTotal);
+      }
+
+      // Sync to Property document in Firestore
+      const syncToProperty = async () => {
+        try {
+          const { doc, updateDoc } = await import('firebase/firestore');
+          const { db } = await import('@/services/firebaseConfig');
+
+          const propertyRef = doc(db, 'users', user.uid, 'properties', propertyId);
+
+          // Update with object format to preserve hasInitialValue flag
+          await updateDoc(propertyRef, {
+            incomeStatement: {
+              value: gsrTotal,
+              hasInitialValue: true
+            }
+          });
+
+          console.log('Synced GSR total to property incomeStatement field');
+        } catch (error) {
+          console.error('Error syncing to property:', error);
+        }
+      };
+
+      syncToProperty();
+    }
+
+    prevGsrTotalRef.current = gsrTotal;
+  }, [data, onGsrTotalChange, propertyId, user]);
 
   const handleManualSave = async () => {
     try {
@@ -185,7 +244,16 @@ const IncomeStatement = React.memo(function IncomeStatement({
               </div>
 
               <div className="floating-section-header__actions">
-                <button className="add-btn">
+                <button
+                  className="add-btn"
+                  onClick={() => {
+                    // Call addItem on the sticky section's ref
+                    const sectionEl = sectionRefs.current[stickySection];
+                    if (sectionEl && sectionEl.addItem) {
+                      sectionEl.addItem();
+                    }
+                  }}
+                >
                   + Item
                 </button>
               </div>
@@ -208,6 +276,7 @@ const IncomeStatement = React.memo(function IncomeStatement({
             baselineData={baselineData}
             isSticky={stickySection === sectionTitle}
             isCollapsed={collapsedSections.has(sectionTitle)}
+            propertyId={propertyId}
             onToggleCollapse={() => {
               setCollapsedSections(prev => {
                 const next = new Set(prev);

@@ -1,51 +1,48 @@
 import { useState, useEffect, useCallback } from "react";
-import { getUnits, saveUnits } from "@/services/firestore/unitsService";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/services/firebaseConfig";
+import { saveUnits } from "@/services/firestore/unitsService";
 import { defaultUnits } from "@/utils/units/unitsDefaults";
 
 /**
- * Hook to manage units data
+ * Hook to manage units data with real-time updates
  */
 export function useUnits(userId, propertyId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load data
+  // Real-time listener
   useEffect(() => {
     if (!userId || !propertyId) {
       setLoading(false);
       return;
     }
 
-    let isMounted = true;
+    setLoading(true);
 
-    async function loadData() {
-      try {
-        setLoading(true);
-        const unitsData = await getUnits(userId, propertyId);
+    const unitsRef = doc(db, 'users', userId, 'properties', propertyId, 'details', 'units');
 
-        if (isMounted) {
-          setData(unitsData || defaultUnits());
-          setError(null);
-        }
-      } catch (err) {
-        console.error("Error loading units:", err);
-        if (isMounted) {
-          setError(err);
+    const unsubscribe = onSnapshot(
+      unitsRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setData(snapshot.data());
+        } else {
           setData(defaultUnits());
         }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        console.error("Error listening to units:", err);
+        setError(err);
+        setData(defaultUnits());
+        setLoading(false);
       }
-    }
+    );
 
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => unsubscribe();
   }, [userId, propertyId]);
 
   // Save data

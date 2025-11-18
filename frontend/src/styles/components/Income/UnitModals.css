@@ -1,0 +1,279 @@
+/* Unit Modal Overlay */
+.unit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.unit-modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.unit-modal-content h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.unit-modal-content p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.unit-modal-content ul {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.8;
+}
+
+.unit-modal-content ul li {
+  margin-bottom: 4px;
+}
+
+/* Modal Note */
+.modal-note {
+  background-color: #f7fafc;
+  border-left: 3px solid #4299e1;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #2d3748;
+}
+
+.modal-question {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Delete Options (Radio Group) */
+.delete-options {
+  margin: 16px 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.delete-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-option:hover {
+  border-color: #cbd5e0;
+  background-color: #f7fafc;
+}
+
+.delete-option input[type="radio"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.delete-option input[type="radio"]:checked + div {
+  color: #2d3748;
+}
+
+.delete-option div {
+  flex: 1;
+}
+
+.delete-option strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: #2d3748;
+}
+
+.delete-option p {
+  margin: 0;
+  font-size: 13px;
+  color: #718096;
+}
+
+.delete-option .recommended {
+  color: #38a169;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Rent Change Display */
+.rent-change-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: #f7fafc;
+  border-radius: 6px;
+  margin: 16px 0 24px 0;
+}
+
+.rent-old,
+.rent-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rent-label {
+  font-size: 12px;
+  color: #718096;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rent-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.rent-arrow {
+  font-size: 24px;
+  color: #4299e1;
+  font-weight: 300;
+}
+
+/* Modal Actions */
+.unit-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Button Styles */
+.unit-btn-primary,
+.unit-btn-secondary,
+.unit-btn-tertiary,
+.unit-btn-danger {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+}
+
+.unit-btn-primary {
+  background-color: #4299e1;
+  color: white;
+}
+
+.unit-btn-primary:hover {
+  background-color: #3182ce;
+}
+
+.unit-btn-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.unit-btn-secondary:hover {
+  background-color: #cbd5e0;
+}
+
+.unit-btn-tertiary {
+  background-color: white;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+}
+
+.unit-btn-tertiary:hover {
+  border-color: #cbd5e0;
+  background-color: #f7fafc;
+}
+
+.unit-btn-danger {
+  background-color: #f56565;
+  color: white;
+}
+
+.unit-btn-danger:hover {
+  background-color: #e53e3e;
+}
+
+/* Focus states for accessibility */
+.unit-btn-primary:focus,
+.unit-btn-secondary:focus,
+.unit-btn-tertiary:focus,
+.unit-btn-danger:focus {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .unit-modal-content {
+    padding: 20px;
+    max-width: 95%;
+  }
+
+  .unit-modal-actions {
+    flex-direction: column;
+  }
+
+  .unit-btn-primary,
+  .unit-btn-secondary,
+  .unit-btn-tertiary,
+  .unit-btn-danger {
+    width: 100%;
+  }
+
+  .rent-change-display {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rent-arrow {
+    transform: rotate(90deg);
+  }
+}

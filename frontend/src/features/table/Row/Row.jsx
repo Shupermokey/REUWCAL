@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import toast from "react-hot-toast";
 import { useAuth } from "@/app/providers/AuthProvider";
 import {
   normalizeRow,
@@ -80,7 +81,7 @@ function Row({
 
   /* ---------------------------- Input handling ---------------------------- */
   const handleInputChange = useCallback(
-    (key, e) => {
+    async (key, e) => {
       const config = columnConfig[key];
       const readOnly = !!config?.readOnly;
       if (readOnly) return;
@@ -107,6 +108,43 @@ function Row({
       toLastEditedKey,
     ]
   );
+
+  /* ---------------------------- Units sync handler ---------------------------- */
+  const handleTotalUnitsChange = useCallback((newTotal) => {
+    // Only update if the value actually changed
+    const currentValue = typeof editableRow.units === "object" ? editableRow.units.value : editableRow.units;
+    if (currentValue === newTotal) return;
+
+    const base = typeof editableRow.units === "object" ? editableRow.units : {};
+    // Preserve hasInitialValue flag when updating from dropdown
+    const nextCell = { ...base, value: newTotal, hasInitialValue: base.hasInitialValue };
+    setLocal("units", nextCell);
+
+    // Trigger recompute for rent calculations
+    const nextRow = { ...editableRow, units: nextCell };
+    const patch = recompute(nextRow);
+    if (patch && Object.keys(patch).length) {
+      setEditableRow((prev) => ({ ...prev, ...patch }));
+    }
+
+    // Also update parent state
+    handleCellChange(row.id, "units", nextCell);
+  }, [editableRow, setLocal, recompute, handleCellChange, row.id]);
+
+  /* ------------------------ Income Statement sync handler ----------------------- */
+  const handleIncomeStatementTotalChange = useCallback((newTotal) => {
+    // Only update if the value actually changed
+    const currentValue = typeof editableRow.incomeStatement === "object" ? editableRow.incomeStatement.value : editableRow.incomeStatement;
+    if (currentValue === newTotal) return;
+
+    const base = typeof editableRow.incomeStatement === "object" ? editableRow.incomeStatement : {};
+    // Preserve hasInitialValue flag when updating from dropdown
+    const nextCell = { ...base, value: newTotal, hasInitialValue: base.hasInitialValue };
+    setLocal("incomeStatement", nextCell);
+
+    // Also update parent state
+    handleCellChange(row.id, "incomeStatement", nextCell);
+  }, [editableRow, setLocal, handleCellChange, row.id]);
 
   /* ---------------------------- Render helpers ---------------------------- */
   const renderEditableCell = useCallback(
@@ -137,6 +175,10 @@ function Row({
 
       if (inputType === "custom") {
         const readOnly = !!config.readOnly;
+        // Check if this field has an initial value and is not a new row
+        const cellData = typeof editableRow[key] === "object" ? editableRow[key] : {};
+        const hasInitialValue = row.id !== "new" && cellData.hasInitialValue === true;
+
         return (
           <div
             className={`row__editable ${
@@ -149,11 +191,11 @@ function Row({
           >
             <input
               type="text"
-              readOnly={readOnly}
+              readOnly={readOnly || hasInitialValue}
               value={unwrapValue(editableRow[key]) || ""}
               onChange={(e) => handleInputChange(key, e)}
               onClick={(e) => e.stopPropagation()}
-              placeholder={readOnly ? "" : "Double-click to edit *"}
+              placeholder={hasInitialValue ? "" : (readOnly ? "" : "Double-click to edit *")}
               required
             />
           </div>
@@ -173,7 +215,7 @@ function Row({
         />
       );
     },
-    [applyBaseline, baselines, editableRow, handleInputChange, invalidFields]
+    [applyBaseline, baselines, editableRow, handleInputChange, invalidFields, row.id]
   );
 
   const renderDisplayValue = useCallback(
@@ -205,7 +247,7 @@ function Row({
   );
 
   /* ------------------------------- Save/Cancel ------------------------------- */
-  const handleSaveClick = useCallback(() => {
+  const handleSaveClick = useCallback(async () => {
     const { ok, invalids } = validateFields(
       editableRow,
       columnOrder,
@@ -219,7 +261,9 @@ function Row({
       alert(`All fields are required. Please fill out: ${fieldNames}`);
       return;
     }
-    onSave(editableRow);
+
+    // Save the row - auto-generation happens in Table.jsx after save
+    await onSave(editableRow);
     setIsEditing(false);
     setShowDetails(false);
   }, [editableRow, onSave]);
@@ -388,6 +432,7 @@ function Row({
           <Units
             propertyId={row.id}
             totalUnits={asNumber(editableRow.units)}
+            onTotalUnitsChange={handleTotalUnitsChange}
           />
         </div>
       )}
@@ -414,6 +459,7 @@ function Row({
             grossBuildingAreaSqFt={rowDataForIS.grossBuildingAreaSqFt}
             units={rowDataForIS.units}
             baselineData={editableRow.baselineSnapshot}
+            onGsrTotalChange={handleIncomeStatementTotalChange}
           />
         </div>
       )}

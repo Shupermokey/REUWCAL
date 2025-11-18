@@ -4,7 +4,7 @@ const IncomeViewCtx = createContext(null);
 
 export function IncomeViewProvider({ children }) {
   // 'monthly' | 'annual' | 'both'
-  const [displayMode, setDisplayMode] = useState('monthly');
+  const [displayMode, setDisplayMode] = useState('annual');
 
   // Rate decimal places: 0-4
   const [rateDecimalPlaces, setRateDecimalPlaces] = useState(2);

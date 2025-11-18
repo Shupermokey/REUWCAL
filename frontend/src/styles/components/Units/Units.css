@@ -115,8 +115,8 @@
 
 /* Unit Mix Grid */
 .units-mix-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -338,7 +338,264 @@
   line-height: 1.4;
 }
 
+/* Unit Type Group (NEW) */
+.units-type-group {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.units-type-group:hover {
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.units-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.units-type-header:hover {
+  background: #f3f4f6;
+}
+
+.units-type-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.units-type-expand-icon {
+  font-size: 0.8rem;
+  color: #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.units-type-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.units-type-name-input {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  min-width: 150px;
+}
+
+.units-type-name-input:hover {
+  background: #f3f4f6;
+}
+
+.units-type-name-input:focus {
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px #6366f1;
+}
+
+.units-type-count {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.units-type-summary {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.units-type-stat {
+  font-size: 0.85rem;
+  color: #374151;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+/* Units List (Individual Units) */
+.units-list {
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.units-list-header {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.5fr 1.5fr 120px;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.units-list-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.5fr 1.5fr 120px;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s ease;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.units-list-row:hover {
+  background: #f9fafb;
+}
+
+.units-list-row:last-child {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.units-list-col-name {
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.units-list-col {
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.units-list-col-lease {
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.units-list-col-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.units-vacant {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.units-lease-dates {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.units-linked-badge {
+  font-size: 1.2rem;
+  cursor: help;
+}
+
+/* Inline Editing Inputs */
+.units-inline-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #111827;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.units-inline-input:hover {
+  border-color: #9ca3af;
+}
+
+.units-inline-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.units-inline-input-number {
+  text-align: right;
+}
+
+.units-inline-input-date {
+  font-size: 0.8rem;
+}
+
+/* Add Unit Button */
+.units-add-unit-row {
+  padding: 12px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.units-add-unit-btn {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.units-add-unit-btn:hover {
+  background: #4f46e5;
+  transform: scale(1.02);
+}
+
+/* Delete Unit Button */
+.units-delete-unit-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+.units-delete-unit-btn:hover {
+  transform: scale(1.2);
+}
+
 /* Responsive */
+@media (max-width: 1024px) {
+  .units-list-header,
+  .units-list-row {
+    grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr 1fr 1fr 100px;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+
+  .units-type-summary {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .units-inline-input {
+    font-size: 0.75rem;
+    padding: 4px 6px;
+  }
+}
+
 @media (max-width: 768px) {
   .units-panel {
     padding: 16px;

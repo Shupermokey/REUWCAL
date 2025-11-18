@@ -143,22 +143,27 @@
 .sec__rowGrid {
   padding: 6px 10px;
   border-bottom: 1px solid #e5e7eb;
-  background: #f8f9fa; /* Parent items - light grey/white */
+  background: #ffffff; /* Default white */
+}
+
+/* Alternating row colors for parent rows */
+.sec__rowGrid:nth-child(even) {
+  background: #f8f9fa; /* Light grey for even rows */
 }
 
 .sec__rowGrid:hover {
   background: #f0f1f3;
 }
 
-/* Sub-row indentation - all white/very light */
+/* Sub-row indentation - slightly lighter than parent */
 .sec__subRowGrid {
   padding: 4px 10px 4px 38px;
   border-bottom: 1px solid #e5e7eb;
-  background: #ffffff; /* Children - white */
+  background: #f9fafb; /* Very light grey for children */
 }
 
 .sec__subRowGrid:hover {
-  background: #f8f9fa;
+  background: #f0f1f3;
 }
 
 .sec__firstCell {
@@ -265,6 +270,7 @@
 .add-btn {
   background: #2563eb;
   color: #fff;
+  font-weight: 400; /* Normal weight by default */
 }
 .add-btn:hover {
   background: #1d4ed8;

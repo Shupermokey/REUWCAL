@@ -22,22 +22,46 @@ const buildSection = (keys) =>
   Object.fromEntries(keys.map((label) => [label, newLeaf()]));
 
 /* -------------------------------------------------------------------------- */
-/* 🧱 Default Income Statement structure (dynamic, constant-driven)            */
+/* 🧱 Helper to create an item with the new structure                         */
+/* -------------------------------------------------------------------------- */
+const createItem = (id, label) => ({
+  id,
+  label,
+  ...newLeaf(),
+});
+
+/* -------------------------------------------------------------------------- */
+/* 🧱 Default Income Statement structure (NEW nested structure)               */
 /* -------------------------------------------------------------------------- */
 export const defaultStructure = {
   /* --------------------------- INCOME SECTION --------------------------- */
   Income: {
-    ...buildSection(INCOME_ORDER),
+    order: ["gsr", "vacancy-collections-loss", "nri", "total-income"],
+    items: {
+      "gsr": {
+        ...createItem("gsr", "Gross Scheduled Rent"),
+        children: {},
+        childOrder: [],
+      },
+      "vacancy-collections-loss": {
+        ...createItem("vacancy-collections-loss", "Vacancy/Collections Loss"),
+        children: {},
+        childOrder: [],
+      },
+      "nri": createItem("nri", "Net Rental Income"),
+      "total-income": createItem("total-income", "Total Operating Income"),
+    },
   },
 
   /* ---------------------- OPERATING EXPENSES SECTION -------------------- */
   OperatingExpenses: {
-    ...buildSection(TAX_KEYS),
-    ...buildSection(INS_KEYS),
-    ...buildSection(CAM_KEYS),
-    ...buildSection(ADMIN_KEYS),
+    order: [],
+    items: {},
   },
 
   /* -------------------------- CAPITAL EXPENSES -------------------------- */
-  CapitalExpenses: buildSection(CAPEX_KEYS),
+  CapitalExpenses: {
+    order: [],
+    items: {},
+  },
 };

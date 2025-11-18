@@ -1,0 +1,100 @@
+/* Unit Info Tooltip */
+.unit-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  min-width: 250px;
+  max-width: 300px;
+  animation: tooltipFadeIn 0.2s ease-out;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tooltip arrow */
+.unit-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  transform: rotate(45deg);
+  box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Tooltip Header */
+.unit-tooltip-header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.unit-tooltip-header strong {
+  font-size: 14px;
+  color: #2d3748;
+}
+
+/* Tooltip Body */
+.unit-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unit-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.unit-tooltip-label {
+  color: #718096;
+  font-weight: 500;
+}
+
+.unit-tooltip-value {
+  color: #2d3748;
+  font-weight: 400;
+}
+
+/* Tooltip Footer */
+.unit-tooltip-footer {
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.unit-tooltip-footer small {
+  font-size: 11px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* Loading/Error States */
+.unit-tooltip-loading,
+.unit-tooltip-error {
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #718096;
+}
+
+.unit-tooltip-error {
+  color: #e53e3e;
+}
