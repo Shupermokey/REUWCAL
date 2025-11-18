@@ -7,9 +7,13 @@ import { useDialog } from "@/app/providers/DialogProvider";
 import { useUnits } from "@/hooks/useUnits";
 import {
   createUnitType,
+  createUnit,
   calculateTotalUnits,
   calculateAvgSqFt,
   calculateAvgRent,
+  generateYearlyBreakdown,
+  calculateWALT,
+  calculatePercentOfGBA,
 } from "@/utils/units/unitsDefaults";
 import {
   createIncomeStatementFromUnitType,
@@ -25,13 +29,22 @@ import "@/styles/components/Units/Units.css";
 /**
  * Units Detail Panel
  */
-export default function Units({ propertyId, onTotalUnitsChange }) {
+export default function Units({ propertyId, onTotalUnitsChange, grossBuildingArea = 0 }) {
   const { user } = useAuth();
   const { prompt, promptMultiple } = useDialog();
   const { data, setData, loading, save } = useUnits(user.uid, propertyId);
   const [expandedTypes, setExpandedTypes] = useState({}); // Track which unit types are expanded
+  const [expandedYearlyUnits, setExpandedYearlyUnits] = useState({}); // Track which units have yearly breakdown expanded
   const onTotalUnitsChangeRef = useRef(onTotalUnitsChange);
   const prevTotalUnitsRef = useRef();
+
+  // Toggle yearly breakdown expansion for a unit
+  const toggleYearlyExpanded = useCallback((unitId) => {
+    setExpandedYearlyUnits(prev => ({
+      ...prev,
+      [unitId]: !prev[unitId]
+    }));
+  }, []);
 
   // Keep ref up to date
   useEffect(() => {
@@ -624,243 +637,362 @@ export default function Units({ propertyId, onTotalUnitsChange }) {
             </div>
           </div>
 
-          <div className="units-mix-grid">
-            {data.unitMix.map((typeGroup, index) => {
+          {/* New 20-Column Table Structure */}
+          <div className="units-table-container">
+            {/* Header Groups */}
+            <div className="units-header-groups">
+              <div className="units-header-group-info">Unit Information</div>
+              <div className="units-header-group-income">Unit Income Information</div>
+              <div className="units-header-group-lease">Lease Information</div>
+            </div>
+
+            {/* Sub-headers */}
+            <div className="units-subheaders">
+              {/* Unit Information - 5 columns */}
+              <div className="units-subheader">Unit ID</div>
+              <div className="units-subheader">Unit Desc</div>
+              <div className="units-subheader">Lease Abstract</div>
+              <div className="units-subheader">Tenant Name</div>
+              <div className="units-subheader">Size (% GBA)</div>
+              {/* Unit Income Information - 11 columns */}
+              <div className="units-subheader">% Inc Rent</div>
+              <div className="units-subheader">Rent/sqft</div>
+              <div className="units-subheader">Rent/mo</div>
+              <div className="units-subheader">Rent/yr</div>
+              <div className="units-subheader">% Inc Rec</div>
+              <div className="units-subheader">Rec/sqft</div>
+              <div className="units-subheader">Rec/mo</div>
+              <div className="units-subheader">Rec/yr</div>
+              <div className="units-subheader">Gross/sqft</div>
+              <div className="units-subheader">Gross/mo</div>
+              <div className="units-subheader">Gross/yr</div>
+              {/* Lease Information - 6 columns */}
+              <div className="units-subheader">Term Start</div>
+              <div className="units-subheader">Term End</div>
+              <div className="units-subheader">Gross Mo Rem</div>
+              <div className="units-subheader">Gross Yr Rem</div>
+              <div className="units-subheader">WALT (Mo)</div>
+              <div className="units-subheader">WALT (Yr)</div>
+            </div>
+
+            {/* Data Rows */}
+            {data.unitMix.map((typeGroup, typeIndex) => {
               const isPlainUnit = typeGroup.type === null;
-              const unit = isPlainUnit ? typeGroup.units[0] : null;
 
-              // Render plain units differently
-              if (isPlainUnit && unit) {
-                return (
-                  <div key={index} className="units-plain-unit-row">
-                    <div className="units-list-row">
-                      <div className="units-list-col-name">
-                        <input
-                          type="text"
-                          className="units-inline-input"
-                          value={unit.name || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'name', e.target.value)}
-                          placeholder="Unit name"
-                        />
-                      </div>
-                      <div className="units-list-col">
-                        <input
-                          type="text"
-                          className="units-inline-input"
-                          value={unit.tenant || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'tenant', e.target.value)}
-                          placeholder="Vacant"
-                        />
-                      </div>
-                      <div className="units-list-col">
-                        <input
-                          type="number"
-                          className="units-inline-input units-inline-input-number"
-                          value={unit.rent || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'rent', parseFloat(e.target.value) || 0)}
-                          placeholder="0"
-                          min="0"
-                          step="1"
-                        />
-                      </div>
-                      <div className="units-list-col">
-                        <input
-                          type="number"
-                          className="units-inline-input units-inline-input-number"
-                          value={unit.sqft || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'sqft', parseFloat(e.target.value) || 0)}
-                          placeholder="0"
-                          min="0"
-                          step="1"
-                        />
-                      </div>
-                      <div className="units-list-col-lease">
-                        <input
-                          type="date"
-                          className="units-inline-input units-inline-input-date"
-                          value={unit.leaseStart || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'leaseStart', e.target.value)}
-                        />
-                      </div>
-                      <div className="units-list-col-lease">
-                        <input
-                          type="date"
-                          className="units-inline-input units-inline-input-date"
-                          value={unit.leaseEnd || ''}
-                          onChange={(e) => updateUnit(index, unit.id, 'leaseEnd', e.target.value)}
-                        />
-                      </div>
-                      <div className="units-list-col-actions">
-                        {unit.linkedIncomeStatementRowId && (
-                          <span className="units-linked-badge" title="Linked to Income Statement">
-                            🔗
-                          </span>
-                        )}
-                        <button
-                          className="units-action-btn"
-                          onClick={() => convertPlainUnitToHeader(index)}
-                          title="Convert to header with sub-units"
-                          style={{ marginRight: '4px' }}
-                        >
-                          📁
-                        </button>
-                        <button
-                          className="units-delete-unit-btn"
-                          onClick={() => removeUnit(index, unit.id)}
-                          title="Delete unit"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              // Render grouped units (with header/type)
               return (
-              <div key={index} className="units-type-group">
-                {/* Unit Type Header */}
-                <div className="units-type-header">
-                  <div className="units-type-header-left">
-                    <span
-                      className="units-type-expand-icon"
-                      onClick={() => toggleExpanded(typeGroup.type)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {expandedTypes[typeGroup.type] ? '▼' : '▶'}
-                    </span>
-                    <input
-                      type="text"
-                      className="units-type-name-input"
-                      value={typeGroup.type || ''}
-                      onChange={(e) => updateUnitTypeName(typeGroup.type, e.target.value)}
-                      placeholder={`Unit Type ${index + 1}`}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <span className="units-type-count">
-                      ({typeGroup.count} unit{typeGroup.count !== 1 ? 's' : ''})
-                    </span>
-                  </div>
-                  <div className="units-type-summary" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {typeGroup.avgSqFt > 0 && (
-                      <span className="units-type-stat">
-                        {typeGroup.avgSqFt.toLocaleString()} sq ft avg
-                      </span>
-                    )}
-                    {typeGroup.avgRent > 0 && (
-                      <span className="units-type-stat">
-                        ${typeGroup.avgRent.toLocaleString()}/mo avg
-                      </span>
-                    )}
-                    <button
-                      className="units-delete-unit-btn"
-                      onClick={() => removeUnitType(index)}
-                      title="Delete entire unit type and all units"
-                      style={{ marginLeft: '8px' }}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-
-                {/* Individual Units (when expanded) */}
-                {expandedTypes[typeGroup.type] && (
-                  <div className="units-list">
-                    <div className="units-list-header">
-                      <div className="units-list-col-name">Unit Name</div>
-                      <div className="units-list-col">Tenant</div>
-                      <div className="units-list-col">Rent</div>
-                      <div className="units-list-col">Sq Ft</div>
-                      <div className="units-list-col-lease">Lease Start</div>
-                      <div className="units-list-col-lease">Lease End</div>
-                      <div className="units-list-col-actions">Actions</div>
-                    </div>
-                    {typeGroup.units && typeGroup.units.map((unit) => (
-                      <div key={unit.id} className="units-list-row">
-                        <div className="units-list-col-name">
+                <React.Fragment key={typeIndex}>
+                  {/* Type Header Row (if grouped) */}
+                  {!isPlainUnit && (
+                    <>
+                      <div
+                        className="units-type-header"
+                        onClick={() => toggleExpanded(typeGroup.type)}
+                      >
+                        <div className="units-type-header-left">
+                          <span className="units-type-expand-icon">
+                            {expandedTypes[typeGroup.type] ? '▼' : '▶'}
+                          </span>
                           <input
                             type="text"
-                            className="units-inline-input"
-                            value={unit.name || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'name', e.target.value)}
-                            placeholder="Unit name"
+                            className="units-type-name-input"
+                            value={typeGroup.type || ''}
+                            onChange={(e) => updateUnitTypeName(typeGroup.type, e.target.value)}
+                            placeholder={`Unit Type ${typeIndex + 1}`}
+                            onClick={(e) => e.stopPropagation()}
                           />
+                          <span className="units-type-count">
+                            ({typeGroup.count} unit{typeGroup.count !== 1 ? 's' : ''})
+                          </span>
                         </div>
-                        <div className="units-list-col">
-                          <input
-                            type="text"
-                            className="units-inline-input"
-                            value={unit.tenant || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'tenant', e.target.value)}
-                            placeholder="Vacant"
-                          />
-                        </div>
-                        <div className="units-list-col">
-                          <input
-                            type="number"
-                            className="units-inline-input units-inline-input-number"
-                            value={unit.rent || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'rent', parseFloat(e.target.value) || 0)}
-                            placeholder="0"
-                            min="0"
-                            step="1"
-                          />
-                        </div>
-                        <div className="units-list-col">
-                          <input
-                            type="number"
-                            className="units-inline-input units-inline-input-number"
-                            value={unit.sqft || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'sqft', parseFloat(e.target.value) || 0)}
-                            placeholder="0"
-                            min="0"
-                            step="1"
-                          />
-                        </div>
-                        <div className="units-list-col-lease">
-                          <input
-                            type="date"
-                            className="units-inline-input units-inline-input-date"
-                            value={unit.leaseStart || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'leaseStart', e.target.value)}
-                          />
-                        </div>
-                        <div className="units-list-col-lease">
-                          <input
-                            type="date"
-                            className="units-inline-input units-inline-input-date"
-                            value={unit.leaseEnd || ''}
-                            onChange={(e) => updateUnit(index, unit.id, 'leaseEnd', e.target.value)}
-                          />
-                        </div>
-                        <div className="units-list-col-actions">
-                          {unit.linkedIncomeStatementRowId && (
-                            <span className="units-linked-badge" title="Linked to Income Statement">
-                              🔗
-                            </span>
-                          )}
+                        <div className="units-type-summary">
                           <button
                             className="units-delete-unit-btn"
-                            onClick={() => removeUnit(index, unit.id)}
-                            title="Delete unit"
+                            onClick={(e) => { e.stopPropagation(); removeUnitType(typeIndex); }}
+                            title="Delete entire unit type"
                           >
                             🗑️
                           </button>
                         </div>
                       </div>
-                    ))}
+                      {/* Subheaders inside expanded group */}
+                      {expandedTypes[typeGroup.type] && (
+                        <div className="units-subheaders units-group-subheaders">
+                          {/* Unit Information - 5 columns */}
+                          <div className="units-subheader">Unit ID</div>
+                          <div className="units-subheader">Unit Desc</div>
+                          <div className="units-subheader">Lease Abstract</div>
+                          <div className="units-subheader">Tenant Name</div>
+                          <div className="units-subheader">Size (% GBA)</div>
+                          {/* Unit Income Information - 11 columns */}
+                          <div className="units-subheader">% Inc Rent</div>
+                          <div className="units-subheader">Rent/sqft</div>
+                          <div className="units-subheader">Rent/mo</div>
+                          <div className="units-subheader">Rent/yr</div>
+                          <div className="units-subheader">% Inc Rec</div>
+                          <div className="units-subheader">Rec/sqft</div>
+                          <div className="units-subheader">Rec/mo</div>
+                          <div className="units-subheader">Rec/yr</div>
+                          <div className="units-subheader">Gross/sqft</div>
+                          <div className="units-subheader">Gross/mo</div>
+                          <div className="units-subheader">Gross/yr</div>
+                          {/* Lease Information - 6 columns */}
+                          <div className="units-subheader">Term Start</div>
+                          <div className="units-subheader">Term End</div>
+                          <div className="units-subheader">Gross Mo Rem</div>
+                          <div className="units-subheader">Gross Yr Rem</div>
+                          <div className="units-subheader">WALT (Mo)</div>
+                          <div className="units-subheader">WALT (Yr)</div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Unit Rows */}
+                  {(isPlainUnit || expandedTypes[typeGroup.type]) && typeGroup.units && typeGroup.units.map((unit) => {
+                    // Calculate derived values
+                    const sqft = parseFloat(unit.sqft) || 0;
+                    const rentMonthly = parseFloat(unit.rent || unit.rentMonthly) || 0;
+                    const rentAnnual = rentMonthly * 12;
+                    const rentPsf = sqft > 0 ? rentMonthly / sqft : 0;
+                    const percentGBA = calculatePercentOfGBA(sqft, grossBuildingArea);
+                    const walt = calculateWALT(unit.leaseEnd);
+
+                    // Generate yearly breakdown
+                    const yearlyBreakdown = generateYearlyBreakdown(
+                      unit.leaseStart,
+                      unit.leaseEnd,
+                      rentMonthly,
+                      unit.percentIncreaseRent || 3
+                    );
+
+                    return (
+                      <React.Fragment key={unit.id}>
+                        {/* Main Unit Row */}
+                        <div className="units-data-row">
+                          {/* Unit Information - 5 columns */}
+                          <div className="units-data-cell">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              {yearlyBreakdown.length > 0 && (
+                                <button
+                                  className={`units-expand-btn ${expandedYearlyUnits[unit.id] ? 'expanded' : ''}`}
+                                  onClick={() => toggleYearlyExpanded(unit.id)}
+                                  title="Toggle yearly breakdown"
+                                >
+                                  ▶
+                                </button>
+                              )}
+                              <input
+                                type="text"
+                                className="units-cell-input"
+                                value={unit.name || unit.unitId || ''}
+                                onChange={(e) => updateUnit(typeIndex, unit.id, 'name', e.target.value)}
+                                placeholder="ID"
+                              />
+                            </div>
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="text"
+                              className="units-cell-input"
+                              value={unit.unitDesc || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'unitDesc', e.target.value)}
+                              placeholder="Description"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="text"
+                              className="units-cell-input"
+                              value={unit.leaseAbstract || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'leaseAbstract', e.target.value)}
+                              placeholder="Abstract"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="text"
+                              className="units-cell-input"
+                              value={unit.tenant || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'tenant', e.target.value)}
+                              placeholder="Vacant"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">{percentGBA.toFixed(2)}%</span>
+                          </div>
+
+                          {/* Unit Income Information - 11 columns */}
+                          <div className="units-data-cell">
+                            <input
+                              type="number"
+                              className="units-cell-input units-cell-input-number"
+                              value={unit.percentIncreaseRent || 3}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'percentIncreaseRent', parseFloat(e.target.value) || 0)}
+                              min="0"
+                              step="0.1"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">${rentPsf.toFixed(2)}</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="number"
+                              className="units-cell-input units-cell-input-number"
+                              value={rentMonthly || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'rent', parseFloat(e.target.value) || 0)}
+                              placeholder="0"
+                              min="0"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">${rentAnnual.toLocaleString()}</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="number"
+                              className="units-cell-input units-cell-input-number"
+                              value={unit.percentIncreaseRecoverable || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'percentIncreaseRecoverable', parseFloat(e.target.value) || 0)}
+                              placeholder="0"
+                              min="0"
+                              step="0.1"
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">-</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">-</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">-</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">${rentPsf.toFixed(2)}</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">${rentMonthly.toLocaleString()}</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">${rentAnnual.toLocaleString()}</span>
+                          </div>
+
+                          {/* Lease Information - 6 columns */}
+                          <div className="units-data-cell">
+                            <input
+                              type="date"
+                              className="units-cell-input units-cell-input-date"
+                              value={unit.leaseStart || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'leaseStart', e.target.value)}
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <input
+                              type="date"
+                              className="units-cell-input units-cell-input-date"
+                              value={unit.leaseEnd || ''}
+                              onChange={(e) => updateUnit(typeIndex, unit.id, 'leaseEnd', e.target.value)}
+                            />
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">
+                              {unit.leaseEnd ? (() => {
+                                const end = new Date(unit.leaseEnd);
+                                const now = new Date();
+                                if (isNaN(end.getTime())) return '-';
+                                const diffMs = end.getTime() - now.getTime();
+                                if (diffMs <= 0) return '0';
+                                const months = diffMs / (1000 * 60 * 60 * 24 * 30.44);
+                                return Math.round(months * 10) / 10;
+                              })() : '-'}
+                            </span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">
+                              {unit.leaseEnd ? (() => {
+                                const end = new Date(unit.leaseEnd);
+                                const now = new Date();
+                                if (isNaN(end.getTime())) return '-';
+                                const diffMs = end.getTime() - now.getTime();
+                                if (diffMs <= 0) return '0';
+                                const years = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+                                return Math.round(years * 100) / 100;
+                              })() : '-'}
+                            </span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">{walt.monthly.toFixed(1)}</span>
+                          </div>
+                          <div className="units-data-cell">
+                            <span className="units-calculated">{walt.annual.toFixed(2)}</span>
+                          </div>
+                        </div>
+
+                        {/* Yearly Breakdown Rows (collapsible) */}
+                        {expandedYearlyUnits[unit.id] && yearlyBreakdown.map((yearData, yearIndex) => (
+                          <div key={`${unit.id}-year-${yearData.year}`} className="units-data-row units-yearly-row">
+                            {/* Unit Information - 5 columns (mostly empty for yearly rows) */}
+                            <div className="units-data-cell" style={{ paddingLeft: '24px' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{yearData.year}</span>
+                            </div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+
+                            {/* Unit Income Information - 11 columns */}
+                            <div className="units-data-cell">
+                              <span className="units-calculated">{yearData.percentIncrease}%</span>
+                            </div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
+                            </div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
+                            </div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
+                            </div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
+                            </div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
+                            </div>
+                            <div className="units-data-cell">
+                              <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
+                            </div>
+
+                            {/* Lease Information - 6 columns */}
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                            <div className="units-data-cell"></div>
+                          </div>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
+
+                  {/* Add Unit button for grouped types */}
+                  {!isPlainUnit && expandedTypes[typeGroup.type] && (
                     <div className="units-add-unit-row">
                       <button
                         className="units-add-unit-btn"
-                        onClick={() => addUnitToType(index)}
+                        onClick={() => addUnitToType(typeIndex)}
                       >
                         ➕ Add Unit to {typeGroup.type}
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </div>
@@ -870,6 +1002,10 @@ export default function Units({ propertyId, onTotalUnitsChange }) {
             <div className="units-totals-item">
               <span className="units-totals-label">Total Units:</span>
               <span className="units-totals-value">{totals.totalUnits}</span>
+            </div>
+            <div className="units-totals-item">
+              <span className="units-totals-label">GBA:</span>
+              <span className="units-totals-value">{grossBuildingArea.toLocaleString()} sq ft</span>
             </div>
             {totals.avgSqFt > 0 && (
               <div className="units-totals-item">

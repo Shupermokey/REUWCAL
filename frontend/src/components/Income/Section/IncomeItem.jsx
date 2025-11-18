@@ -386,7 +386,7 @@ export default function IncomeItem({
 
         {/* Action buttons */}
         <div className="sec__actions">
-          {!isSubtotal && config.allowSub && (
+          {!isSubtotal && config.allowSub && depth < 2 && (
             <button
               className="sub-btn"
               onClick={() => onAddChild(item.id, path)}

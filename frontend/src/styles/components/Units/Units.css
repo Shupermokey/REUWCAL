@@ -1,12 +1,12 @@
 /* ==========================================================
-   UNITS PANEL
+   UNITS PANEL - NEW STRUCTURE
    ========================================================== */
 
 .units-wrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1200px;
+  max-width: 2400px;
   height: 80vh;
   max-height: 900px;
   margin: 0 auto;
@@ -71,15 +71,6 @@
   border: 1px solid #e5e7eb;
 }
 
-.units-section h3 {
-  margin: 0 0 20px 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #374151;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #d1d5db;
-}
-
 .units-section-header {
   display: flex;
   justify-content: space-between;
@@ -91,8 +82,9 @@
 
 .units-section-header h3 {
   margin: 0;
-  padding: 0;
-  border: none;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 /* Add Button */
@@ -113,258 +105,357 @@
   transform: scale(1.05);
 }
 
-/* Unit Mix Grid */
-.units-mix-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
+/* ==========================================================
+   NEW TABLE STRUCTURE - 20 Columns with Header Groups
+   ========================================================== */
 
-/* Unit Mix Card */
-.units-mix-card {
-  background: #ffffff;
+.units-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
 }
 
-.units-mix-card:hover {
-  border-color: #6366f1;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
-}
-
-.units-mix-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.units-mix-card-number {
-  display: inline-block;
-  padding: 4px 10px;
-  background: #6366f1;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.units-remove-btn {
-  background: #ef4444;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.units-remove-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
-}
-
-/* Unit Mix Fields */
-.units-mix-fields {
+/* Header Groups Row - Uses same column widths as subheaders */
+.units-header-groups {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Fields */
-.units-field {
-  display: flex;
-  flex-direction: column;
-}
-
-.units-field label {
-  margin-bottom: 6px;
+  /* Same grid as subheaders to ensure alignment */
+  grid-template-columns:
+    /* Unit Information - 5 columns */
+    minmax(80px, 1fr)
+    minmax(120px, 1.5fr)
+    minmax(100px, 1.2fr)
+    minmax(100px, 1.2fr)
+    minmax(80px, 1fr)
+    /* Unit Income Information - 11 columns */
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    /* Lease Information - 6 columns */
+    minmax(90px, 1fr)
+    minmax(90px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr);
+  font-weight: 700;
   font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Unit Information header spans columns 1-5 */
+.units-header-group-info {
+  grid-column: 1 / 6;
+  padding: 12px 16px;
+  text-align: center;
+  background: #374151;
+  color: #fff;
+  border-right: 3px solid #1e3a8a;
+}
+
+/* Unit Income Information header spans columns 6-16 */
+.units-header-group-income {
+  grid-column: 6 / 17;
+  padding: 12px 16px;
+  text-align: center;
+  background: #065f46;
+  color: #fff;
+  border-right: 3px solid #1e3a8a;
+}
+
+/* Lease Information header spans columns 17-22 */
+.units-header-group-lease {
+  grid-column: 17 / 23;
+  padding: 12px 16px;
+  text-align: center;
+  background: #1e40af;
+  color: #fff;
+}
+
+/* Sub-headers Row */
+.units-subheaders {
+  display: grid;
+  /* Unit Info (5) + Unit Income (11) + Lease Info (6) = 22 columns */
+  grid-template-columns:
+    /* Unit Information - 5 columns */
+    minmax(80px, 1fr)   /* Unit ID */
+    minmax(120px, 1.5fr) /* Unit Desc */
+    minmax(100px, 1.2fr) /* Lease Abstract */
+    minmax(100px, 1.2fr) /* Tenant Name */
+    minmax(80px, 1fr)    /* Unit Size % */
+    /* Unit Income Information - 11 columns */
+    minmax(60px, 0.8fr)  /* % Increase Rent */
+    minmax(70px, 0.9fr)  /* Rent p/sqft */
+    minmax(80px, 1fr)    /* Rent p/month */
+    minmax(80px, 1fr)    /* Rent p/annual */
+    minmax(60px, 0.8fr)  /* % Increase Recoverable */
+    minmax(70px, 0.9fr)  /* Recoverable p/sqft */
+    minmax(80px, 1fr)    /* Recoverable p/month */
+    minmax(80px, 1fr)    /* Recoverable p/annual */
+    minmax(70px, 0.9fr)  /* Gross p/sqft */
+    minmax(80px, 1fr)    /* Gross p/month */
+    minmax(80px, 1fr)    /* Gross p/annual */
+    /* Lease Information - 6 columns */
+    minmax(90px, 1fr)    /* Term Start */
+    minmax(90px, 1fr)    /* Term End */
+    minmax(70px, 0.9fr)  /* Gross Mo Remaining */
+    minmax(70px, 0.9fr)  /* Gross Yr Remaining */
+    minmax(70px, 0.9fr)  /* WALT Monthly */
+    minmax(70px, 0.9fr); /* WALT Annual */
+  font-size: 0.7rem;
   font-weight: 600;
   color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.units-field input[type="text"],
-.units-field input[type="number"] {
+.units-subheader {
+  padding: 10px 8px;
+  text-align: center;
+  border-right: 1px solid #d1d5db;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.units-subheader:last-child {
+  border-right: none;
+}
+
+/* Unit Information columns (1-5) - Gray background */
+.units-subheader:nth-child(-n+5) {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+/* Add thick border after Unit Information group */
+.units-subheader:nth-child(5) {
+  border-right: 3px solid #1e3a8a;
+}
+
+/* Unit Income Information columns (6-16) - Light green background */
+.units-subheader:nth-child(n+6):nth-child(-n+16) {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+/* Add thick border after Unit Income Information group */
+.units-subheader:nth-child(16) {
+  border-right: 3px solid #1e3a8a;
+}
+
+/* Lease Information columns (17-22) - Light blue background */
+.units-subheader:nth-child(n+17) {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Subheaders inside expanded groups - slightly smaller and with top border */
+.units-group-subheaders {
+  border-top: 2px solid #e5e7eb;
+  font-size: 0.65rem;
+}
+
+.units-group-subheaders .units-subheader {
+  padding: 8px 6px;
+}
+
+/* Data Rows */
+.units-data-row {
+  display: grid;
+  grid-template-columns:
+    /* Unit Information - 5 columns */
+    minmax(80px, 1fr)
+    minmax(120px, 1.5fr)
+    minmax(100px, 1.2fr)
+    minmax(100px, 1.2fr)
+    minmax(80px, 1fr)
+    /* Unit Income Information - 11 columns */
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(80px, 1fr)
+    /* Lease Information - 6 columns */
+    minmax(90px, 1fr)
+    minmax(90px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr)
+    minmax(70px, 0.9fr);
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.15s ease;
+  align-items: center;
+}
+
+.units-data-row:hover {
+  background: #f9fafb;
+}
+
+.units-data-row.units-yearly-row {
+  background: #fefce8;
+  font-size: 0.85em;
+}
+
+.units-data-row.units-yearly-row:hover {
+  background: #fef3c7;
+}
+
+.units-data-cell {
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 0.85rem;
+  border-right: 1px solid #f3f4f6;
+}
+
+.units-data-cell:last-child {
+  border-right: none;
+}
+
+/* Add thick border separators between groups in data rows */
+.units-data-cell:nth-child(5) {
+  border-right: 3px solid #e5e7eb;
+}
+
+.units-data-cell:nth-child(16) {
+  border-right: 3px solid #e5e7eb;
+}
+
+/* Subtle background tints for data cell groups */
+.units-data-row .units-data-cell:nth-child(-n+5) {
+  background: rgba(229, 231, 235, 0.3);
+}
+
+.units-data-row .units-data-cell:nth-child(n+6):nth-child(-n+16) {
+  background: rgba(236, 253, 245, 0.3);
+}
+
+.units-data-row .units-data-cell:nth-child(n+17) {
+  background: rgba(219, 234, 254, 0.3);
+}
+
+.units-data-row:hover .units-data-cell {
+  background: rgba(249, 250, 251, 0.8);
+}
+
+/* Input styling within cells */
+.units-cell-input {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #111827;
-  background: #fff;
-  transition: all 0.2s ease;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-align: center;
+  background: transparent;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 }
 
-.units-field input:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.units-cell-input:hover {
+  border-color: #d1d5db;
+  background: #fff;
 }
 
-.units-field-hint {
-  margin: 6px 0 0 0;
-  font-size: 0.8rem;
+.units-cell-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.units-cell-input-number {
+  text-align: right;
+}
+
+.units-cell-input-date {
+  font-size: 0.75rem;
+}
+
+/* Calculated field styling */
+.units-calculated {
   color: #6b7280;
   font-style: italic;
 }
 
-/* Unit Mix Summary */
-.units-mix-summary {
-  margin-top: 12px;
-  padding: 10px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-}
-
-.units-mix-summary-text {
-  font-size: 0.85rem;
-  color: #1e40af;
-  font-weight: 500;
-}
-
-/* Totals */
-.units-totals {
-  padding: 16px;
-  background: #ffffff;
-  border: 2px solid #6366f1;
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.units-totals-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.units-totals-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.units-totals-value {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #6366f1;
-  font-family: monospace;
-}
-
-/* Rent Roll Grid */
-.units-rentroll-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.units-rentroll-grid .units-field {
-  padding: 16px;
-  background: #ffffff;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-}
-
-/* Rent Roll Summary */
-.units-rentroll-summary {
-  padding: 16px;
-  background: #f0fdf4;
-  border: 2px solid #86efac;
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.units-rentroll-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.units-rentroll-summary-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #065f46;
-}
-
-.units-rentroll-summary-value {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #059669;
-  font-family: monospace;
-}
-
-/* Folder Card */
-.units-folder-card {
-  padding: 16px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+/* Expand/Collapse button for yearly rows */
+.units-expand-btn {
+  background: transparent;
+  border: none;
   cursor: pointer;
+  padding: 2px;
+  font-size: 0.9rem;
+  color: #6366f1;
+  transition: transform 0.2s ease;
 }
 
-.units-folder-card:hover {
-  border-color: #2563eb;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
-  transform: translateY(-2px);
+.units-expand-btn:hover {
+  transform: scale(1.2);
 }
 
-.units-folder-card h4 {
-  margin: 0 0 8px 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #111827;
+.units-expand-btn.expanded {
+  transform: rotate(90deg);
 }
 
-.units-folder-card p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #6b7280;
-  line-height: 1.4;
+/* Actions column (delete, etc.) */
+.units-actions-cell {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
 }
 
-/* Unit Type Group (NEW) */
+.units-delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+  color: #ef4444;
+}
+
+.units-delete-btn:hover {
+  transform: scale(1.2);
+}
+
+/* ==========================================================
+   UNIT TYPE GROUPS (Headers)
+   ========================================================== */
+
 .units-type-group {
-  background: #ffffff;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
   margin-bottom: 16px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.units-type-group:hover {
-  border-color: #6366f1;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
 .units-type-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: #f9fafb;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 .units-type-header:hover {
-  background: #f3f4f6;
+  background: #e5e7eb;
 }
 
 .units-type-header-left {
@@ -377,13 +468,6 @@
   font-size: 0.8rem;
   color: #6b7280;
   transition: transform 0.2s ease;
-}
-
-.units-type-header h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
 }
 
 .units-type-name-input {
@@ -429,118 +513,13 @@
   border-radius: 4px;
 }
 
-/* Units List (Individual Units) */
-.units-list {
-  border-top: 1px solid #e5e7eb;
-  background: #ffffff;
-}
-
-.units-list-header {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.5fr 1.5fr 120px;
-  gap: 12px;
-  padding: 14px 20px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.units-list-row {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1.5fr 1.5fr 120px;
-  gap: 12px;
-  padding: 12px 20px;
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.2s ease;
-  align-items: center;
-  font-size: 0.95rem;
-}
-
-.units-list-row:hover {
-  background: #f9fafb;
-}
-
-.units-list-row:last-child {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.units-list-col-name {
-  font-size: 0.9rem;
-  color: #111827;
-}
-
-.units-list-col {
-  font-size: 0.85rem;
-  color: #374151;
-}
-
-.units-list-col-lease {
-  font-size: 0.85rem;
-  color: #374151;
-}
-
-.units-list-col-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.units-vacant {
-  color: #9ca3af;
-  font-style: italic;
-}
-
-.units-lease-dates {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.units-linked-badge {
-  font-size: 1.2rem;
-  cursor: help;
-}
-
-/* Inline Editing Inputs */
-.units-inline-input {
-  width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  color: #111827;
-  background: #fff;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.units-inline-input:hover {
-  border-color: #9ca3af;
-}
-
-.units-inline-input:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-}
-
-.units-inline-input-number {
-  text-align: right;
-}
-
-.units-inline-input-date {
-  font-size: 0.8rem;
-}
-
 /* Add Unit Button */
 .units-add-unit-row {
-  padding: 12px 20px;
+  padding: 12px 16px;
   background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
 }
 
 .units-add-unit-btn {
@@ -561,7 +540,7 @@
   transform: scale(1.02);
 }
 
-/* Delete Unit Button */
+/* Delete buttons */
 .units-delete-unit-btn {
   background: transparent;
   border: none;
@@ -575,24 +554,79 @@
   transform: scale(1.2);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .units-list-header,
-  .units-list-row {
-    grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr 1fr 1fr 100px;
-    gap: 8px;
-    font-size: 0.8rem;
+/* Action Button (Convert button) */
+.units-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+.units-action-btn:hover {
+  transform: scale(1.2);
+}
+
+/* ==========================================================
+   TOTALS SECTION
+   ========================================================== */
+
+.units-totals {
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.units-totals-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.units-totals-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.units-totals-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #6366f1;
+  font-family: monospace;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 1400px) {
+  .units-subheaders,
+  .units-data-row {
+    font-size: 0.7rem;
   }
 
+  .units-cell-input {
+    font-size: 0.75rem;
+    padding: 3px 4px;
+  }
+
+  .units-subheader {
+    padding: 8px 4px;
+  }
+}
+
+@media (max-width: 1024px) {
   .units-type-summary {
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
-  }
-
-  .units-inline-input {
-    font-size: 0.75rem;
-    padding: 4px 6px;
   }
 }
 
@@ -619,23 +653,5 @@
 
   .units-add-btn {
     width: 100%;
-  }
-
-  .units-mix-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .units-mix-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .units-rentroll-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .units-totals,
-  .units-rentroll-summary {
-    flex-direction: column;
-    gap: 8px;
   }
 }

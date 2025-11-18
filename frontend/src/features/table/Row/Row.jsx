@@ -433,6 +433,7 @@ function Row({
             propertyId={row.id}
             totalUnits={asNumber(editableRow.units)}
             onTotalUnitsChange={handleTotalUnitsChange}
+            grossBuildingArea={asNumber(editableRow.grossBuildingArea)}
           />
         </div>
       )}

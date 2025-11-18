@@ -118,6 +118,15 @@ const Section = React.forwardRef(({
   }));
 
   const handleAddChild = async (parentId, path = []) => {
+    // Enforce maximum nesting depth of 2 layers
+    // path.length === 0: Adding to root (e.g., GSR) -> creates layer 1
+    // path.length === 1: Adding to layer 1 (e.g., Studio) -> creates layer 2
+    // path.length === 2: Would create layer 3 (NOT ALLOWED)
+    if (path.length >= 2) {
+      alert("Maximum nesting depth reached. Cannot add more sub-items.");
+      return;
+    }
+
     // Find the parent item's label by traversing the path
     let parentLabel = "Item";
 
