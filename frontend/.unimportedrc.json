@@ -1,0 +1,17 @@
+{
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    "firebase.json",
+    "vite.config.js",
+    "functions", 
+    "public",
+    "coverage",
+    "src/styles",
+    "src/assets"
+  ],
+  "entry": ["src/main.jsx"],
+  "ignoreUnresolved": ["firebase/*", "react-hot-toast", "stripe"],
+  "ignoreUnused": []
+}

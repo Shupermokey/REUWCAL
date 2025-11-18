@@ -1,4 +1,4 @@
-import { useSubscription } from "../app/SubscriptionProvider";
+import { useSubscription } from "../app/providers/SubscriptionProvider";
 import { meetsTier, TIERS } from "../constants/tiers";
 
 

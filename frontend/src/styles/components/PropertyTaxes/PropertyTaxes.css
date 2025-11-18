@@ -1,0 +1,268 @@
+/* ==========================================================
+   PROPERTY TAXES PANEL
+   ========================================================== */
+
+.property-taxes-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  height: 80vh;
+  max-height: 900px;
+  margin: 0 auto;
+  background: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.property-taxes-panel {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 24px;
+  background: #ffffff;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* Header */
+.pt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.pt-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pt-save-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.pt-save-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* Sections */
+.pt-section {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.pt-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #d1d5db;
+  padding-bottom: 8px;
+}
+
+.pt-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* Fields */
+.pt-field {
+  margin-bottom: 20px;
+}
+
+.pt-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.pt-field .required {
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.pt-field input[type="text"],
+.pt-field input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.pt-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pt-field input::placeholder {
+  color: #9ca3af;
+}
+
+.pt-field-hint {
+  margin: 6px 0 0 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Input Group (for $ prefix) */
+.pt-input-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.pt-input-prefix {
+  position: absolute;
+  left: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.pt-input-group input {
+  padding-left: 28px;
+}
+
+/* Tax PINs List */
+.pt-pins-list {
+  margin-top: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.pt-pins-label {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pt-pins-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pt-pin-chip {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: monospace;
+}
+
+/* Tax Breakdown */
+.pt-breakdown {
+  margin-top: 24px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.pt-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+/* Folder Cards */
+.pt-folders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pt-folder-card {
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pt-folder-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+.pt-folder-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.pt-folder-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .property-taxes-panel {
+    padding: 16px;
+  }
+
+  .pt-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pt-save-btn {
+    width: 100%;
+  }
+
+  .pt-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pt-folders-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,40 @@
+/* ==========================================================
+   SECTION ROW — hover, drag, and nested subrows
+   ========================================================== */
+.section-row {
+  display: grid;
+  grid-template-columns: 24px minmax(220px, 1.2fr) repeat(var(--value-cols, 3), minmax(120px, 1fr)) auto;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.section-row:hover {
+  background: #f9fafb;
+}
+
+.section-row.is-dragging {
+  outline: 2px dashed var(--color-accent);
+  background: #eff6ff;
+}
+
+.section-row .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.section-row .actions button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-text-dim);
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.section-row .actions button:hover {
+  background: #f3f4f6;
+}

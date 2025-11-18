@@ -1,0 +1,46 @@
+/* ==========================================================
+   FORMS — unified input, select, and textarea styling
+   ========================================================== */
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  background: #fff;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  margin-bottom: var(--sp-2);
+}
+
+.form-group {
+  margin-bottom: var(--sp-4);
+}
+
+input.error,
+select.error,
+textarea.error {
+  border-color: var(--color-danger);
+  background: #fff5f5;
+}

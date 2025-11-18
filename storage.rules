@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Validate file size (in bytes)
+    function isValidFileSize(maxSize) {
+      return request.resource.size <= maxSize;
+    }
+
+    // Validate file type
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isValidDocumentType() {
+      return request.resource.contentType in [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+        'text/plain'
+      ];
+    }
+
+    // Rate limiting (simple implementation)
+    function withinRateLimit() {
+      // Basic rate limit: prevent abuse
+      // For production, implement with counters or Firebase Extensions
+      return true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // USER PROFILE IMAGES
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{userId}/profile/{fileName} {
+      // Users can read and write their own profile images
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId)
+        && isValidImageType()
+        && isValidFileSize(5 * 1024 * 1024) // 5 MB max
+        && withinRateLimit();
+      allow delete: if isOwner(userId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PROPERTY DOCUMENTS & IMAGES
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{userId}/properties/{propertyId}/{allPaths=**} {
+      // Users can read their own property files
+      allow read: if isOwner(userId);
+
+      // Users can upload images (property photos, floor plans, etc.)
+      allow write: if isOwner(userId)
+        && (isValidImageType() || isValidDocumentType())
+        && isValidFileSize(20 * 1024 * 1024) // 20 MB max
+        && withinRateLimit();
+
+      // Users can delete their own property files
+      allow delete: if isOwner(userId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INCOME STATEMENT ATTACHMENTS
+    // ═══════════════════════════════════════════════════════════════
+
+    match /users/{userId}/incomeStatements/{statementId}/{fileName} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId)
+        && (isValidImageType() || isValidDocumentType())
+        && isValidFileSize(20 * 1024 * 1024) // 20 MB max
+        && withinRateLimit();
+      allow delete: if isOwner(userId);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PUBLIC ASSETS (Read-only for everyone)
+    // ═══════════════════════════════════════════════════════════════
+
+    match /public/{allPaths=**} {
+      // Anyone can read public assets
+      allow read: if true;
+      // Only admins can write (via Admin SDK)
+      allow write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DENY ALL OTHER PATHS
+    // ═══════════════════════════════════════════════════════════════
+
+    // Explicitly deny access to any paths not defined above
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

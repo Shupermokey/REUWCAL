@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../app/AuthProvider";
+import { useAuth } from "../app/providers/AuthProvider";
 import { getAuth, sendEmailVerification, signOut } from "firebase/auth";
 import toast from "react-hot-toast";
 

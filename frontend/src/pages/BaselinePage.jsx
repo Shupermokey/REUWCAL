@@ -4,9 +4,13 @@ import {
   deleteBaseline,
   subscribeToBaselines,
 } from "../services/firestoreService";
-import { useAuth } from "../app/AuthProvider";
-import Sidebar from "../components/Sidebar";
+import { useAuth } from "../app/providers/AuthProvider";
 import BaselineSection from "../features/baseline/BaselineAssumptions/BaselineSection";
+
+//CSS
+import "@/styles/components/Baseline.css";
+import Sidebar from "@/components/Sidebar/Sidebar";
+
 
 const defaultRows = [
   { id: 0, name: "Base Rent (MR) Growth Rate", percentBRI: 100, $PSF: 100, growthRate: 0 },

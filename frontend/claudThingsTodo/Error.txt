@@ -1,0 +1,61 @@
+Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+Units@http://localhost:5173/src/components/Units/Units.jsx?t=1763069600819:29:30
+div
+Row@http://localhost:5173/src/features/table/Row/Row.jsx?t=1763069600819:39:13
+div
+div
+Table@http://localhost:5173/src/features/table/Table.jsx?t=1763069600819:34:15
+section
+main
+div
+Home@http://localhost:5173/src/pages/Home.jsx?t=1763069600819:26:20
+RenderedRoute@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:5972:23
+Outlet@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:6689:20
+ProtectedRoute@http://localhost:5173/src/components/ProtectedRoutes/ProtectedRoute.jsx:22:39
+RenderedRoute@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:5972:23
+Routes@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:6754:16
+Suspense
+Router@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:6697:16
+BrowserRouter@http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=58501834:9803:23
+App
+IncomeViewProvider@http://localhost:5173/src/app/providers/IncomeViewProvider.jsx:20:35
+DialogProvider@http://localhost:5173/src/app/providers/DialogProvider.jsx:21:31
+TableProvider@http://localhost:5173/src/app/providers/TableProvider.jsx:22:30
+SubscriptionProvider@http://localhost:5173/src/app/providers/SubscriptionProvider.jsx:35:45
+AppProvider@http://localhost:5173/src/app/providers/AppProvider.jsx:20:28
+AuthProvider@http://localhost:5173/src/app/providers/AuthProvider.jsx:25:29
+QueryClientProvider@http://localhost:5173/node_modules/.vite/deps/chunk-BAPQHEWR.js?v=8346bbde:3092:27
+ErrorBoundary@http://localhost:5173/src/components/ErrorBoundary.jsx:21:5 71 chunk-RPCDYKBN.js:521:38
+    printWarning http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:521
+    error http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:505
+    checkForNestedUpdates http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:19665
+    scheduleUpdateOnFiber http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:18533
+    dispatchSetState http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:12403
+    setLocal http://localhost:5173/src/features/table/Row/Row.jsx?t=1763069600819:69
+    handleTotalUnitsChange http://localhost:5173/src/features/table/Row/Row.jsx?t=1763069600819:116
+    Units http://localhost:5173/src/components/Units/Units.jsx?t=1763069600819:44
+    commitHookEffectListMount http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:16915
+    commitPassiveMountOnFiber http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:18156
+    commitPassiveMountEffects_complete http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:18129
+    commitPassiveMountEffects_begin http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:18119
+    commitPassiveMountEffects http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:18109
+    flushPassiveEffectsImpl http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:19490
+    flushPassiveEffects http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:19447
+    commitRootImpl http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:19328
+    workLoop http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:197
+    flushWork http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:176
+    performWorkUntilDeadline http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:384
+    (Async: EventHandlerNonNull)
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:405
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:453
+    __require http://localhost:5173/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8346bbde:12
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:465
+    __require http://localhost:5173/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8346bbde:12
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:481
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:21571
+    __require http://localhost:5173/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8346bbde:12
+    js http://localhost:5173/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8346bbde:21583
+    __require http://localhost:5173/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8346bbde:12
+    js http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=06ce6a52:12
+    __require http://localhost:5173/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8346bbde:12
+    <anonymous> http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=06ce6a52:38
