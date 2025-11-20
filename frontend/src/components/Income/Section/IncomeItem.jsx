@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { getItemConfig, isDeductionItem, SPECIAL_IDS } from "@/utils/income/incomeConfig";
 import { useIncomeView } from "@/app/providers/IncomeViewProvider";
 import { calculateValues, sumChildrenValues, isVacancyItem } from "@/utils/income/incomeCalculations";
+import AccountingInput from "@/components/common/AccountingInput";
 import "@/styles/components/Income/IncomeItem.css";
 
 /**
@@ -304,26 +305,29 @@ export default function IncomeItem({
                     }}>%</span>
                   </div>
                 )}
-                <input
-                  type="number"
-                  value={formatValue(displayValues.grossMonthly)}
-                  onChange={(e) => handleChange("grossMonthly", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.grossMonthly}
+                  onChange={(val) => handleChange("grossMonthly", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="currency"
                 />
-                <input
-                  type="number"
-                  value={formatValue(displayValues.psfMonthly)}
-                  onChange={(e) => handleChange("psfMonthly", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.psfMonthly}
+                  onChange={(val) => handleChange("psfMonthly", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="psf"
                 />
-                <input
-                  type="number"
-                  value={formatValue(displayValues.punitMonthly)}
-                  onChange={(e) => handleChange("punitMonthly", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.punitMonthly}
+                  onChange={(val) => handleChange("punitMonthly", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="punit"
                 />
               </>
             )}
@@ -358,26 +362,29 @@ export default function IncomeItem({
                     }}>%</span>
                   </div>
                 )}
-                <input
-                  type="number"
-                  value={formatValue(displayValues.grossAnnual)}
-                  onChange={(e) => handleChange("grossAnnual", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.grossAnnual}
+                  onChange={(val) => handleChange("grossAnnual", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="currency"
                 />
-                <input
-                  type="number"
-                  value={formatValue(displayValues.psfAnnual)}
-                  onChange={(e) => handleChange("psfAnnual", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.psfAnnual}
+                  onChange={(val) => handleChange("psfAnnual", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="psfyr"
                 />
-                <input
-                  type="number"
-                  value={formatValue(displayValues.punitAnnual)}
-                  onChange={(e) => handleChange("punitAnnual", e.target.value)}
-                  readOnly={isReadOnly}
+                <AccountingInput
+                  value={displayValues.punitAnnual}
+                  onChange={(val) => handleChange("punitAnnual", val)}
+                  disabled={isReadOnly}
                   placeholder="0"
+                  decimals={2}
+                  symbolType="punityr"
                 />
               </>
             )}

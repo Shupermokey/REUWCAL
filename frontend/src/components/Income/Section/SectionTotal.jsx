@@ -1,6 +1,7 @@
 // components/Income/SectionTotal.jsx
 import React, { useMemo } from "react";
 import { useIncomeView } from "@/app/providers/IncomeViewProvider.jsx";
+import AccountingNumber from "@/components/common/AccountingNumber";
 
 export default function SectionTotal({ data, title }) {
   const { displayMode } = useIncomeView();
@@ -34,22 +35,15 @@ export default function SectionTotal({ data, title }) {
     return t;
   }, [data]);
 
-  const fmt = (n) => {
-    if (!Number.isFinite(n)) return "";
-    const abs = Math.abs(n);
-    const formatted = abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return n < 0 ? `(${formatted})` : formatted;
-  };
-
   const showAnnual = displayMode === "annual" || displayMode === "both";
   const showMonthly = displayMode === "monthly" || displayMode === "both";
 
-  const renderCell = (key, value) => (
+  const renderCell = (key, value, symbolType = 'none') => (
     <div
       key={key}
       className={`total-cell ${value < 0 ? "negative" : ""}`}
     >
-      {fmt(value)}
+      <AccountingNumber value={value} decimals={2} symbolType={symbolType} />
     </div>
   );
 
@@ -57,18 +51,18 @@ export default function SectionTotal({ data, title }) {
     const cells = [];
     if (showMonthly) {
       cells.push(
-        renderCell("rateMonthly", totals.rateMonthly),
-        renderCell("grossMonthly", totals.grossMonthly),
-        renderCell("psfMonthly", totals.psfMonthly),
-        renderCell("punitMonthly", totals.punitMonthly)
+        renderCell("rateMonthly", totals.rateMonthly, "percent"),
+        renderCell("grossMonthly", totals.grossMonthly, "currency"),
+        renderCell("psfMonthly", totals.psfMonthly, "psf"),
+        renderCell("punitMonthly", totals.punitMonthly, "punit")
       );
     }
     if (showAnnual) {
       cells.push(
-        renderCell("rateAnnual", totals.rateAnnual),
-        renderCell("grossAnnual", totals.grossAnnual),
-        renderCell("psfAnnual", totals.psfAnnual),
-        renderCell("punitAnnual", totals.punitAnnual)
+        renderCell("rateAnnual", totals.rateAnnual, "percent"),
+        renderCell("grossAnnual", totals.grossAnnual, "currency"),
+        renderCell("psfAnnual", totals.psfAnnual, "psfyr"),
+        renderCell("punitAnnual", totals.punitAnnual, "punityr")
       );
     }
     return cells;

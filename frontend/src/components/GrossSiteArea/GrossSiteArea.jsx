@@ -8,6 +8,8 @@ import {
   roundArea,
   SQFT_PER_ACRE,
 } from "@/utils/grossSiteArea/grossSiteAreaDefaults";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import "@/styles/components/GrossSiteArea/GrossSiteArea.css";
 
 /**
@@ -31,7 +33,7 @@ export default function GrossSiteArea({ propertyId, acres, squareFeet }) {
   // Handle acres change - update square feet
   const handleAcresChange = useCallback(
     (value) => {
-      const acres = parseFloat(value) || 0;
+      const acres = typeof value === 'number' ? value : (parseFloat(value) || 0);
       const sqFt = roundArea(acresToSqFt(acres), false);
 
       setData((prev) => ({
@@ -46,7 +48,7 @@ export default function GrossSiteArea({ propertyId, acres, squareFeet }) {
   // Handle square feet change - update acres
   const handleSquareFeetChange = useCallback(
     (value) => {
-      const sqFt = parseFloat(value) || 0;
+      const sqFt = typeof value === 'number' ? value : (parseFloat(value) || 0);
       const acres = roundArea(sqFtToAcres(sqFt), true);
 
       setData((prev) => ({
@@ -120,13 +122,12 @@ export default function GrossSiteArea({ propertyId, acres, squareFeet }) {
               <label>
                 Acres {isPrimaryAcres && <span className="gsa-primary-badge">Primary</span>}
               </label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.acres}
-                onChange={(e) => handleAcresChange(e.target.value)}
+                onChange={(val) => handleAcresChange(val)}
                 placeholder="0.0000"
-                step="0.0001"
-                min="0"
+                decimals={4}
+                symbolType="acres"
               />
               <p className="gsa-field-hint">
                 {isPrimaryAcres ? "Enter acres, auto-calculates sq ft" : "Auto-calculated from sq ft"}
@@ -138,13 +139,12 @@ export default function GrossSiteArea({ propertyId, acres, squareFeet }) {
               <label>
                 Square Feet {!isPrimaryAcres && <span className="gsa-primary-badge">Primary</span>}
               </label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.squareFeet}
-                onChange={(e) => handleSquareFeetChange(e.target.value)}
+                onChange={(val) => handleSquareFeetChange(val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="sqft"
               />
               <p className="gsa-field-hint">
                 {!isPrimaryAcres ? "Enter sq ft, auto-calculates acres" : "Auto-calculated from acres"}
@@ -156,7 +156,7 @@ export default function GrossSiteArea({ propertyId, acres, squareFeet }) {
             <div className="gsa-summary-item">
               <span className="gsa-summary-label">Total Area:</span>
               <span className="gsa-summary-value">
-                {data.acres.toFixed(4)} acres ({data.squareFeet.toLocaleString()} sq ft)
+                <AccountingNumber value={data.acres} decimals={4} symbolType="acres" /> (<AccountingNumber value={data.squareFeet} decimals={0} symbolType="sqft" />)
               </span>
             </div>
           </div>

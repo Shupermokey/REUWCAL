@@ -6,6 +6,7 @@ import {
   parseTaxPins,
   formatTaxPins,
 } from "@/utils/propertyTaxes/propertyTaxesDefaults";
+import AccountingInput from "@/components/common/AccountingInput";
 import "@/styles/components/PropertyTaxes/PropertyTaxes.css";
 
 /**
@@ -53,7 +54,7 @@ export default function PropertyTaxes({ propertyId, currentTaxAmount }) {
   // Auto-calculate total from country + municipal
   const handleTaxBreakdownChange = useCallback(
     (field, value) => {
-      const numValue = parseFloat(value) || 0;
+      const numValue = typeof value === 'number' ? value : (parseFloat(value) || 0);
       updateField(`taxAmount.${field}`, numValue);
 
       // Auto-update total
@@ -76,7 +77,7 @@ export default function PropertyTaxes({ propertyId, currentTaxAmount }) {
   // Handle total change - distribute to country and municipal proportionally
   const handleTotalChange = useCallback(
     (value) => {
-      const numValue = parseFloat(value) || 0;
+      const numValue = typeof value === 'number' ? value : (parseFloat(value) || 0);
       updateField("taxAmount.total", numValue);
 
       // If country and municipal are both 0, split 50/50
@@ -181,17 +182,13 @@ export default function PropertyTaxes({ propertyId, currentTaxAmount }) {
             <label>
               Total Tax Amount <span className="required">*</span>
             </label>
-            <div className="pt-input-group">
-              <span className="pt-input-prefix">$</span>
-              <input
-                type="number"
-                value={data.taxAmount.total}
-                onChange={(e) => handleTotalChange(e.target.value)}
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-              />
-            </div>
+            <AccountingInput
+              value={data.taxAmount.total}
+              onChange={(val) => handleTotalChange(val)}
+              placeholder="0.00"
+              decimals={2}
+              symbolType="currency"
+            />
           </div>
 
           <div className="pt-breakdown">
@@ -199,32 +196,24 @@ export default function PropertyTaxes({ propertyId, currentTaxAmount }) {
             <div className="pt-breakdown-grid">
               <div className="pt-field">
                 <label>Country Tax</label>
-                <div className="pt-input-group">
-                  <span className="pt-input-prefix">$</span>
-                  <input
-                    type="number"
-                    value={data.taxAmount.country}
-                    onChange={(e) => handleTaxBreakdownChange("country", e.target.value)}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
+                <AccountingInput
+                  value={data.taxAmount.country}
+                  onChange={(val) => handleTaxBreakdownChange("country", val)}
+                  placeholder="0.00"
+                  decimals={2}
+                  symbolType="currency"
+                />
               </div>
 
               <div className="pt-field">
                 <label>Municipal Tax</label>
-                <div className="pt-input-group">
-                  <span className="pt-input-prefix">$</span>
-                  <input
-                    type="number"
-                    value={data.taxAmount.municipal}
-                    onChange={(e) => handleTaxBreakdownChange("municipal", e.target.value)}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
+                <AccountingInput
+                  value={data.taxAmount.municipal}
+                  onChange={(val) => handleTaxBreakdownChange("municipal", val)}
+                  placeholder="0.00"
+                  decimals={2}
+                  symbolType="currency"
+                />
               </div>
             </div>
           </div>
@@ -235,13 +224,12 @@ export default function PropertyTaxes({ propertyId, currentTaxAmount }) {
           <h3>Property Size</h3>
           <div className="pt-field">
             <label>Size (Square Feet)</label>
-            <input
-              type="number"
+            <AccountingInput
               value={data.size}
-              onChange={(e) => updateField("size", parseFloat(e.target.value) || 0)}
+              onChange={(val) => updateField("size", val)}
               placeholder="0"
-              min="0"
-              step="1"
+              decimals={0}
+              symbolType="sqft"
             />
             <p className="pt-field-hint">
               Portions that add up to Gross Site Area (GSA)

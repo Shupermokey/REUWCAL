@@ -275,6 +275,33 @@ export const createUserProfile = async (userId, data) => {
   }, { merge: true });
 };
 
+/**
+ * Update user settings/preferences
+ * @param {string} userId - The user ID
+ * @param {Object} settings - The settings to update
+ */
+export const updateUserSettings = async (userId, settings) => {
+  const docRef = doc(db, `users/${userId}`);
+  await setDoc(docRef, {
+    settings: settings,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+};
+
+/**
+ * Get user settings/preferences
+ * @param {string} userId - The user ID
+ * @returns {Object} The user settings
+ */
+export const getUserSettings = async (userId) => {
+  const docRef = doc(db, `users/${userId}`);
+  const snapshot = await getDoc(docRef);
+  if (snapshot.exists()) {
+    return snapshot.data().settings || {};
+  }
+  return {};
+};
+
 const DEBUG = import.meta.env.DEV;
 const log = (...a) => DEBUG && console.debug("[IncomeStmt]", ...a);
 

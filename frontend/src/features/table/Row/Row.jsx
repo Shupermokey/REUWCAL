@@ -17,6 +17,8 @@ import Units from "@/components/Units/Units";
 import PurchasePrice from "@/components/PurchasePrice/PurchasePrice";
 import Financing from "@/components/Financing/Financing";
 import FileSystemManager from "@/components/FileSystem/FileSystemManager";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import columnConfig, { columnOrder } from "@/constants/columnConfig";
 
 // ✅ Scoped CSS
@@ -179,6 +181,40 @@ function Row({
         const cellData = typeof editableRow[key] === "object" ? editableRow[key] : {};
         const hasInitialValue = row.id !== "new" && cellData.hasInitialValue === true;
 
+        // For numeric custom fields, use AccountingInput
+        if (config.type === "number") {
+          // Determine symbol type based on column
+          let symbolType = 'none';
+          if (['purchasePrice', 'propertyTaxes', 'incomeStatement', 'financing'].includes(key)) {
+            symbolType = 'currency';
+          } else if (['grossSiteArea', 'grossBuildingArea'].includes(key)) {
+            symbolType = 'sqft';
+          }
+
+          return (
+            <div
+              className={`row__editable ${
+                isInvalid ? "row__editable--invalid" : ""
+              }`}
+              onDoubleClick={() => {
+                setActiveColumn(key);
+                setShowDetails(true);
+              }}
+            >
+              <AccountingInput
+                className="row__input"
+                readOnly={readOnly || hasInitialValue}
+                value={unwrapValue(editableRow[key]) || ""}
+                onChange={(val) => handleInputChange(key, { target: { value: val } })}
+                onClick={(e) => e.stopPropagation()}
+                placeholder={hasInitialValue ? "" : (readOnly ? "" : "Double-click to edit *")}
+                decimals={0}
+                symbolType={symbolType}
+              />
+            </div>
+          );
+        }
+
         return (
           <div
             className={`row__editable ${
@@ -203,10 +239,36 @@ function Row({
       }
 
       const currentValue = unwrapValue(editableRow[key]) ?? "";
+
+      // Use AccountingInput for number fields
+      if (inputType === "number") {
+        // Determine symbol type based on column
+        let symbolType = 'none';
+        if (['purchasePrice', 'propertyTaxes', 'incomeStatement', 'financing'].includes(key)) {
+          symbolType = 'currency';
+        } else if (['grossSiteArea', 'grossBuildingArea'].includes(key)) {
+          symbolType = 'sqft';
+        }
+
+        return (
+          <AccountingInput
+            className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
+            value={currentValue}
+            onChange={(val) => {
+              // Create a synthetic event-like object for handleInputChange
+              handleInputChange(key, { target: { value: val } });
+            }}
+            placeholder={`Enter ${columnConfig[key]?.label || key} *`}
+            decimals={2}
+            symbolType={symbolType}
+          />
+        );
+      }
+
       return (
         <input
           className={`row__input ${isInvalid ? "row__input--invalid" : ""}`}
-          type={inputType === "number" ? "number" : "text"}
+          type="text"
           value={currentValue}
           onChange={(e) => handleInputChange(key, e)}
           onClick={(e) => e.stopPropagation()}
@@ -226,6 +288,25 @@ function Row({
         const selected = baselines.find((b) => b.id === id);
         return selected?.name ?? id ?? "—";
       }
+
+      // Use AccountingNumber for number type columns (check type, not input)
+      const config = columnConfig[key];
+      if (config?.type === "number") {
+        const value = unwrapValue(raw);
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          // Determine symbol type based on column
+          let symbolType = 'none';
+          if (['purchasePrice', 'propertyTaxes', 'incomeStatement', 'financing'].includes(key)) {
+            symbolType = 'currency';
+          } else if (['grossSiteArea', 'grossBuildingArea'].includes(key)) {
+            symbolType = 'sqft';
+          }
+          return <AccountingNumber value={numValue} decimals={0} symbolType={symbolType} />;
+        }
+        return "—";
+      }
+
       return displayValue(raw, columnConfig[key]);
     },
     [editableRow, baselines]

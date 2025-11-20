@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   getUserMetadata,
   subscribeToProperties,
+  getUserSettings,
+  updateUserSettings,
 } from "../services/firestoreService";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../app/providers/AuthProvider";
+import { useUserSettings } from "../app/providers/UserSettingsProvider";
 
 //CSS
 import "@/styles/pages/ProfilePage.css";
@@ -15,6 +18,7 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 
 export default function ProfilePage() {
   const { user, tier } = useAuth(); // ✅ from context
+  const { settings: contextSettings, setSettings: setContextSettings } = useUserSettings();
   const [profile, setProfile] = useState(null);
   const [properties, setProperties] = useState([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
@@ -22,7 +26,24 @@ export default function ProfilePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [currentPage, setCurrentPage] = useState(1);
+  const [userSettings, setUserSettings] = useState({
+    accountingFormat: false,
+  });
   const itemsPerPage = 10;
+
+  // Handle settings toggle
+  const handleSettingChange = async (settingKey, value) => {
+    try {
+      const newSettings = { ...userSettings, [settingKey]: value };
+      setUserSettings(newSettings);
+      setContextSettings(newSettings); // Sync with context
+      await updateUserSettings(user.uid, newSettings);
+      toast.success('Settings saved');
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      toast.error('Failed to save settings');
+    }
+  };
 
   const openFileSystem = (propertyId) => {
     setSelectedPropertyId(propertyId);
@@ -76,6 +97,12 @@ export default function ProfilePage() {
       try {
         const profileData = await getUserMetadata(user.uid);
         setProfile(profileData);
+
+        // Load user settings
+        const settings = await getUserSettings(user.uid);
+        if (settings) {
+          setUserSettings(prev => ({ ...prev, ...settings }));
+        }
 
         const unsubscribe = subscribeToProperties(user.uid, setProperties);
         return unsubscribe;
@@ -147,7 +174,7 @@ export default function ProfilePage() {
       <Sidebar />
       <div className="profile-container">
         <section className="profile-header">
-          <h1>👤 Your Profile</h1>
+          <h1>Your Profile</h1>
           <div className="profile-details">
             <p>
               <strong>Email:</strong> {user.email}
@@ -155,6 +182,29 @@ export default function ProfilePage() {
             <p>
               <strong>Subscription:</strong> {tier}
             </p>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <h2>Settings</h2>
+          <div className="settings-list">
+            <div className="setting-item">
+              <div className="setting-info">
+                <label htmlFor="accountingFormat">Accounting Number Format</label>
+                <p className="setting-description">
+                  Display numbers with thousands separators, two decimal places, and negative values in parentheses
+                </p>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="accountingFormat"
+                  checked={userSettings.accountingFormat}
+                  onChange={(e) => handleSettingChange('accountingFormat', e.target.checked)}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
           </div>
         </section>
 

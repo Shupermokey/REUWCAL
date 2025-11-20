@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { usePurchasePrice } from "@/hooks/usePurchasePrice";
 import { calculateTotalAcquisitionCost } from "@/utils/purchasePrice/purchasePriceDefaults";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import "@/styles/components/PurchasePrice/PurchasePrice.css";
 
 /**
@@ -70,39 +72,36 @@ export default function PurchasePrice({ propertyId }) {
               <label>
                 Contract Price <span className="pp-required-badge">Primary</span>
               </label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.contractPrice}
-                onChange={(e) => updateField("contractPrice", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("contractPrice", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Agreed-upon purchase price</p>
             </div>
 
             <div className="pp-field">
               <label>Transaction Costs</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.transactionCosts}
-                onChange={(e) => updateField("transactionCosts", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("transactionCosts", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Closing costs, legal fees, title insurance</p>
             </div>
 
             <div className="pp-field">
               <label>Due Diligence</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.dueDiligence}
-                onChange={(e) => updateField("dueDiligence", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("dueDiligence", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Inspection, appraisal, environmental reports</p>
             </div>
@@ -116,13 +115,12 @@ export default function PurchasePrice({ propertyId }) {
           <div className="pp-fields-grid">
             <div className="pp-field">
               <label>Capital to Stabilize</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.capitalToStabilize}
-                onChange={(e) => updateField("capitalToStabilize", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("capitalToStabilize", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Renovation and improvement costs</p>
             </div>
@@ -140,26 +138,24 @@ export default function PurchasePrice({ propertyId }) {
 
             <div className="pp-field">
               <label>Capital Reserve</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.capitalReserve}
-                onChange={(e) => updateField("capitalReserve", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("capitalReserve", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Operating reserve for contingencies</p>
             </div>
 
             <div className="pp-field">
               <label>Other Expenses</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.otherExpenses}
-                onChange={(e) => updateField("otherExpenses", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("otherExpenses", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="pp-field-hint">Additional acquisition costs</p>
             </div>
@@ -175,19 +171,19 @@ export default function PurchasePrice({ propertyId }) {
               {data.contractPrice > 0 && (
                 <div className="pp-summary-item">
                   <span className="pp-summary-label">Contract Price:</span>
-                  <span className="pp-summary-value">${data.contractPrice.toLocaleString()}</span>
+                  <AccountingNumber value={data.contractPrice} showCurrency className="pp-summary-value" />
                 </div>
               )}
               {data.transactionCosts > 0 && (
                 <div className="pp-summary-item">
                   <span className="pp-summary-label">Transaction Costs:</span>
-                  <span className="pp-summary-value">${data.transactionCosts.toLocaleString()}</span>
+                  <AccountingNumber value={data.transactionCosts} showCurrency className="pp-summary-value" />
                 </div>
               )}
               {data.dueDiligence > 0 && (
                 <div className="pp-summary-item">
                   <span className="pp-summary-label">Due Diligence:</span>
-                  <span className="pp-summary-value">${data.dueDiligence.toLocaleString()}</span>
+                  <AccountingNumber value={data.dueDiligence} showCurrency className="pp-summary-value" />
                 </div>
               )}
               {data.capitalToStabilize > 0 && (
@@ -195,26 +191,26 @@ export default function PurchasePrice({ propertyId }) {
                   <span className="pp-summary-label">
                     Capital to Stabilize{data.capitalToStabilizeTimeframe && ` (${data.capitalToStabilizeTimeframe})`}:
                   </span>
-                  <span className="pp-summary-value">${data.capitalToStabilize.toLocaleString()}</span>
+                  <AccountingNumber value={data.capitalToStabilize} showCurrency className="pp-summary-value" />
                 </div>
               )}
               {data.capitalReserve > 0 && (
                 <div className="pp-summary-item">
                   <span className="pp-summary-label">Capital Reserve:</span>
-                  <span className="pp-summary-value">${data.capitalReserve.toLocaleString()}</span>
+                  <AccountingNumber value={data.capitalReserve} showCurrency className="pp-summary-value" />
                 </div>
               )}
               {data.otherExpenses > 0 && (
                 <div className="pp-summary-item">
                   <span className="pp-summary-label">Other Expenses:</span>
-                  <span className="pp-summary-value">${data.otherExpenses.toLocaleString()}</span>
+                  <AccountingNumber value={data.otherExpenses} showCurrency className="pp-summary-value" />
                 </div>
               )}
             </div>
 
             <div className="pp-summary-total">
               <span className="pp-summary-total-label">Total Acquisition Cost:</span>
-              <span className="pp-summary-total-value">${totalCost.toLocaleString()}</span>
+              <AccountingNumber value={totalCost} showCurrency className="pp-summary-total-value" />
             </div>
           </div>
         </section>

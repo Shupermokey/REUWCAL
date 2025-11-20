@@ -7,6 +7,8 @@ import {
   calculateMonthlyPayment,
   calculateLTV,
 } from "@/utils/financing/financingDefaults";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import "@/styles/components/Financing/Financing.css";
 
 /**
@@ -77,26 +79,24 @@ export default function Financing({ propertyId }) {
               <label>
                 Loan Amount <span className="fin-primary-badge">Primary</span>
               </label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.loanAmount}
-                onChange={(e) => updateField("loanAmount", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("loanAmount", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="fin-field-hint">Total loan amount</p>
             </div>
 
             <div className="fin-field">
               <label>Down Payment</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.downPayment}
-                onChange={(e) => updateField("downPayment", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("downPayment", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="fin-field-hint">Initial down payment amount</p>
             </div>
@@ -126,39 +126,37 @@ export default function Financing({ propertyId }) {
 
           <div className="fin-fields-grid">
             <div className="fin-field">
-              <label>Interest Rate (%)</label>
-              <input
-                type="number"
+              <label>Interest Rate</label>
+              <AccountingInput
                 value={data.interestRate}
-                onChange={(e) => updateField("interestRate", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("interestRate", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
-                max="100"
+                decimals={2}
+                symbolType="percent"
               />
               <p className="fin-field-hint">Annual interest rate percentage</p>
             </div>
 
             <div className="fin-field">
-              <label>Term (Years)</label>
-              <input
-                type="number"
+              <label>Term</label>
+              <AccountingInput
                 value={data.termYears}
-                onChange={(e) => updateField("termYears", parseInt(e.target.value) || 0)}
+                onChange={(val) => updateField("termYears", Math.round(val))}
                 placeholder="0"
-                min="0"
+                decimals={0}
+                symbolType="years"
               />
               <p className="fin-field-hint">Loan term length</p>
             </div>
 
             <div className="fin-field">
-              <label>Amortization (Years)</label>
-              <input
-                type="number"
+              <label>Amortization</label>
+              <AccountingInput
                 value={data.amortizationYears}
-                onChange={(e) => updateField("amortizationYears", parseInt(e.target.value) || 0)}
+                onChange={(val) => updateField("amortizationYears", Math.round(val))}
                 placeholder="0"
-                min="0"
+                decimals={0}
+                symbolType="years"
               />
               <p className="fin-field-hint">Payment amortization period</p>
             </div>
@@ -174,24 +172,18 @@ export default function Financing({ propertyId }) {
               <div className="fin-summary-grid">
                 <div className="fin-summary-item">
                   <span className="fin-summary-label">Monthly Payment:</span>
-                  <span className="fin-summary-value">${monthlyPayment.toLocaleString()}</span>
+                  <AccountingNumber value={monthlyPayment} showCurrency className="fin-summary-value" />
                 </div>
 
                 <div className="fin-summary-item">
                   <span className="fin-summary-label">Annual Debt Service:</span>
-                  <span className="fin-summary-value">
-                    ${(monthlyPayment * 12).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                  </span>
+                  <AccountingNumber value={monthlyPayment * 12} showCurrency decimals={0} className="fin-summary-value" />
                 </div>
 
                 {data.termYears > 0 && (
                   <div className="fin-summary-item">
                     <span className="fin-summary-label">Total Payments over {data.termYears} years:</span>
-                    <span className="fin-summary-value">
-                      ${(monthlyPayment * 12 * data.termYears).toLocaleString(undefined, {
-                        maximumFractionDigits: 0,
-                      })}
-                    </span>
+                    <AccountingNumber value={monthlyPayment * 12 * data.termYears} showCurrency decimals={0} className="fin-summary-value" />
                   </div>
                 )}
               </div>

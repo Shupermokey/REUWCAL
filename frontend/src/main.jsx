@@ -13,6 +13,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { AppProvider } from "./app/providers/AppProvider.jsx";
 import { TableProvider } from "./app/providers/TableProvider.jsx";
 import { AuthProvider } from "./app/providers/AuthProvider.jsx";
+import { UserSettingsProvider } from "./app/providers/UserSettingsProvider.jsx";
 import SubscriptionProvider from "./app/providers/SubscriptionProvider.jsx";
 import { DialogProvider } from "./app/providers/DialogProvider.jsx";
 import { IncomeViewProvider } from "./app/providers/IncomeViewProvider.jsx";
@@ -26,17 +27,19 @@ createRoot(document.getElementById("root")).render(
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppProvider>
-          <SubscriptionProvider>
-            <TableProvider>
-              <DialogProvider>
-                <IncomeViewProvider>
-                  <App />
-                </IncomeViewProvider>
-              </DialogProvider>
-            </TableProvider>
-          </SubscriptionProvider>
-        </AppProvider>
+        <UserSettingsProvider>
+          <AppProvider>
+            <SubscriptionProvider>
+              <TableProvider>
+                <DialogProvider>
+                  <IncomeViewProvider>
+                    <App />
+                  </IncomeViewProvider>
+                </DialogProvider>
+              </TableProvider>
+            </SubscriptionProvider>
+          </AppProvider>
+        </UserSettingsProvider>
       </AuthProvider>
       {/* React Query DevTools - only in development */}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}

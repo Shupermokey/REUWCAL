@@ -2,6 +2,8 @@ import React, { useCallback } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useGrossBuildingArea } from "@/hooks/useGrossBuildingArea";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import "@/styles/components/GrossBuildingArea/GrossBuildingArea.css";
 
 /**
@@ -64,13 +66,12 @@ export default function GrossBuildingArea({ propertyId }) {
               <label>
                 Gross Building Area (GBA) <span className="gba-required-badge">Required</span>
               </label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.gba}
-                onChange={(e) => updateField("gba", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("gba", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="sqft"
               />
               <p className="gba-field-hint">Total building area including all floors and common spaces</p>
             </div>
@@ -78,13 +79,12 @@ export default function GrossBuildingArea({ propertyId }) {
             {/* GLA Field */}
             <div className="gba-field">
               <label>Gross Living Area (GLA)</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.gla}
-                onChange={(e) => updateField("gla", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("gla", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="sqft"
               />
               <p className="gba-field-hint">Finished living space in residential properties</p>
             </div>
@@ -92,13 +92,12 @@ export default function GrossBuildingArea({ propertyId }) {
             {/* NRA Field */}
             <div className="gba-field">
               <label>Net Rentable Area (NRA)</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.nra}
-                onChange={(e) => updateField("nra", parseFloat(e.target.value) || 0)}
+                onChange={(val) => updateField("nra", val)}
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="sqft"
               />
               <p className="gba-field-hint">Actual rentable space excluding common areas</p>
             </div>
@@ -108,18 +107,18 @@ export default function GrossBuildingArea({ propertyId }) {
           <div className="gba-summary">
             <div className="gba-summary-item">
               <span className="gba-summary-label">Total GBA:</span>
-              <span className="gba-summary-value">{data.gba.toLocaleString()} sq ft</span>
+              <span className="gba-summary-value"><AccountingNumber value={data.gba} decimals={0} symbolType="sqft" /></span>
             </div>
             {data.gla > 0 && (
               <div className="gba-summary-item">
                 <span className="gba-summary-label">GLA:</span>
-                <span className="gba-summary-value">{data.gla.toLocaleString()} sq ft</span>
+                <span className="gba-summary-value"><AccountingNumber value={data.gla} decimals={0} symbolType="sqft" /></span>
               </div>
             )}
             {data.nra > 0 && (
               <div className="gba-summary-item">
                 <span className="gba-summary-label">NRA:</span>
-                <span className="gba-summary-value">{data.nra.toLocaleString()} sq ft</span>
+                <span className="gba-summary-value"><AccountingNumber value={data.nra} decimals={0} symbolType="sqft" /></span>
               </div>
             )}
           </div>

@@ -5,6 +5,8 @@ import { db } from '@/services/firebaseConfig';
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useDialog } from "@/app/providers/DialogProvider";
 import { useUnits } from "@/hooks/useUnits";
+import AccountingInput from "@/components/common/AccountingInput";
+import AccountingNumber from "@/components/common/AccountingNumber";
 import {
   createUnitType,
   createUnit,
@@ -29,12 +31,37 @@ import "@/styles/components/Units/Units.css";
 /**
  * Units Detail Panel
  */
+// Theme presets for table settings
+const THEME_PRESETS = {
+  default: {
+    name: 'Default',
+    headerBg: '#374151',
+    incomeBg: '#065f46',
+    leaseBg: '#1e40af',
+  },
+  ocean: {
+    name: 'Ocean',
+    headerBg: '#0c4a6e',
+    incomeBg: '#155e75',
+    leaseBg: '#164e63',
+  },
+  forest: {
+    name: 'Forest',
+    headerBg: '#14532d',
+    incomeBg: '#166534',
+    leaseBg: '#15803d',
+  },
+};
+
 export default function Units({ propertyId, onTotalUnitsChange, grossBuildingArea = 0 }) {
   const { user } = useAuth();
   const { prompt, promptMultiple } = useDialog();
   const { data, setData, loading, save } = useUnits(user.uid, propertyId);
   const [expandedTypes, setExpandedTypes] = useState({}); // Track which unit types are expanded
   const [expandedYearlyUnits, setExpandedYearlyUnits] = useState({}); // Track which units have yearly breakdown expanded
+  const [viewMode, setViewMode] = useState('annual'); // 'monthly', 'annual', or 'rollup'
+  const [showSettings, setShowSettings] = useState(false); // Show/hide settings dropdown
+  const [theme, setTheme] = useState('default'); // Current theme preset
   const onTotalUnitsChangeRef = useRef(onTotalUnitsChange);
   const prevTotalUnitsRef = useRef();
 
@@ -618,9 +645,70 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
         {/* Header */}
         <div className="units-header">
           <h2>Units</h2>
-          <button className="units-save-btn" onClick={handleSave}>
-            💾 Save
-          </button>
+          <div className="units-header-controls">
+            {/* View Mode Toggle */}
+            <div className="units-view-mode">
+              <button
+                className={`units-view-btn ${viewMode === 'monthly' ? 'active' : ''}`}
+                onClick={() => setViewMode('monthly')}
+                title="Show Monthly values only"
+              >
+                Monthly
+              </button>
+              <button
+                className={`units-view-btn ${viewMode === 'annual' ? 'active' : ''}`}
+                onClick={() => setViewMode('annual')}
+                title="Show Annual values only"
+              >
+                Annual
+              </button>
+              <button
+                className={`units-view-btn ${viewMode === 'rollup' ? 'active' : ''}`}
+                onClick={() => setViewMode('rollup')}
+                title="Show both Monthly and Annual"
+              >
+                Roll Up
+              </button>
+            </div>
+
+            {/* Settings Gear */}
+            <div className="units-settings-wrapper">
+              <button
+                className="units-settings-btn"
+                onClick={() => setShowSettings(!showSettings)}
+                title="Table Settings"
+              >
+                ⚙️
+              </button>
+              {showSettings && (
+                <div className="units-settings-dropdown">
+                  <div className="units-settings-header">Theme</div>
+                  {Object.entries(THEME_PRESETS).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      className={`units-theme-option ${theme === key ? 'active' : ''}`}
+                      onClick={() => {
+                        setTheme(key);
+                        setShowSettings(false);
+                      }}
+                    >
+                      <span
+                        className="units-theme-preview"
+                        style={{
+                          background: `linear-gradient(90deg, ${preset.headerBg} 33%, ${preset.incomeBg} 33%, ${preset.incomeBg} 66%, ${preset.leaseBg} 66%)`
+                        }}
+                      />
+                      {preset.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button className="units-save-btn" onClick={handleSave}>
+              💾 Save
+            </button>
+          </div>
         </div>
 
         {/* Unit Mix Section */}
@@ -637,13 +725,13 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
             </div>
           </div>
 
-          {/* New 20-Column Table Structure */}
-          <div className="units-table-container">
+          {/* New 22-Column Table Structure */}
+          <div className={`units-table-container units-view-${viewMode}`}>
             {/* Header Groups */}
             <div className="units-header-groups">
-              <div className="units-header-group-info">Unit Information</div>
-              <div className="units-header-group-income">Unit Income Information</div>
-              <div className="units-header-group-lease">Lease Information</div>
+              <div className="units-header-group-info" style={{ background: THEME_PRESETS[theme].headerBg }}>Unit Information</div>
+              <div className="units-header-group-income" style={{ background: THEME_PRESETS[theme].incomeBg }}>Unit Income Information</div>
+              <div className="units-header-group-lease" style={{ background: THEME_PRESETS[theme].leaseBg }}>Lease Information</div>
             </div>
 
             {/* Sub-headers */}
@@ -654,25 +742,28 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
               <div className="units-subheader">Lease Abstract</div>
               <div className="units-subheader">Tenant Name</div>
               <div className="units-subheader">Size (% GBA)</div>
-              {/* Unit Income Information - 11 columns */}
+              {/* Unit Income Information - columns vary by view mode */}
               <div className="units-subheader">% Inc Rent</div>
-              <div className="units-subheader">Rent/sqft</div>
-              <div className="units-subheader">Rent/mo</div>
-              <div className="units-subheader">Rent/yr</div>
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rent/sqft</div>}
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rent/mo</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rent/sqft/yr</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rent/yr</div>}
               <div className="units-subheader">% Inc Rec</div>
-              <div className="units-subheader">Rec/sqft</div>
-              <div className="units-subheader">Rec/mo</div>
-              <div className="units-subheader">Rec/yr</div>
-              <div className="units-subheader">Gross/sqft</div>
-              <div className="units-subheader">Gross/mo</div>
-              <div className="units-subheader">Gross/yr</div>
-              {/* Lease Information - 6 columns */}
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rec/sqft</div>}
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rec/mo</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rec/sqft/yr</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rec/yr</div>}
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Gross/sqft</div>}
+              {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Gross/mo</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Gross/sqft/yr</div>}
+              {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Gross/yr</div>}
+              {/* Lease Information - only Term Start/End for Monthly/Annual, all 6 for Roll Up */}
               <div className="units-subheader">Term Start</div>
               <div className="units-subheader">Term End</div>
-              <div className="units-subheader">Gross Mo Rem</div>
-              <div className="units-subheader">Gross Yr Rem</div>
-              <div className="units-subheader">WALT (Mo)</div>
-              <div className="units-subheader">WALT (Yr)</div>
+              {viewMode === 'rollup' && <div className="units-subheader">Gross Mo Rem</div>}
+              {viewMode === 'rollup' && <div className="units-subheader">Gross Yr Rem</div>}
+              {viewMode === 'rollup' && <div className="units-subheader">WALT (Mo)</div>}
+              {viewMode === 'rollup' && <div className="units-subheader">WALT (Yr)</div>}
             </div>
 
             {/* Data Rows */}
@@ -723,25 +814,28 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
                           <div className="units-subheader">Lease Abstract</div>
                           <div className="units-subheader">Tenant Name</div>
                           <div className="units-subheader">Size (% GBA)</div>
-                          {/* Unit Income Information - 11 columns */}
+                          {/* Unit Income Information - columns vary by view mode */}
                           <div className="units-subheader">% Inc Rent</div>
-                          <div className="units-subheader">Rent/sqft</div>
-                          <div className="units-subheader">Rent/mo</div>
-                          <div className="units-subheader">Rent/yr</div>
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rent/sqft</div>}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rent/mo</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rent/sqft/yr</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rent/yr</div>}
                           <div className="units-subheader">% Inc Rec</div>
-                          <div className="units-subheader">Rec/sqft</div>
-                          <div className="units-subheader">Rec/mo</div>
-                          <div className="units-subheader">Rec/yr</div>
-                          <div className="units-subheader">Gross/sqft</div>
-                          <div className="units-subheader">Gross/mo</div>
-                          <div className="units-subheader">Gross/yr</div>
-                          {/* Lease Information - 6 columns */}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rec/sqft</div>}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Rec/mo</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rec/sqft/yr</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Rec/yr</div>}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Gross/sqft</div>}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-subheader">Gross/mo</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Gross/sqft/yr</div>}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-subheader">Gross/yr</div>}
+                          {/* Lease Information - only Term Start/End for Monthly/Annual, all 6 for Roll Up */}
                           <div className="units-subheader">Term Start</div>
                           <div className="units-subheader">Term End</div>
-                          <div className="units-subheader">Gross Mo Rem</div>
-                          <div className="units-subheader">Gross Yr Rem</div>
-                          <div className="units-subheader">WALT (Mo)</div>
-                          <div className="units-subheader">WALT (Yr)</div>
+                          {viewMode === 'rollup' && <div className="units-subheader">Gross Mo Rem</div>}
+                          {viewMode === 'rollup' && <div className="units-subheader">Gross Yr Rem</div>}
+                          {viewMode === 'rollup' && <div className="units-subheader">WALT (Mo)</div>}
+                          {viewMode === 'rollup' && <div className="units-subheader">WALT (Yr)</div>}
                         </div>
                       )}
                     </>
@@ -818,67 +912,182 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
                             />
                           </div>
                           <div className="units-data-cell">
-                            <span className="units-calculated">{percentGBA.toFixed(2)}%</span>
+                            <AccountingInput
+                              className="units-cell-input units-cell-input-number"
+                              value={unit.sqft || ''}
+                              onChange={(val) => updateUnit(typeIndex, unit.id, 'sqft', val)}
+                              placeholder="0"
+                              decimals={0}
+                              symbolType="sqft"
+                            />
                           </div>
 
-                          {/* Unit Income Information - 11 columns */}
+                          {/* Unit Income Information - columns vary by view mode */}
                           <div className="units-data-cell">
-                            <input
-                              type="number"
+                            <AccountingInput
                               className="units-cell-input units-cell-input-number"
                               value={unit.percentIncreaseRent || 3}
-                              onChange={(e) => updateUnit(typeIndex, unit.id, 'percentIncreaseRent', parseFloat(e.target.value) || 0)}
-                              min="0"
-                              step="0.1"
+                              onChange={(val) => updateUnit(typeIndex, unit.id, 'percentIncreaseRent', val)}
+                              decimals={1}
+                              symbolType="percent"
                             />
                           </div>
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={rentPsf}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'rent', val * sqft)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psf"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={rentMonthly || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'rent', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={sqft > 0 ? rentAnnual / sqft : ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'rent', (val * sqft) / 12)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psfyr"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={rentAnnual || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'rent', val / 12)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
                           <div className="units-data-cell">
-                            <span className="units-calculated">${rentPsf.toFixed(2)}</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <input
-                              type="number"
-                              className="units-cell-input units-cell-input-number"
-                              value={rentMonthly || ''}
-                              onChange={(e) => updateUnit(typeIndex, unit.id, 'rent', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              min="0"
-                            />
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">${rentAnnual.toLocaleString()}</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <input
-                              type="number"
+                            <AccountingInput
                               className="units-cell-input units-cell-input-number"
                               value={unit.percentIncreaseRecoverable || ''}
-                              onChange={(e) => updateUnit(typeIndex, unit.id, 'percentIncreaseRecoverable', parseFloat(e.target.value) || 0)}
+                              onChange={(val) => updateUnit(typeIndex, unit.id, 'percentIncreaseRecoverable', val)}
                               placeholder="0"
-                              min="0"
-                              step="0.1"
+                              decimals={1}
+                              symbolType="percent"
                             />
                           </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">-</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">-</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">-</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">${rentPsf.toFixed(2)}</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">${rentMonthly.toLocaleString()}</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">${rentAnnual.toLocaleString()}</span>
-                          </div>
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.recoverableRentPsf || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'recoverableRentPsf', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psf"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.recoverableRentMonthly || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'recoverableRentMonthly', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.recoverableRentPsfAnnual || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'recoverableRentPsfAnnual', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psfyr"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.recoverableRentAnnual || ''}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'recoverableRentAnnual', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossRentPsf || rentPsf}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossRentPsf', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psf"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossRentMonthly || rentMonthly}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossRentMonthly', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossRentPsfAnnual || (sqft > 0 ? rentAnnual / sqft : '')}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossRentPsfAnnual', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="psfyr"
+                              />
+                            </div>
+                          )}
+                          {(viewMode === 'annual' || viewMode === 'rollup') && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossRentAnnual || rentAnnual}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossRentAnnual', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="currency"
+                              />
+                            </div>
+                          )}
 
-                          {/* Lease Information - 6 columns */}
+                          {/* Lease Information - only Term Start/End for Monthly/Annual, all 6 for Roll Up */}
                           <div className="units-data-cell">
                             <input
                               type="date"
@@ -895,38 +1104,70 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
                               onChange={(e) => updateUnit(typeIndex, unit.id, 'leaseEnd', e.target.value)}
                             />
                           </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">
-                              {unit.leaseEnd ? (() => {
-                                const end = new Date(unit.leaseEnd);
-                                const now = new Date();
-                                if (isNaN(end.getTime())) return '-';
-                                const diffMs = end.getTime() - now.getTime();
-                                if (diffMs <= 0) return '0';
-                                const months = diffMs / (1000 * 60 * 60 * 24 * 30.44);
-                                return Math.round(months * 10) / 10;
-                              })() : '-'}
-                            </span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">
-                              {unit.leaseEnd ? (() => {
-                                const end = new Date(unit.leaseEnd);
-                                const now = new Date();
-                                if (isNaN(end.getTime())) return '-';
-                                const diffMs = end.getTime() - now.getTime();
-                                if (diffMs <= 0) return '0';
-                                const years = diffMs / (1000 * 60 * 60 * 24 * 365.25);
-                                return Math.round(years * 100) / 100;
-                              })() : '-'}
-                            </span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">{walt.monthly.toFixed(1)}</span>
-                          </div>
-                          <div className="units-data-cell">
-                            <span className="units-calculated">{walt.annual.toFixed(2)}</span>
-                          </div>
+                          {viewMode === 'rollup' && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossMonthsRemaining || (() => {
+                                  if (!unit.leaseEnd) return '';
+                                  const end = new Date(unit.leaseEnd);
+                                  const now = new Date();
+                                  if (isNaN(end.getTime())) return '';
+                                  const diffMs = end.getTime() - now.getTime();
+                                  if (diffMs <= 0) return 0;
+                                  return Math.round((diffMs / (1000 * 60 * 60 * 24 * 30.44)) * 10) / 10;
+                                })()}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossMonthsRemaining', val)}
+                                placeholder="0"
+                                decimals={1}
+                                symbolType="months"
+                              />
+                            </div>
+                          )}
+                          {viewMode === 'rollup' && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.grossYearsRemaining || (() => {
+                                  if (!unit.leaseEnd) return '';
+                                  const end = new Date(unit.leaseEnd);
+                                  const now = new Date();
+                                  if (isNaN(end.getTime())) return '';
+                                  const diffMs = end.getTime() - now.getTime();
+                                  if (diffMs <= 0) return 0;
+                                  return Math.round((diffMs / (1000 * 60 * 60 * 24 * 365.25)) * 100) / 100;
+                                })()}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'grossYearsRemaining', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="years"
+                              />
+                            </div>
+                          )}
+                          {viewMode === 'rollup' && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.waltMonthly || walt.monthly}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'waltMonthly', val)}
+                                placeholder="0"
+                                decimals={1}
+                                symbolType="months"
+                              />
+                            </div>
+                          )}
+                          {viewMode === 'rollup' && (
+                            <div className="units-data-cell">
+                              <AccountingInput
+                                className="units-cell-input units-cell-input-number"
+                                value={unit.waltAnnual || walt.annual}
+                                onChange={(val) => updateUnit(typeIndex, unit.id, 'waltAnnual', val)}
+                                placeholder="0"
+                                decimals={2}
+                                symbolType="years"
+                              />
+                            </div>
+                          )}
                         </div>
 
                         {/* Yearly Breakdown Rows (collapsible) */}
@@ -941,40 +1182,63 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
                             <div className="units-data-cell"></div>
                             <div className="units-data-cell"></div>
 
-                            {/* Unit Income Information - 11 columns */}
+                            {/* Unit Income Information - columns vary by view mode */}
                             <div className="units-data-cell">
                               <span className="units-calculated">{yearData.percentIncrease}%</span>
                             </div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
-                            </div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
-                            </div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
-                            </div>
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${sqft > 0 ? (yearData.rentAnnual / sqft).toFixed(2) : '0.00'}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
+                              </div>
+                            )}
                             <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
-                            </div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
-                            </div>
-                            <div className="units-data-cell">
-                              <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
-                            </div>
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-data-cell"></div>}
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && <div className="units-data-cell"></div>}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-data-cell"></div>}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && <div className="units-data-cell"></div>}
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${sqft > 0 ? (yearData.rentMonthly / sqft).toFixed(2) : '0.00'}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'monthly' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${yearData.rentMonthly.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${sqft > 0 ? (yearData.rentAnnual / sqft).toFixed(2) : '0.00'}</span>
+                              </div>
+                            )}
+                            {(viewMode === 'annual' || viewMode === 'rollup') && (
+                              <div className="units-data-cell">
+                                <span className="units-calculated">${yearData.rentAnnual.toLocaleString()}</span>
+                              </div>
+                            )}
 
-                            {/* Lease Information - 6 columns */}
+                            {/* Lease Information - only Term Start/End for Monthly/Annual, all 6 for Roll Up */}
                             <div className="units-data-cell"></div>
                             <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
-                            <div className="units-data-cell"></div>
+                            {viewMode === 'rollup' && <div className="units-data-cell"></div>}
+                            {viewMode === 'rollup' && <div className="units-data-cell"></div>}
+                            {viewMode === 'rollup' && <div className="units-data-cell"></div>}
+                            {viewMode === 'rollup' && <div className="units-data-cell"></div>}
                           </div>
                         ))}
                       </React.Fragment>
@@ -1029,37 +1293,34 @@ export default function Units({ propertyId, onTotalUnitsChange, grossBuildingAre
           <div className="units-rentroll-grid">
             <div className="units-field">
               <label>Total Monthly Rent</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.rentRoll?.totalMonthlyRent || 0}
-                onChange={(e) =>
+                onChange={(val) =>
                   updateField("rentRoll", {
                     ...(data.rentRoll || {}),
-                    totalMonthlyRent: parseFloat(e.target.value) || 0,
+                    totalMonthlyRent: val,
                   })
                 }
                 placeholder="0.00"
-                step="0.01"
-                min="0"
+                decimals={2}
+                symbolType="currency"
               />
               <p className="units-field-hint">Total monthly rent collected from all units</p>
             </div>
 
             <div className="units-field">
               <label>Occupancy Rate (%)</label>
-              <input
-                type="number"
+              <AccountingInput
                 value={data.rentRoll?.occupancyRate || 100}
-                onChange={(e) =>
+                onChange={(val) =>
                   updateField("rentRoll", {
                     ...(data.rentRoll || {}),
-                    occupancyRate: parseFloat(e.target.value) || 0,
+                    occupancyRate: val,
                   })
                 }
                 placeholder="100"
-                step="0.1"
-                min="0"
-                max="100"
+                decimals={1}
+                symbolType="percent"
               />
               <p className="units-field-hint">Current occupancy percentage</p>
             </div>

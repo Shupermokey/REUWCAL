@@ -62,6 +62,211 @@
   box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
 }
 
+/* Header Controls Container */
+.units-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* View Mode Toggle */
+.units-view-mode {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 2px;
+  border: 1px solid #e5e7eb;
+}
+
+.units-view-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.units-view-btn:hover {
+  color: #374151;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.units-view-btn.active {
+  background: #fff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings Button & Dropdown */
+.units-settings-wrapper {
+  position: relative;
+}
+
+.units-settings-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.units-settings-btn:hover {
+  background: #e5e7eb;
+}
+
+.units-settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.units-settings-header {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.units-theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.units-theme-option:hover {
+  background: #f3f4f6;
+}
+
+.units-theme-option.active {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.units-theme-preview {
+  width: 24px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* View Mode Grid Adjustments */
+/* Monthly view: 5 (Unit Info) + 8 (Income) + 2 (Lease) = 15 columns */
+.units-view-monthly .units-header-groups,
+.units-view-monthly .units-subheaders,
+.units-view-monthly .units-data-row {
+  grid-template-columns:
+    /* Unit Information - 5 columns */
+    minmax(80px, 1fr)
+    minmax(120px, 1.5fr)
+    minmax(100px, 1.2fr)
+    minmax(100px, 1.2fr)
+    minmax(80px, 1fr)
+    /* Unit Income Information - 8 columns (monthly only) */
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    /* Lease Information - 2 columns (Term Start/End only) */
+    minmax(90px, 1fr)
+    minmax(90px, 1fr);
+}
+
+.units-view-monthly .units-header-group-income {
+  grid-column: 6 / 14;
+}
+
+.units-view-monthly .units-header-group-lease {
+  grid-column: 14 / 16;
+}
+
+/* Monthly view border separators */
+.units-view-monthly .units-subheader:nth-child(13),
+.units-view-monthly .units-data-cell:nth-child(13) {
+  border-right: 3px solid #1e3a8a;
+}
+
+.units-view-monthly .units-subheader:nth-child(19),
+.units-view-monthly .units-data-cell:nth-child(19) {
+  border-right: 1px solid #d1d5db;
+}
+
+/* Annual view: 5 (Unit Info) + 8 (Income) + 2 (Lease) = 15 columns */
+.units-view-annual .units-header-groups,
+.units-view-annual .units-subheaders,
+.units-view-annual .units-data-row {
+  grid-template-columns:
+    /* Unit Information - 5 columns */
+    minmax(80px, 1fr)
+    minmax(120px, 1.5fr)
+    minmax(100px, 1.2fr)
+    minmax(100px, 1.2fr)
+    minmax(80px, 1fr)
+    /* Unit Income Information - 8 columns (annual only) */
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(60px, 0.8fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
+    minmax(80px, 1fr)
+    /* Lease Information - 2 columns (Term Start/End only) */
+    minmax(90px, 1fr)
+    minmax(90px, 1fr);
+}
+
+.units-view-annual .units-header-group-income {
+  grid-column: 6 / 14;
+}
+
+.units-view-annual .units-header-group-lease {
+  grid-column: 14 / 16;
+}
+
+/* Annual view border separators */
+.units-view-annual .units-subheader:nth-child(13),
+.units-view-annual .units-data-cell:nth-child(13) {
+  border-right: 3px solid #1e3a8a;
+}
+
+.units-view-annual .units-subheader:nth-child(19),
+.units-view-annual .units-data-cell:nth-child(19) {
+  border-right: 1px solid #d1d5db;
+}
+
+/* Roll up view uses default 25 columns (already defined) */
+
 /* Sections */
 .units-section {
   margin-bottom: 32px;
@@ -120,7 +325,7 @@
 /* Header Groups Row - Uses same column widths as subheaders */
 .units-header-groups {
   display: grid;
-  /* Same grid as subheaders to ensure alignment */
+  /* Same grid as subheaders to ensure alignment - Roll Up view (25 columns) */
   grid-template-columns:
     /* Unit Information - 5 columns */
     minmax(80px, 1fr)
@@ -128,17 +333,20 @@
     minmax(100px, 1.2fr)
     minmax(100px, 1.2fr)
     minmax(80px, 1fr)
-    /* Unit Income Information - 11 columns */
+    /* Unit Income Information - 14 columns */
     minmax(60px, 0.8fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     minmax(60px, 0.8fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     /* Lease Information - 6 columns */
     minmax(90px, 1fr)
@@ -163,9 +371,9 @@
   border-right: 3px solid #1e3a8a;
 }
 
-/* Unit Income Information header spans columns 6-16 */
+/* Unit Income Information header spans columns 6-19 (14 columns) */
 .units-header-group-income {
-  grid-column: 6 / 17;
+  grid-column: 6 / 20;
   padding: 12px 16px;
   text-align: center;
   background: #065f46;
@@ -173,9 +381,9 @@
   border-right: 3px solid #1e3a8a;
 }
 
-/* Lease Information header spans columns 17-22 */
+/* Lease Information header spans columns 20-25 (6 columns) */
 .units-header-group-lease {
-  grid-column: 17 / 23;
+  grid-column: 20 / 26;
   padding: 12px 16px;
   text-align: center;
   background: #1e40af;
@@ -185,7 +393,7 @@
 /* Sub-headers Row */
 .units-subheaders {
   display: grid;
-  /* Unit Info (5) + Unit Income (11) + Lease Info (6) = 22 columns */
+  /* Unit Info (5) + Unit Income (14) + Lease Info (6) = 25 columns - Roll Up view */
   grid-template-columns:
     /* Unit Information - 5 columns */
     minmax(80px, 1fr)   /* Unit ID */
@@ -193,17 +401,20 @@
     minmax(100px, 1.2fr) /* Lease Abstract */
     minmax(100px, 1.2fr) /* Tenant Name */
     minmax(80px, 1fr)    /* Unit Size % */
-    /* Unit Income Information - 11 columns */
+    /* Unit Income Information - 14 columns */
     minmax(60px, 0.8fr)  /* % Increase Rent */
     minmax(70px, 0.9fr)  /* Rent p/sqft */
     minmax(80px, 1fr)    /* Rent p/month */
+    minmax(70px, 0.9fr)  /* Rent p/sqft/yr */
     minmax(80px, 1fr)    /* Rent p/annual */
     minmax(60px, 0.8fr)  /* % Increase Recoverable */
     minmax(70px, 0.9fr)  /* Recoverable p/sqft */
     minmax(80px, 1fr)    /* Recoverable p/month */
+    minmax(70px, 0.9fr)  /* Recoverable p/sqft/yr */
     minmax(80px, 1fr)    /* Recoverable p/annual */
     minmax(70px, 0.9fr)  /* Gross p/sqft */
     minmax(80px, 1fr)    /* Gross p/month */
+    minmax(70px, 0.9fr)  /* Gross p/sqft/yr */
     minmax(80px, 1fr)    /* Gross p/annual */
     /* Lease Information - 6 columns */
     minmax(90px, 1fr)    /* Term Start */
@@ -244,19 +455,19 @@
   border-right: 3px solid #1e3a8a;
 }
 
-/* Unit Income Information columns (6-16) - Light green background */
-.units-subheader:nth-child(n+6):nth-child(-n+16) {
+/* Unit Income Information columns (6-19) - Light green background */
+.units-subheader:nth-child(n+6):nth-child(-n+19) {
   background: #ecfdf5;
   color: #065f46;
 }
 
 /* Add thick border after Unit Income Information group */
-.units-subheader:nth-child(16) {
+.units-subheader:nth-child(19) {
   border-right: 3px solid #1e3a8a;
 }
 
-/* Lease Information columns (17-22) - Light blue background */
-.units-subheader:nth-child(n+17) {
+/* Lease Information columns (20-25) - Light blue background */
+.units-subheader:nth-child(n+20) {
   background: #dbeafe;
   color: #1e40af;
 }
@@ -281,17 +492,20 @@
     minmax(100px, 1.2fr)
     minmax(100px, 1.2fr)
     minmax(80px, 1fr)
-    /* Unit Income Information - 11 columns */
+    /* Unit Income Information - 14 columns */
     minmax(60px, 0.8fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     minmax(60px, 0.8fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     minmax(70px, 0.9fr)
     minmax(80px, 1fr)
+    minmax(70px, 0.9fr)
     minmax(80px, 1fr)
     /* Lease Information - 6 columns */
     minmax(90px, 1fr)
@@ -331,11 +545,11 @@
 
 /* Add thick border separators between groups in data rows */
 .units-data-cell:nth-child(5) {
-  border-right: 3px solid #e5e7eb;
+  border-right: 3px solid #1e3a8a;
 }
 
-.units-data-cell:nth-child(16) {
-  border-right: 3px solid #e5e7eb;
+.units-data-cell:nth-child(19) {
+  border-right: 3px solid #1e3a8a;
 }
 
 /* Subtle background tints for data cell groups */
@@ -343,11 +557,11 @@
   background: rgba(229, 231, 235, 0.3);
 }
 
-.units-data-row .units-data-cell:nth-child(n+6):nth-child(-n+16) {
+.units-data-row .units-data-cell:nth-child(n+6):nth-child(-n+19) {
   background: rgba(236, 253, 245, 0.3);
 }
 
-.units-data-row .units-data-cell:nth-child(n+17) {
+.units-data-row .units-data-cell:nth-child(n+20) {
   background: rgba(219, 234, 254, 0.3);
 }
 
